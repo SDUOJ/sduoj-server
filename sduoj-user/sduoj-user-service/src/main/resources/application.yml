@@ -1,0 +1,12 @@
+server:
+  port: 8081
+spring:
+  application:
+    name: user-service
+  datasource:
+    driver-class-name: com.mysql.jdbc.Driver
+    url: jdbc:mysql://192.168.68.132:33306/sduoj
+    username: root
+    password: 123
+mybatis:
+  type-aliases-package: cn.edu.sdu.qd.oj.user.pojo
