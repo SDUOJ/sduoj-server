@@ -24,6 +24,14 @@
         <dependency>
             <groupId>tk.mybatis</groupId>
             <artifactId>mapper-spring-boot-starter</artifactId>
+<!-- 阻止Spring boot默认加载org.springframework.boot.autoconfigure.jdbc.DataSourceAutoConfiguration类
+     避免了没有dataSource的子工程引入common后报错-->
+            <exclusions>
+                <exclusion>
+                    <groupId>org.springframework.boot</groupId>
+                    <artifactId>spring-boot-starter-jdbc</artifactId>
+                </exclusion>
+            </exclusions>
         </dependency>
         <dependency>
             <groupId>org.apache.commons</groupId>

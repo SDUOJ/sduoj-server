@@ -5,9 +5,11 @@
 
 package cn.edu.sdu.qd.oj.user.controller;
 
-import cn.edu.sdu.qd.oj.common.pojo.ResponseResult;
+import cn.edu.sdu.qd.oj.common.entity.ResponseResult;
+import cn.edu.sdu.qd.oj.user.pojo.User;
 import cn.edu.sdu.qd.oj.user.service.UserService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -21,7 +23,6 @@ import org.springframework.web.bind.annotation.*;
 
 @RestController
 @CrossOrigin
-@RequestMapping("user")
 public class UserController {
     @Autowired
     private UserService userService;
@@ -29,5 +30,25 @@ public class UserController {
     @GetMapping("/{id}")
     public ResponseEntity<ResponseResult> queryById(@PathVariable("id") Integer id) {
         return ResponseEntity.ok(ResponseResult.ok(this.userService.queryById(id)));
+    }
+
+
+    /**
+     * 根据用户名和密码查询用户
+     * TODO: 实现通用返回类
+     * @param username
+     * @param password
+     * @return
+     */
+    @GetMapping("/query")
+    public ResponseEntity<User> queryUser(
+            @RequestParam("account") String account,
+            @RequestParam("password") String password
+    ) {
+        User user = this.userService.queryUser(account, password);
+        if (user == null) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).build();
+        }
+        return ResponseEntity.ok(user);
     }
 }

@@ -3,7 +3,7 @@
  * Copyright (c) 2020-2020 zhangt2333@gmail.com
  **/
 
-package cn.edu.sdu.qd.oj.common.pojo;
+package cn.edu.sdu.qd.oj.common.entity;
 
 import lombok.AllArgsConstructor;
 import lombok.Data;

@@ -6,7 +6,7 @@
 package cn.edu.sdu.qd.oj.common.advice;
 
 import cn.edu.sdu.qd.oj.common.exception.OJException;
-import cn.edu.sdu.qd.oj.common.pojo.ResponseResult;
+import cn.edu.sdu.qd.oj.common.entity.ResponseResult;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.ControllerAdvice;

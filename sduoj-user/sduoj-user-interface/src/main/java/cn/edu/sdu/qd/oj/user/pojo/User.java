@@ -5,6 +5,7 @@
 
 package cn.edu.sdu.qd.oj.user.pojo;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import lombok.Data;
 
 import javax.persistence.Column;
@@ -33,6 +34,7 @@ public class User implements Serializable {
     private String account;
 
     @Column(name = "u_password")
+    @JsonIgnore
     private String password;
 
     @Column(name = "u_nickname")

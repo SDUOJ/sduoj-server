@@ -17,7 +17,8 @@ import lombok.AllArgsConstructor;
 
 @AllArgsConstructor
 public enum ExceptionEnum {
-    USER_NOT_FOUND(400, "该用户不存在"),
+    USER_NOT_FOUND(500, "该用户不存在"),
+    PASSWORD_NOT_MATCHING(500, "该用户账号或密码错误"), // 不能直接提示密码错误哦
     ;
 
     public int code;

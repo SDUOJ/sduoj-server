@@ -5,25 +5,23 @@
 
 package cn.edu.sdu.qd.oj;
 
-
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.cloud.client.discovery.EnableDiscoveryClient;
-import tk.mybatis.spring.annotation.MapperScan;
+import org.springframework.cloud.openfeign.EnableFeignClients;
 
 /**
- * @ClassName UserApplication
+ * @ClassName AuthApplication
  * @Description TODO
  * @Author zhangt2333
- * @Date 2020/2/26 11:29
+ * @Date 2020/2/27 13:01
  * @Version V1.0
  **/
 
 @SpringBootApplication
 @EnableDiscoveryClient
-@MapperScan(basePackages = {"cn.edu.sdu.qd.oj.user.mapper"})
-public class UserApplication {
-    public static void main(String[] args) {
-        SpringApplication.run(UserApplication.class, args);
+@EnableFeignClients
+public class AuthApplication {    public static void main(String[] args) {
+        SpringApplication.run(AuthApplication.class, args);
     }
 }
