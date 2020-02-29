@@ -1,16 +1,27 @@
-# sduoj-server
+# SDUOJ Server
 
-sduoj 的业务服务器，技术栈 Spring Boot + Spring Cloud + MyBatis + Lombok + 通用 Mapper + PageHelper。
+This is the service server of the SDUOJ.
 
-## 迭代日志
+## Solution stack
 
-*   2020年2月26日 `init0`：建立项目仓库。
+*   Spring Boot
+*   Spring Cloud
+*   MyBatis
+*   Mybatis Common Mapper
+*   Lombok
+*   PageHelper
 
-*   2020年2月26日 `init1`：初次提交，搭框架，实现 API 规范，指定通常异常处理，实现 User 接口查询。 
+## Development log of V1.0
 
-*   2020年2月27日 `init2`：
-    *   数据库 user 表增加`学号`列
-    *   更新增加微服务注册中心 `Eureka`
-    *   更新增加网关中心 `Zuul`
-    *   更新增加鉴权微服务 `auth-service`，初定认证方案为 token 机制
-
+*   2020-2-26  `init0`：
+    *   Create the repo.
+*   2020-2-26  `init1`：
+    *   Build a framework.
+    *   Develop API specifications.
+    *   General exception handling.
+    *   Build `user-service`.
+*   2020-2-27  `init2`：
+    *   Add `studentId` column to the table `user`  of database.
+    *   Add `registry-service` using `Eureka` component.
+    *   Add `api-gateway` using `Zuul` component.
+    *   Add  `auth-service` which may use "token" as an authentication scheme.
