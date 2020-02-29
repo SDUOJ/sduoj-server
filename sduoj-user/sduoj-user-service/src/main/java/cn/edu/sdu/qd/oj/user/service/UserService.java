@@ -36,10 +36,10 @@ public class UserService {
         return user;
     }
 
-    public User queryUser(String account, String password) {
+    public User queryUser(String username, String password) {
         // 查询
         User record = new User();
-        record.setAccount(account);
+        record.setUsername(username);
         User user = this.userMapper.selectOne(record);
         // 校验用户名
         if (user == null) {

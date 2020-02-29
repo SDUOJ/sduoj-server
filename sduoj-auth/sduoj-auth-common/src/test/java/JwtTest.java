@@ -55,6 +55,6 @@ public class JwtTest {
         // 解析token
         UserInfo user = JwtUtils.getInfoFromToken(token, publicKey);
         System.out.println("id: " + user.getId());
-        System.out.println("account: " + user.getAccount());
+        System.out.println("username: " + user.getUsername());
     }
 }

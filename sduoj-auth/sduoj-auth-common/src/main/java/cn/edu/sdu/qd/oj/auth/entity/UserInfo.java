@@ -21,5 +21,5 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 public class UserInfo {
     private Integer id;
-    private String account;
+    private String username;
 }

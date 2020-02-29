@@ -37,7 +37,7 @@ public class AuthService {
                 return null;
             }
             // 如果有查询结果，则生成token
-            String token = JwtUtils.generateToken(new UserInfo(user.getId(), user.getAccount()),
+            String token = JwtUtils.generateToken(new UserInfo(user.getId(), user.getUsername()),
                     properties.getPrivateKey(), properties.getExpire());
             return token;
         } catch (Exception e) {

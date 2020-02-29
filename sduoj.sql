@@ -21,7 +21,7 @@ SET FOREIGN_KEY_CHECKS=0;
 DROP TABLE IF EXISTS `oj_users`;
 CREATE TABLE `oj_users` (
   `u_id` int(11) NOT NULL AUTO_INCREMENT COMMENT '用户id',
-  `u_account` varchar(16) COLLATE utf8mb4_unicode_ci NOT NULL COMMENT '用户账号',
+  `u_username` varchar(16) COLLATE utf8mb4_unicode_ci NOT NULL COMMENT '用户账号',
   `u_password` varchar(32) COLLATE utf8mb4_unicode_ci NOT NULL COMMENT '用户密码',
   `u_nickname` varchar(20) COLLATE utf8mb4_unicode_ci NOT NULL,
   `u_email` varchar(64) COLLATE utf8mb4_unicode_ci NOT NULL COMMENT '用户邮箱',

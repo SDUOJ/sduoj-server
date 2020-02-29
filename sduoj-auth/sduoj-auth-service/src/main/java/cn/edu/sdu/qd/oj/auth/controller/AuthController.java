@@ -40,18 +40,18 @@ public class AuthController {
 
     /**
     * @Description TODO
-    * @param account
+    * @param username
     * @param password
     * @return org.springframework.http.ResponseEntity<cn.edu.sdu.qd.oj.common.entity.ResponseResult>
     **/
     @PostMapping("accredit")
     public ResponseEntity<ResponseResult> authentication(
-            @RequestParam("account") String account,
+            @RequestParam("username") String username,
             @RequestParam("password") String password,
             HttpServletRequest request,
             HttpServletResponse response) {
         // 登录校验
-        String token = this.authService.authentication(account, password);
+        String token = this.authService.authentication(username, password);
         if (StringUtils.isBlank(token)) {
             return new ResponseEntity<>(HttpStatus.UNAUTHORIZED);
         }

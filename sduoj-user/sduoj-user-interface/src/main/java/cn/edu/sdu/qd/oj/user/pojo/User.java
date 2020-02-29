@@ -30,8 +30,8 @@ public class User implements Serializable {
     @Column(name = "u_id")
     private Integer id;
 
-    @Column(name = "u_account")
-    private String account;
+    @Column(name = "u_username")
+    private String username;
 
     @Column(name = "u_password")
     @JsonIgnore
