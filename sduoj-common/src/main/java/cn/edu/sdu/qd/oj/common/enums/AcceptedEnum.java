@@ -17,8 +17,8 @@ import lombok.AllArgsConstructor;
 
 @AllArgsConstructor
 public enum AcceptedEnum {
-    OK(1, "成功"),
-    ERROR(0, "失败")  // 需要服务端处理的异常
+    OK(0, "成功"),
+    ERROR(1, "失败")  // 需要服务端处理的异常
     ;
 
     public int code;

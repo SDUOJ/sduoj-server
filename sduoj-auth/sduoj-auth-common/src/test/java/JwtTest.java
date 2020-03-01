@@ -33,28 +33,28 @@ public class JwtTest {
     @Test
     public void testRsa() throws Exception {
         // 测该方法前，注释掉`testGetRsa()`的Before注解
-        RsaUtils.generateKey(pubKeyPath, priKeyPath, "2333");
+//        RsaUtils.generateKey(pubKeyPath, priKeyPath, "2333");
     }
 
     @Before
     public void testGetRsa() throws Exception {
-        this.publicKey = RsaUtils.getPublicKey(pubKeyPath);
-        this.privateKey = RsaUtils.getPrivateKey(priKeyPath);
+//        this.publicKey = RsaUtils.getPublicKey(pubKeyPath);
+//        this.privateKey = RsaUtils.getPrivateKey(priKeyPath);
     }
 
     @Test
     public void testGenerateToken() throws Exception {
         // 生成token
-        String token = JwtUtils.generateToken(new UserInfo(1000, "tttt"), privateKey, 5);
-        System.out.println("String token = \"" + token + "\";");
+//        String token = JwtUtils.generateToken(new UserInfo(1000, "tttt"), privateKey, 5);
+//        System.out.println("String token = \"" + token + "\";");
     }
 
     @Test
     public void testParseToken() throws Exception {
-        String token = "eyJhbGciOiJSUzI1NiJ9.eyJpZCI6MTAwMCwiYWNjb3VudCI6InR0dHQiLCJleHAiOjE1ODI3ODM2NDV9.sCk3nzIJQhK2NfY1hmbLM-AVN6HYpf3Frt9sPYLhb02dZ3KSuyPTsphCEH_YITrFW9lI58rGS4eukmur02Q0BbOkrz7Hi8jUICmSBmGHwxTfoZVCHgrSx8Jr_4u5f3mFz7kxZuGNhYt8VsvLSJwoRZCnPOLznjOAud_6Zt8zgKE";
-        // 解析token
-        UserInfo user = JwtUtils.getInfoFromToken(token, publicKey);
-        System.out.println("id: " + user.getId());
-        System.out.println("username: " + user.getUsername());
+//        String token = "eyJhbGciOiJSUzI1NiJ9.eyJpZCI6MTAwMCwiYWNjb3VudCI6InR0dHQiLCJleHAiOjE1ODI3ODM2NDV9.sCk3nzIJQhK2NfY1hmbLM-AVN6HYpf3Frt9sPYLhb02dZ3KSuyPTsphCEH_YITrFW9lI58rGS4eukmur02Q0BbOkrz7Hi8jUICmSBmGHwxTfoZVCHgrSx8Jr_4u5f3mFz7kxZuGNhYt8VsvLSJwoRZCnPOLznjOAud_6Zt8zgKE";
+//        // 解析token
+//        UserInfo user = JwtUtils.getInfoFromToken(token, publicKey);
+//        System.out.println("id: " + user.getId());
+//        System.out.println("username: " + user.getUsername());
     }
 }

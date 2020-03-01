@@ -26,22 +26,24 @@ public class AuthService {
     private UserClient userClient;
 
     @Autowired
-    private JwtProperties properties;
+    private JwtProperties prop;
 
-    public String authentication(String username, String password) {
+    public User authentication(String username, String password) {
         try {
             // 调用微服务，执行查询
-            User user = this.userClient.queryUser(username, password);
-            // 如果查询结果为null，则直接返回null
-            if (user == null) {
-                return null;
-            }
-            // 如果有查询结果，则生成token
-            String token = JwtUtils.generateToken(new UserInfo(user.getId(), user.getUsername()),
-                    properties.getPrivateKey(), properties.getExpire());
-            return token;
-        } catch (Exception e) {
-            e.printStackTrace();
+            return this.userClient.queryUser(username, password);
+        } catch (Exception ignore) {
+            // TODO: 异常处理
+        }
+        return null;
+    }
+
+    public User queryUserById(Integer id) {
+        try {
+            // 调用微服务，执行查询
+            return this.userClient.queryUser(id);
+        } catch (Exception ignore) {
+            // TODO: 异常处理
         }
         return null;
     }

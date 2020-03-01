@@ -51,4 +51,21 @@ public class UserController {
         }
         return ResponseEntity.ok(user);
     }
+
+    /**
+     * 根据用户id查询用户
+     * TODO: 实现通用返回类
+     * @param username
+     * @param password
+     * @return
+     */
+    @GetMapping("/queryById")
+    public ResponseEntity<User> queryUser(@RequestParam("id") Integer id) {
+        User user = this.userService.queryById(id);
+        if (user == null) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).build();
+        }
+        return ResponseEntity.ok(user);
+    }
+
 }

@@ -42,7 +42,7 @@ public class ResponseResult implements Serializable {
 	}
 
 	/**
-	 * 错误响应，但无响应数据。
+	 * 异常反馈，需要客户端处理的
 	 */
 	public static ResponseResult error(ExceptionEnum em) {
 		return new ResponseResult()
@@ -51,10 +51,12 @@ public class ResponseResult implements Serializable {
 	}
 
 	/**
-	 * 异常反馈，需要客户端处理的
+	 * 错误反馈，需要服务端处理的
 	 */
 	public static ResponseResult error() {
-		return error(null);
+		return new ResponseResult()
+				.setCode(AcceptedEnum.ERROR.code)
+				.setMessage(AcceptedEnum.ERROR.message);
 	}
 
 	/**

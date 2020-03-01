@@ -30,7 +30,7 @@ public class UserControllerTest {
 
     @Test
     public void queryById() {
-        System.out.println(userController.queryById(1000));
+//        System.out.println(userController.queryById(1000));
 //        System.out.println(userController.queryById(1));
     }
 }

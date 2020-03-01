@@ -33,17 +33,16 @@
             <optional>true</optional>
         </dependency>
 
-
         <dependency>
             <groupId>cn.edu.sdu.qd.oj.auth</groupId>
             <artifactId>sduoj-auth-common</artifactId>
             <version>1.0.0-SNAPSHOT</version>
         </dependency>
-<!--        不能导入sduoj-common, 因为拦截器无法生效会报错-->
-<!--        <dependency>-->
-<!--            <groupId>cn.edu.sdu.qd.oj.common</groupId>-->
-<!--            <artifactId>sduoj-common</artifactId>-->
-<!--            <version>1.0.0-SNAPSHOT</version>-->
-<!--        </dependency>-->
+        <dependency>
+            <groupId>cn.edu.sdu.qd.oj.common</groupId>
+            <artifactId>sduoj-common</artifactId>
+            <version>1.0.0-SNAPSHOT</version>
+        </dependency>
     </dependencies>
+
 </project>

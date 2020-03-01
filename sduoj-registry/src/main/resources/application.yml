@@ -2,7 +2,7 @@ server:
   port: 10086
 spring:
   application:
-    name: ly-registry
+    name: sduoj-registry
 eureka:
   client:
     fetch-registry: false
