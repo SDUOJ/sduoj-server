@@ -9,6 +9,7 @@ import cn.edu.sdu.qd.oj.common.enums.AcceptedEnum;
 import cn.edu.sdu.qd.oj.common.enums.ExceptionEnum;
 import lombok.Getter;
 import lombok.ToString;
+import org.springframework.http.HttpStatus;
 
 import java.io.Serializable;
 
@@ -22,7 +23,7 @@ import java.io.Serializable;
 
 @Getter
 @ToString
-public class ResponseResult implements Serializable {
+public class ResponseResult <T> implements Serializable {
 	private static final long serialVersionUID = 1L;
 
 	private int code;
@@ -41,17 +42,39 @@ public class ResponseResult implements Serializable {
 		return ok(null);
 	}
 
+
 	/**
-	 * 异常反馈，需要客户端处理的
+	 * 错误响应，需要客户端处理的
 	 */
-	public static ResponseResult error(ExceptionEnum em) {
+	public static ResponseResult fail(ExceptionEnum em) {
 		return new ResponseResult()
 				.setCode(em.code)
 				.setMessage(em.message);
 	}
 
 	/**
-	 * 错误反馈，需要服务端处理的
+	 * 错误响应，存在响应数据。
+	 */
+	public static <T> ResponseResult<T> fail(HttpStatus status) {
+		return new ResponseResult()
+				.setCode(status.value())
+				.setMessage(status.getReasonPhrase())
+				.setData(null);
+	}
+
+	/**
+	 * 错误响应，存在响应数据。
+	 */
+	public static <T> ResponseResult<T> fail(T data) {
+		return new ResponseResult()
+				.setCode(AcceptedEnum.ERROR.code)
+				.setMessage(AcceptedEnum.ERROR.message)
+				.setData(data);
+	}
+
+
+	/**
+	 * 异常反馈，需要服务端处理的
 	 */
 	public static ResponseResult error() {
 		return new ResponseResult()
@@ -59,27 +82,22 @@ public class ResponseResult implements Serializable {
 				.setMessage(AcceptedEnum.ERROR.message);
 	}
 
+
+
+
 	/**
 	 * 成功响应，存在响应数据。
 	 */
-	public static ResponseResult ok(Object data) {
+	public static <T> ResponseResult<T> ok(T data) {
 		return new ResponseResult()
 				.setCode(AcceptedEnum.OK.code)
 				.setMessage(AcceptedEnum.OK.message)
 				.setData(data);
 	}
 
-	/**
-	 * 错误响应，存在响应数据。
-	 */
-	public static ResponseResult error(Object data) {
-		return new ResponseResult()
-				.setCode(AcceptedEnum.ERROR.code)
-				.setMessage(AcceptedEnum.ERROR.message)
-				.setData(data);
-	}
 
-	public ResponseResult setData(Object data) {
+
+	public ResponseResult setData(T data) {
 		this.data = data;
 		return this;
 	}

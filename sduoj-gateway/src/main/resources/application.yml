@@ -6,7 +6,7 @@ spring:
 eureka:
   client:
     service-url:
-      defaultZone: http://192.168.68.132:10086/eureka
+      defaultZone: http://127.0.0.1:10086/eureka
     registry-fetch-interval-seconds: 5 # 服务拉取间隔
   instance:
     prefer-ip-address: true
@@ -20,8 +20,8 @@ zuul:
   add-host-header: true     # 携带请求本身的head头
   sensitive-headers:        # 配置禁止使用的头信息，这里设为 null，不然 set-cookie 无效
 ribbon:
-  ConnectTimeout: 250            # 连接超时时间(ms)
-  ReadTimeout: 2000              # 通信超时时间(ms)
+  ConnectTimeout: 2000           # 连接超时时间(ms)
+  ReadTimeout: 5000              # 通信超时时间(ms)
   OkToRetryOnAllOperations: true # 是否对所有操作重试
   MaxAutoRetriesNextServer: 1    # 同一服务不同实例的重试次数
   MaxAutoRetries: 1              # 同一实例的重试次数
@@ -34,8 +34,8 @@ hystrix:
             timeoutInMillisecond: 10000 # 熔断超时时长：10000ms
 sduoj:
   jwt:
-#    pubKeyPath: C:\\Users\\tttt\\Desktop\\tempProjects\\rsa.pub       # 公钥地址
-    pubKeyPath: /home/tttt/rsa.pub
+    pubKeyPath: C:\\Users\\tttt\\Desktop\\tempProjects\\rsa.pub       # 公钥地址
+#    pubKeyPath: /home/tttt/rsa.pub
     cookieName: SDUOJ_TOKEN                 # cookie的name
   filter:
     allowPaths:

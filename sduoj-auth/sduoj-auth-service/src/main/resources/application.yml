@@ -6,7 +6,7 @@ spring:
 eureka:
   client:
     service-url:
-      defaultZone: http://192.168.68.132:10086/eureka
+      defaultZone: http://127.0.0.1:10086/eureka
     registry-fetch-interval-seconds: 10
   instance:
     lease-renewal-interval-in-seconds: 5     # 每隔5秒发送一次心跳
@@ -16,10 +16,10 @@ eureka:
 sduoj:
   jwt:
     secret: sduoj@Login(Auth}*^31)&sducs%   # 登录校验的密钥
-#    pubKeyPath: C:\\Users\\tttt\\Desktop\\tempProjects\\rsa.pub
-#    priKeyPath: C:\\Users\\tttt\\Desktop\\tempProjects\\rsa.pri
-    pubKeyPath: /home/tttt/rsa.pub
-    priKeyPath: /home/tttt/rsa.pri
+    pubKeyPath: C:\\Users\\tttt\\Desktop\\tempProjects\\rsa.pub
+    priKeyPath: C:\\Users\\tttt\\Desktop\\tempProjects\\rsa.pri
+#    pubKeyPath: /home/tttt/rsa.pub
+#    priKeyPath: /home/tttt/rsa.pri
     expire: 30                              # 过期时间,单位分钟
     cookieName: SDUOJ_TOKEN                 # cookie的name
     cookieMaxAge: 86400                     # cookie的存活时间(s)

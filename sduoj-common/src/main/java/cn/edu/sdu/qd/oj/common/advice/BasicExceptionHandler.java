@@ -26,6 +26,6 @@ public class BasicExceptionHandler {
     @ExceptionHandler(OJException.class)
     public ResponseEntity<ResponseResult> handleException(OJException e) {
         return ResponseEntity.status(e.getExceptionEnum().code)
-                .body(ResponseResult.error(e.getExceptionEnum()));
+                .body(ResponseResult.fail(e.getExceptionEnum()));
     }
 }
