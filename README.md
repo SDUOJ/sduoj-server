@@ -36,3 +36,4 @@ This is the service server of the SDUOJ.
     *   Use `HandlerMethodReturnValueHandler` to format response json.
 *   2020-03-03 :
     *   Refactor : Update the solution of global exception handle.
+    *   Build`problem-service`.

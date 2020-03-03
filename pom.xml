@@ -13,6 +13,7 @@
         <module>sduoj-auth</module>
         <module>sduoj-registry</module>
         <module>sduoj-gateway</module>
+        <module>sduoj-problem</module>
     </modules>
     <!--父工程用 pom 的打包方式-->
     <packaging>pom</packaging>
