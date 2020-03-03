@@ -9,14 +9,15 @@ import cn.edu.sdu.qd.oj.auth.config.JwtProperties;
 import cn.edu.sdu.qd.oj.auth.entity.UserInfo;
 import cn.edu.sdu.qd.oj.auth.service.AuthService;
 import cn.edu.sdu.qd.oj.auth.utils.JwtUtils;
-import cn.edu.sdu.qd.oj.common.entity.OJResponseBody;
+import cn.edu.sdu.qd.oj.common.entity.ApiResponseBody;
 import cn.edu.sdu.qd.oj.common.entity.ResponseResult;
+import cn.edu.sdu.qd.oj.common.enums.ApiExceptionEnum;
+import cn.edu.sdu.qd.oj.common.exception.ApiException;
 import cn.edu.sdu.qd.oj.common.utils.CookieUtils;
 import cn.edu.sdu.qd.oj.user.pojo.User;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.*;
 
@@ -45,11 +46,11 @@ public class AuthController {
     * @Description TODO
     * @param username
     * @param password
-    * @return org.springframework.http.ResponseEntity<cn.edu.sdu.qd.oj.common.entity.ResponseResult>
+    * @return
     **/
     @PostMapping("login")
-    @ResponseBody
-    public ResponseResult<User> authentication(
+    @ApiResponseBody
+    public User authentication(
             @RequestBody Map json,
             HttpServletRequest request,
             HttpServletResponse response) {
@@ -59,7 +60,7 @@ public class AuthController {
             // 登录校验
             User user = this.authService.authentication(username, password);
             if (user == null) {
-                return ResponseResult.fail(HttpStatus.UNAUTHORIZED);
+                throw new ApiException(ApiExceptionEnum.PASSWORD_NOT_MATCHING);
             }
             // 计算token
             String token = null;
@@ -74,8 +75,7 @@ public class AuthController {
                        .httpOnly()
                        .maxAge(prop.getCookieMaxAge())
                        .request(request).build(prop.getCookieName(), token);
-            System.out.println(user);
-            return ResponseResult.ok(user);
+            return user;
         } else {
             String token = CookieUtils.getCookieValue(request, this.prop.getCookieName());
             // TODO: 校验现有 cookie 超时与否
@@ -83,15 +83,15 @@ public class AuthController {
             try {
                 UserInfo userInfo = JwtUtils.getInfoFromToken(token, prop.getPublicKey());
                 User user = this.authService.queryUserById(userInfo.getId());
-                return ResponseResult.ok(user);
+                return user;
             } catch (Exception e) {
-                return ResponseResult.fail(HttpStatus.UNAUTHORIZED);
+                throw new ApiException(ApiExceptionEnum.UNKNOWN_ERROR);
             }
         }
     }
 
     @GetMapping("logout")
-    @OJResponseBody
+    @ApiResponseBody
     public void logout(
             HttpServletRequest request,
             HttpServletResponse response) {

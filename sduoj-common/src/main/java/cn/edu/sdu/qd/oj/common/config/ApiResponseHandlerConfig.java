@@ -1,6 +1,6 @@
 package cn.edu.sdu.qd.oj.common.config;
 
-import cn.edu.sdu.qd.oj.common.entity.OJResponseBody;
+import cn.edu.sdu.qd.oj.common.entity.ApiResponseBody;
 import cn.edu.sdu.qd.oj.common.entity.ResponseResult;
 import org.springframework.beans.BeansException;
 import org.springframework.context.ApplicationContext;
@@ -22,7 +22,7 @@ import java.util.List;
 import java.util.Objects;
 
 @Configuration
-public class OJResponseHandlerConfig implements WebMvcConfigurer {
+public class ApiResponseHandlerConfig implements WebMvcConfigurer {
     @Override
     public void addReturnValueHandlers(List<HandlerMethodReturnValueHandler> handlers) {
         handlers.add(OJProcessor());
@@ -46,8 +46,8 @@ public class OJResponseHandlerConfig implements WebMvcConfigurer {
 
         @Override
         public boolean supportsReturnType(MethodParameter returnType) {
-            return AnnotatedElementUtils.hasAnnotation(returnType.getContainingClass(), OJResponseBody.class) ||
-                    returnType.hasMethodAnnotation(OJResponseBody.class);
+            return AnnotatedElementUtils.hasAnnotation(returnType.getContainingClass(), ApiResponseBody.class) ||
+                    returnType.hasMethodAnnotation(ApiResponseBody.class);
         }
 
         @Override

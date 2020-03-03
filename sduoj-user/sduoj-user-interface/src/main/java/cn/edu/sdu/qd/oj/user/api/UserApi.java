@@ -5,8 +5,11 @@
 
 package cn.edu.sdu.qd.oj.user.api;
 
+import cn.edu.sdu.qd.oj.common.exception.ApiException;
+import cn.edu.sdu.qd.oj.common.exception.InternalApiException;
 import cn.edu.sdu.qd.oj.user.pojo.User;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 
 /**
@@ -18,9 +21,9 @@ import org.springframework.web.bind.annotation.RequestParam;
  **/
 
 public interface UserApi {
-    @GetMapping("/query")
+    @PostMapping("/query")
     User queryUser(@RequestParam("username") String username,
-                   @RequestParam("password") String password);
-    @GetMapping("/queryById")
-    User queryUser(@RequestParam("id") Integer id);
+                   @RequestParam("password") String password) throws InternalApiException;
+    @PostMapping("/queryById")
+    User queryUser(@RequestParam("id") Integer id) throws InternalApiException;
 }

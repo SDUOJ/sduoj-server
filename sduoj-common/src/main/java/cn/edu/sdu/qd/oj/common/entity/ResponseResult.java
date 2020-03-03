@@ -6,7 +6,7 @@
 package cn.edu.sdu.qd.oj.common.entity;
 
 import cn.edu.sdu.qd.oj.common.enums.AcceptedEnum;
-import cn.edu.sdu.qd.oj.common.enums.ExceptionEnum;
+import cn.edu.sdu.qd.oj.common.enums.ApiExceptionEnum;
 import lombok.Getter;
 import lombok.ToString;
 import org.springframework.http.HttpStatus;
@@ -46,10 +46,19 @@ public class ResponseResult <T> implements Serializable {
 	/**
 	 * 错误响应，需要客户端处理的
 	 */
-	public static ResponseResult fail(ExceptionEnum em) {
+	public static ResponseResult fail(ApiExceptionEnum em) {
 		return new ResponseResult()
 				.setCode(em.code)
 				.setMessage(em.message);
+	}
+
+	/**
+	 * 错误响应，需要客户端处理的
+	 */
+	public static ResponseResult fail(int code, String message) {
+		return new ResponseResult()
+				.setCode(code)
+				.setMessage(message);
 	}
 
 	/**
@@ -76,13 +85,18 @@ public class ResponseResult <T> implements Serializable {
 	/**
 	 * 异常反馈，需要服务端处理的
 	 */
+	public static ResponseResult error(ApiExceptionEnum em) {
+		return fail(em);
+	}
+
+	/**
+	 * 异常反馈，需要服务端处理的
+	 */
 	public static ResponseResult error() {
 		return new ResponseResult()
 				.setCode(AcceptedEnum.ERROR.code)
 				.setMessage(AcceptedEnum.ERROR.message);
 	}
-
-
 
 
 	/**

@@ -5,13 +5,13 @@
 
 package cn.edu.sdu.qd.oj.user.controller;
 
-import cn.edu.sdu.qd.oj.common.entity.OJResponseBody;
-import cn.edu.sdu.qd.oj.common.entity.ResponseResult;
+import cn.edu.sdu.qd.oj.common.entity.ApiResponseBody;
+import cn.edu.sdu.qd.oj.common.enums.ApiExceptionEnum;
+import cn.edu.sdu.qd.oj.common.exception.ApiException;
+import cn.edu.sdu.qd.oj.common.exception.InternalApiException;
 import cn.edu.sdu.qd.oj.user.pojo.User;
 import cn.edu.sdu.qd.oj.user.service.UserService;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.*;
 
@@ -31,10 +31,11 @@ public class UserController {
 
 
     @GetMapping("/{id}")
-    @OJResponseBody
+    @ApiResponseBody
     public User queryById(@PathVariable("id") Integer id) {
         return this.userService.queryById(id);
     }
+
 
     /**
      * 根据用户名和密码查询用户, 内部接口
@@ -43,10 +44,11 @@ public class UserController {
      * @param password
      * @return
      */
-    @GetMapping("/query")
+    @PostMapping("/query")
+    @ResponseBody
     public User queryUser(
             @RequestParam("username") String username,
-            @RequestParam("password") String password) {
+            @RequestParam("password") String password) throws InternalApiException {
         User user = this.userService.queryUser(username, password);
         return user;
     }
@@ -59,9 +61,9 @@ public class UserController {
      * @return
      */
     @GetMapping("/queryById")
+    @ResponseBody
     public User queryUser(@RequestParam("id") Integer id) {
         User user = this.userService.queryById(id);
         return user;
     }
-
 }
