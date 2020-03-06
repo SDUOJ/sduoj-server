@@ -37,3 +37,5 @@ This is the service server of the SDUOJ.
 *   2020-03-03 :
     *   Refactor : Update the solution of global exception handle.
     *   Build`problem-service`.
+*   2020-03-06 :
+    *   Build `submit-service` and add a resolve view which is used to test RabbitMQ.

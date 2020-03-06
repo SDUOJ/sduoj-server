@@ -1,0 +1,27 @@
+server:
+  port: 8082
+spring:
+  application:
+    name: submit-service
+  datasource:
+    driver-class-name: com.mysql.jdbc.Driver
+    url: jdbc:mysql://192.168.68.132:33306/sduoj
+    username: root
+    password: sduoj-server-mysql
+  rabbitmq:
+    host: 192.168.68.132
+    username: sduoj
+    password: sduoj-mq
+    virtual-host: /sduoj
+    publisher-confirms: true
+eureka:
+  client:
+    service-url:
+      defaultZone: http://127.0.0.1:10086/eureka
+  instance:
+    lease-renewal-interval-in-seconds: 5
+    lease-expiration-duration-in-seconds: 15
+    prefer-ip-address: true
+    instance-id: ${spring.cloud.client.ip-address}:${server.port}
+mybatis:
+  type-aliases-package: cn.edu.sdu.qd.oj.submit.pojo
