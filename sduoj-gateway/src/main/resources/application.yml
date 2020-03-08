@@ -15,9 +15,10 @@ zuul:
   prefix: /api              # 路由前缀
   retryable: true
   routes:
-    user-service: /user/**       # 用户中心
-    auth-service: /auth/**       # 授权中心
-    problem-service: /problem/** # 题库中心
+    user-service: /user/**       # 用户服务
+    auth-service: /auth/**       # 授权服务
+    problem-service: /problem/** # 题库服务
+    submit-service: /submit/**   # 提交服务
   add-host-header: true     # 携带请求本身的head头
   sensitive-headers:        # 配置禁止使用的头信息，这里设为 null，不然 set-cookie 无效
 ribbon:
