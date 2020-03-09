@@ -38,8 +38,9 @@ public class AuthService {
             return user;
         } catch (InternalApiException e) {
             log.error(e.toString());
-            throw new ApiException(e.code, e.message);
+//            throw new ApiException(e.code, e.message);
         }
+        return null;
     }
 
     public User queryUserById(Integer id) {

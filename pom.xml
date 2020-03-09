@@ -32,9 +32,10 @@
         <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
         <java.version>1.8</java.version>
         <spring-cloud.version>Greenwich.SR5</spring-cloud.version>
-        <mybatis.starter.version>2.0.3</mybatis.starter.version>
+        <mybatis.starter.version>2.1.1</mybatis.starter.version>
         <mapper.starter.version>2.1.5</mapper.starter.version>
         <mysql.version>5.1.48</mysql.version>
+        <pageHelper.starter.version>1.2.13</pageHelper.starter.version>
         <lombok.version>1.18.4</lombok.version>
     </properties>
 
@@ -83,6 +84,12 @@
                 <groupId>mysql</groupId>
                 <artifactId>mysql-connector-java</artifactId>
                 <version>${mysql.version}</version>
+            </dependency>
+            <!-- 分页助手启动器 -->
+            <dependency>
+                <groupId>com.github.pagehelper</groupId>
+                <artifactId>pagehelper-spring-boot-starter</artifactId>
+                <version>${pageHelper.starter.version}</version>
             </dependency>
         </dependencies>
     </dependencyManagement>

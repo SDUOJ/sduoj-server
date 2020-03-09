@@ -1,15 +1,21 @@
 package cn.edu.sdu.qd.oj.problem.service;
 
+import cn.edu.sdu.qd.oj.common.entity.PageResult;
 import cn.edu.sdu.qd.oj.common.enums.ApiExceptionEnum;
 import cn.edu.sdu.qd.oj.common.exception.ApiException;
+import cn.edu.sdu.qd.oj.problem.mapper.ProblemListBoMapper;
 import cn.edu.sdu.qd.oj.problem.mapper.ProblemMapper;
 import cn.edu.sdu.qd.oj.problem.pojo.Problem;
 
+import cn.edu.sdu.qd.oj.problem.pojo.ProblemListBo;
+import com.github.pagehelper.Page;
+import com.github.pagehelper.PageHelper;
 import net.minidev.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import tk.mybatis.mapper.entity.Example;
 import tk.mybatis.mapper.genid.GenId;
 
 import java.lang.reflect.Array;
@@ -21,11 +27,31 @@ public class ProblemService {
     @Autowired
     private ProblemMapper problemMapper;
 
+    @Autowired
+    private ProblemListBoMapper problemListBoMapper;
+
     public Problem queryById(Integer id) {
         Problem problem = this.problemMapper.selectByPrimaryKey(id);
         if (problem == null) {
             throw new ApiException(ApiExceptionEnum.PROBLEM_NOT_FOUND);
         }
+        if (problem.getIsPublic() == 0) {
+            throw new ApiException(ApiExceptionEnum.PROBLEM_NOT_PUBLIC);
+        }
         return problem;
+    }
+
+    public List<ProblemListBo> queryBoById(Integer id) {
+        List<ProblemListBo> ret = new ArrayList<>();
+        ret.add(this.problemListBoMapper.selectByPrimaryKey(id));
+        return ret;
+    }
+
+    public PageResult<ProblemListBo> queryProblemByPage(int page, int limit) {
+        PageHelper.startPage(page, limit);
+        Example example = new Example(ProblemListBo.class);
+        example.createCriteria().andEqualTo("isPublic", 1);
+        Page<ProblemListBo> pageInfo = (Page<ProblemListBo>) problemListBoMapper.selectByExample(example);
+        return new PageResult<>(pageInfo.getPages(), pageInfo);
     }
 }

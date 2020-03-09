@@ -2,7 +2,10 @@ package cn.edu.sdu.qd.oj.problem.controller;
 
 import cn.edu.sdu.qd.oj.common.entity.ApiResponseBody;
 import cn.edu.sdu.qd.oj.common.entity.PageResult;
+import cn.edu.sdu.qd.oj.common.enums.ApiExceptionEnum;
+import cn.edu.sdu.qd.oj.common.exception.ApiException;
 import cn.edu.sdu.qd.oj.problem.pojo.Problem;
+import cn.edu.sdu.qd.oj.problem.pojo.ProblemListBo;
 import cn.edu.sdu.qd.oj.problem.service.ProblemService;
 
 
@@ -25,11 +28,22 @@ public class ProblemController {
     @Autowired
     private ProblemService problemService;
 
-    @GetMapping("{id}")
+    @PostMapping("query")
     @ApiResponseBody
-    public Problem queryById(@PathVariable("id") Integer id) {
-        return this.problemService.queryById(id);
+    public Problem queryById(@RequestBody Map json) {
+        return this.problemService.queryById((Integer) json.get("id"));
     }
 
-    // TODO: query the list of problem
+    @PostMapping("list")
+    @ApiResponseBody
+    public PageResult<ProblemListBo> queryList(@RequestBody Map json) {
+        int page = (int) json.get("page");
+        int limit = (int) json.get("limit");
+        PageResult<ProblemListBo> result = this.problemService.queryProblemByPage(page, limit);
+        if (result == null || result.getRows().size() == 0) {
+            throw new ApiException(ApiExceptionEnum.PROBLEM_NOT_FOUND);
+        }
+        return result;
+    }
+
 }

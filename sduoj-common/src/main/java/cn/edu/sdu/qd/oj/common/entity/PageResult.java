@@ -22,13 +22,17 @@ import java.util.List;
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
-public class PageResult <T> {
+public class PageResult<T> {
     private Long total;
     private Integer totalPage;
     private List<T> rows;
 
-    public PageResult(Long total, List<T> rows) {
-        this.total = total;
+    public PageResult(Integer totalPage, List<T> rows) {
+        this.totalPage = totalPage;
         this.rows = rows;
+        if (rows != null)
+            this.total = Long.valueOf(rows.size());
+        else
+            this.total = 0L;
     }
 }

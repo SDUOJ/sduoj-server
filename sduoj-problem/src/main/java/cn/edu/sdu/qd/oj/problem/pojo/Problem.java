@@ -16,7 +16,7 @@ public class Problem implements Serializable {
 
     @Id
     @Column(name = "p_id")
-    private Integer id;  // TODO: match the length of Integer in database
+    private Integer id;
 
     @Column(name = "p_is_public")
     private Integer isPublic;

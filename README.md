@@ -39,3 +39,6 @@ This is the service server of the SDUOJ.
     *   Build`problem-service`.
 *   2020-03-06 :
     *   Build `submit-service` and add a resolve view which is used to test RabbitMQ.
+*   2020-03-09 :
+    *   Complete the API of querying problem list in paging.
+

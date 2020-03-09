@@ -92,7 +92,7 @@ public class AuthController {
 
     @GetMapping("logout")
     @ApiResponseBody
-    public void logout(
+    public Void logout(
             HttpServletRequest request,
             HttpServletResponse response) {
         CookieUtils.newBuilder(response)
@@ -100,5 +100,6 @@ public class AuthController {
                    .maxAge(0)
                    .request(request)
                    .build(prop.getCookieName(), null);
+        return null;
     }
 }
