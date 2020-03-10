@@ -9,12 +9,20 @@ import cn.edu.sdu.qd.oj.common.enums.ApiExceptionEnum;
 import cn.edu.sdu.qd.oj.common.exception.ApiException;
 import cn.edu.sdu.qd.oj.common.entity.ResponseResult;
 import cn.edu.sdu.qd.oj.common.exception.InternalApiException;
+import com.sun.org.apache.xalan.internal.xsltc.compiler.util.ErrorMsg;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.validation.BindingResult;
+import org.springframework.validation.FieldError;
+import org.springframework.validation.ObjectError;
+import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.MissingServletRequestParameterException;
 import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ExceptionHandler;
+
+import java.util.List;
+import java.util.stream.Collectors;
 
 /**
  * @ClassName BasicExceptionHandler
@@ -52,6 +60,12 @@ public class GlobalExceptionHandlerConfig {
     public ResponseEntity<ResponseResult> handleException(ApiException e) {
         return ResponseEntity.status(e.code)
                 .body(ResponseResult.fail(e.code, e.message));
+    }
+
+    @ExceptionHandler(MethodArgumentNotValidException.class)
+    public ResponseEntity<ResponseResult> exception(MethodArgumentNotValidException e) {
+        String message = e.getBindingResult().getAllErrors().stream().map(ObjectError::getDefaultMessage).collect(Collectors.joining(";"));
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(ResponseResult.fail(HttpStatus.BAD_REQUEST.value(), message));
     }
 
 }
