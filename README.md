@@ -42,3 +42,13 @@ This is the service server of the SDUOJ.
 *   2020-03-09 :
     *   Complete the API of querying problem list in paging.
 
+*   2020-03-10 :
+    *   Add the handler of `MethodArgumentNotValidException`.
+*   2020-03-11 :
+    *   Add the handler of `HttpMessageNotReadableException`.
+*   2020-03-12 :
+    *   Add the data validator of `User`.
+
+*   2020-03-13 :
+    *   Complete the API of register.
+

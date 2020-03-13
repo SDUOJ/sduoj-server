@@ -49,11 +49,19 @@ public class UserService {
         if (!user.getPassword().equals(CodecUtils.md5Hex(password, "slat_string"))) {
             throw new InternalApiException(ApiExceptionEnum.PASSWORD_NOT_MATCHING);
         }
-        // TODO：校验加盐密码，选择加密方式和盐
+        // TODO：校验加盐密码，选择加密方式和盐，盐放到配置文件中
 //        if (!user.getPassword().equals(CodecUtils.md5Hex(password, user.getSalt()))) {
 //            throw new InternalApiException(ExceptionEnum.PASSWORD_NOT_MATCHING);
 //        }
         // 用户名密码都正确
         return user;
+    }
+
+    public void register(User user) {
+        user.setId(null);
+        user.setPassword(CodecUtils.md5Hex(user.getPassword(), "slat_string"));
+        if(this.userMapper.insertSelective(user) != 1) {
+            throw new ApiException(ApiExceptionEnum.UNKNOWN_ERROR);
+        }
     }
 }

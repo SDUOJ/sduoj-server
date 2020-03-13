@@ -15,6 +15,9 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.*;
 
+import javax.validation.Valid;
+import java.util.Map;
+
 /**
  * @ClassName UserController
  * @Description TODO
@@ -36,6 +39,12 @@ public class UserController {
         return this.userService.queryById(id);
     }
 
+    @PostMapping("/register")
+    @ApiResponseBody
+    public Void register(@Valid @RequestBody User user) {
+        this.userService.register(user);
+        return null;
+    }
 
     /**
      * 根据用户名和密码查询用户, 内部接口
