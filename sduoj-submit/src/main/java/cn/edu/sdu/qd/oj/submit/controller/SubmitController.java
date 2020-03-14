@@ -6,12 +6,13 @@
 package cn.edu.sdu.qd.oj.submit.controller;
 
 import cn.edu.sdu.qd.oj.common.entity.ApiResponseBody;
+import cn.edu.sdu.qd.oj.submit.pojo.SubmissionJudgeBo;
 import cn.edu.sdu.qd.oj.submit.service.SubmitService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
-import org.springframework.web.bind.annotation.CrossOrigin;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.*;
+
+import java.util.Map;
 
 /**
  * @ClassName SubmitController
@@ -33,5 +34,12 @@ public class SubmitController {
     public Void submit_test(@PathVariable("id") int id) {
         this.submitService.createSubmission(id);
         return null;
+    }
+
+    @PostMapping("/queryByJudger")
+    @ApiResponseBody
+    public SubmissionJudgeBo queryByJudger(@RequestBody Map json) {
+        int id = (int) json.get("id");
+        return this.submitService.queryByJudger(id);
     }
 }

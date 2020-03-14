@@ -14,15 +14,15 @@ import java.io.Serializable;
 import java.util.Date;
 
 /**
- * @ClassName Submission
+ * @ClassName SubmissionJudgeBo
  * @Description TODO
  * @Author zhangt2333
- * @Date 2020/3/6 16:03
+ * @Date 2020/3/14 18:59
  * @Version V1.0
  **/
 @Data
 @Table(name = "oj_submissions")
-public class Submission implements Serializable {
+public class SubmissionJudgeBo implements Serializable {
     private static final long serialVersionUID = 1L;
 
     @Id
@@ -43,24 +43,6 @@ public class Submission implements Serializable {
 
     @Column(name = "s_ipv4")
     private String ipv4;
-
-    @Column(name = "s_judge_id")
-    private Integer judgeId;
-
-    @Column(name = "s_judge_result")
-    private String judgeResult;
-
-    @Column(name = "s_judge_score")
-    private Integer judgeScore;
-
-    @Column(name = "s_used_time")
-    private Integer usedTime;
-
-    @Column(name = "s_used_memory")
-    private Integer usedMemory;
-
-    @Column(name = "s_judge_log")
-    private String judgeLog;
 
     @Column(name = "s_code")
     private String code;

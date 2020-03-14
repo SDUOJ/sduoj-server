@@ -5,7 +5,12 @@
 
 package cn.edu.sdu.qd.oj.submit.service;
 
+import cn.edu.sdu.qd.oj.common.enums.ApiExceptionEnum;
+import cn.edu.sdu.qd.oj.common.exception.ApiException;
+import cn.edu.sdu.qd.oj.submit.mapper.SubmissionJudgeBoMapper;
+import cn.edu.sdu.qd.oj.submit.mapper.SubmissionMapper;
 import cn.edu.sdu.qd.oj.submit.pojo.Submission;
+import cn.edu.sdu.qd.oj.submit.pojo.SubmissionJudgeBo;
 import com.alibaba.fastjson.JSON;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.amqp.core.AmqpTemplate;
@@ -27,6 +32,13 @@ import java.util.Map;
 @Service
 @Slf4j
 public class SubmitService {
+
+    @Autowired
+    private SubmissionMapper submissionMapper;
+
+    @Autowired
+    private SubmissionJudgeBoMapper submissionJudgeBoMapper;
+
     @Autowired
     private RabbitTemplate rabbitTemplate;
 
@@ -43,5 +55,13 @@ public class SubmitService {
             log.error("提交创建失败, ");
         }
         return null;
+    }
+
+    public SubmissionJudgeBo queryByJudger(int id) {
+        SubmissionJudgeBo submissionJudgeBo = this.submissionJudgeBoMapper.selectByPrimaryKey(id);
+        if(submissionJudgeBo == null) {
+            throw new ApiException(ApiExceptionEnum.SUBMISSION_NOT_FOUND);
+        }
+        return submissionJudgeBo;
     }
 }

@@ -21,7 +21,8 @@ public enum ApiExceptionEnum {
     USER_NOT_FOUND(500, "该用户不存在"),
     PASSWORD_NOT_MATCHING(500, "该用户账号或密码错误"), // 不能直接提示密码错误哦
     PROBLEM_NOT_FOUND(500, "题目未找到"),
-    PROBLEM_NOT_PUBLIC(403, "题目非公开")
+    PROBLEM_NOT_PUBLIC(403, "题目非公开"),
+    SUBMISSION_NOT_FOUND(500, "提交未找到"),
     ;
 
     public int code;
