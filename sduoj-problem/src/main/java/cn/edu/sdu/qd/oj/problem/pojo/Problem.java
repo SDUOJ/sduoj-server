@@ -11,7 +11,6 @@ import java.io.Serializable;
 @Data
 @Table(name = "oj_problems")
 public class Problem implements Serializable {
-
     private static final long serialVersionUID = 1L;
 
     @Id

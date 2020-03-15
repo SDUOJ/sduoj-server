@@ -18,6 +18,5 @@ public class SubmitServiceTest {
 
     @Test
     public void createSubmission() {
-        submitService.createSubmission(10000000);
     }
 }

@@ -25,3 +25,8 @@ eureka:
     instance-id: ${spring.cloud.client.ip-address}:${server.port}
 mybatis:
   type-aliases-package: cn.edu.sdu.qd.oj.submit.pojo
+sduoj:
+  jwt:
+    pubKeyPath: C:\\Users\\tttt\\Desktop\\tempProjects\\rsa.pub       # 公钥地址
+    #    pubKeyPath: /home/tttt/rsa.pub
+    cookieName: SDUOJ_TOKEN                 # cookie的name

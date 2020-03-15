@@ -7,9 +7,7 @@ package cn.edu.sdu.qd.oj.submit.pojo;
 
 import lombok.Data;
 
-import javax.persistence.Column;
-import javax.persistence.Id;
-import javax.persistence.Table;
+import javax.persistence.*;
 import java.io.Serializable;
 import java.util.Date;
 
@@ -26,6 +24,7 @@ public class Submission implements Serializable {
     private static final long serialVersionUID = 1L;
 
     @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "s_id")
     private Long id;
 
@@ -64,4 +63,13 @@ public class Submission implements Serializable {
 
     @Column(name = "s_code")
     private String code;
+
+    public Submission(Integer problemId, Integer userId, Integer languageId, Date createTime, String ipv4, String code) {
+        this.problemId = problemId;
+        this.userId = userId;
+        this.languageId = languageId;
+        this.createTime = createTime;
+        this.ipv4 = ipv4;
+        this.code = code;
+    }
 }

@@ -42,19 +42,8 @@ public class SubmitService {
     @Autowired
     private RabbitTemplate rabbitTemplate;
 
-    public Submission createSubmission(int submissionId) {
-        // TODO: 包装提交信息
-        // Test MQ
-        try {
-            Map<String, String> msg = new HashMap<>();
-            msg.put("event", "SubmissionCreated");
-            msg.put("submissionId", String.valueOf(submissionId));
-            log.info("It's time to send test message to MQ!");
-            this.rabbitTemplate.convertAndSend("", "judge_queue", msg);
-        } catch (Exception e) {
-            log.error("提交创建失败, ");
-        }
-        return null;
+    public boolean createSubmission(Submission submission) {
+        return this.submissionMapper.insertSelective(submission)==1;
     }
 
     public SubmissionJudgeBo queryByJudger(int id) {
