@@ -43,12 +43,23 @@ public class SubmitService {
     private RabbitTemplate rabbitTemplate;
 
     public boolean createSubmission(Submission submission) {
-        return this.submissionMapper.insertSelective(submission)==1;
+        if (this.submissionMapper.insertSelective(submission) == 1) {
+            try {
+                Map<String, Object> msg = new HashMap<>();
+                msg.put("event", "submissionCreated");
+                msg.put("submissionId", submission.getId());
+                this.rabbitTemplate.convertAndSend("", "judge_queue", msg);
+            } catch (Exception e) {
+                log.error("提交创建失败, ");
+            }
+            return true;
+        }
+        return false;
     }
 
     public SubmissionJudgeBo queryByJudger(int id) {
         SubmissionJudgeBo submissionJudgeBo = this.submissionJudgeBoMapper.selectByPrimaryKey(id);
-        if(submissionJudgeBo == null) {
+        if (submissionJudgeBo == null) {
             throw new ApiException(ApiExceptionEnum.SUBMISSION_NOT_FOUND);
         }
         return submissionJudgeBo;
