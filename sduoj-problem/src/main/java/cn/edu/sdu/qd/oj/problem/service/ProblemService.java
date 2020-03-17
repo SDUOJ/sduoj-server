@@ -3,10 +3,12 @@ package cn.edu.sdu.qd.oj.problem.service;
 import cn.edu.sdu.qd.oj.common.entity.PageResult;
 import cn.edu.sdu.qd.oj.common.enums.ApiExceptionEnum;
 import cn.edu.sdu.qd.oj.common.exception.ApiException;
+import cn.edu.sdu.qd.oj.problem.mapper.ProblemJudgerBoMapper;
 import cn.edu.sdu.qd.oj.problem.mapper.ProblemListBoMapper;
 import cn.edu.sdu.qd.oj.problem.mapper.ProblemMapper;
 import cn.edu.sdu.qd.oj.problem.pojo.Problem;
 
+import cn.edu.sdu.qd.oj.problem.pojo.ProblemJudgerBo;
 import cn.edu.sdu.qd.oj.problem.pojo.ProblemListBo;
 import com.github.pagehelper.Page;
 import com.github.pagehelper.PageHelper;
@@ -29,6 +31,9 @@ public class ProblemService {
 
     @Autowired
     private ProblemListBoMapper problemListBoMapper;
+
+    @Autowired
+    private ProblemJudgerBoMapper problemJudgerBoMapper;
 
     public Problem queryById(Integer id) {
         Problem problem = this.problemMapper.selectByPrimaryKey(id);
@@ -53,5 +58,9 @@ public class ProblemService {
         example.createCriteria().andEqualTo("isPublic", 1);
         Page<ProblemListBo> pageInfo = (Page<ProblemListBo>) problemListBoMapper.selectByExample(example);
         return new PageResult<>(pageInfo.getPages(), pageInfo);
+    }
+
+    public ProblemJudgerBo querybujudger(int problemId) {
+        return this.problemJudgerBoMapper.selectByPrimaryKey(problemId);
     }
 }

@@ -5,6 +5,7 @@ import cn.edu.sdu.qd.oj.common.entity.PageResult;
 import cn.edu.sdu.qd.oj.common.enums.ApiExceptionEnum;
 import cn.edu.sdu.qd.oj.common.exception.ApiException;
 import cn.edu.sdu.qd.oj.problem.pojo.Problem;
+import cn.edu.sdu.qd.oj.problem.pojo.ProblemJudgerBo;
 import cn.edu.sdu.qd.oj.problem.pojo.ProblemListBo;
 import cn.edu.sdu.qd.oj.problem.service.ProblemService;
 
@@ -44,6 +45,12 @@ public class ProblemController {
             throw new ApiException(ApiExceptionEnum.PROBLEM_NOT_FOUND);
         }
         return result;
+    }
+
+    @PostMapping("querybyjudger")
+    @ApiResponseBody
+    public ProblemJudgerBo queryByJudger(@RequestBody Map json) {
+        return this.problemService.querybujudger((Integer) json.get("id"));
     }
 
 }

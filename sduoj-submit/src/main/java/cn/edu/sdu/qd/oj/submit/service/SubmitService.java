@@ -48,6 +48,7 @@ public class SubmitService {
                 Map<String, Object> msg = new HashMap<>();
                 msg.put("event", "submissionCreated");
                 msg.put("submissionId", submission.getId());
+                msg.put("problemId", submission.getProblemId());
                 this.rabbitTemplate.convertAndSend("", "judge_queue", msg);
             } catch (Exception e) {
                 log.error("提交创建失败, ");

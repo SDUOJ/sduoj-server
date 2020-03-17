@@ -1,6 +1,7 @@
 package cn.edu.sdu.qd.oj.problem.pojo;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.Data;
 
 import javax.persistence.Column;
@@ -18,6 +19,7 @@ public class Problem implements Serializable {
     private Integer id;
 
     @Column(name = "p_is_public")
+    @JsonProperty(access = JsonProperty.Access.WRITE_ONLY)
     private Integer isPublic;
 
     @Column(name = "u_id")
@@ -25,6 +27,10 @@ public class Problem implements Serializable {
 
     @Column(name = "p_name")
     private String problemName;
+
+    @Column(name = "p_checkpoint_url")
+    @JsonProperty(access = JsonProperty.Access.WRITE_ONLY)
+    private String checkpointUrl;
 
     @Column(name = "p_submit_num")
     private Integer submitNum;
