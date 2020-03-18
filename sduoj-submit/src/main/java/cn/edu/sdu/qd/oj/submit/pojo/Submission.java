@@ -72,4 +72,14 @@ public class Submission implements Serializable {
         this.ipv4 = ipv4;
         this.code = code;
     }
+
+    public Submission(Long id, Integer judgeId, String judgeResult, Integer judgeScore, Integer usedTime, Integer usedMemory, String judgeLog) {
+        this.id = id;
+        this.judgeId = judgeId;
+        this.judgeResult = judgeResult;
+        this.judgeScore = judgeScore;
+        this.usedTime = usedTime;
+        this.usedMemory = usedMemory;
+        this.judgeLog = judgeLog;
+    }
 }

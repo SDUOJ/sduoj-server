@@ -49,7 +49,7 @@ public class SubmitController {
     @PostMapping("/create")
     @ApiResponseBody
     public Long submissionCreate(@RequestBody Map json,
-                                                    HttpServletRequest request) {
+                                 HttpServletRequest request) {
         int problemId = (int) json.get("problemId");
         int languageId = (int) json.get("languageId");
         String code = (String) json.get("code");
@@ -61,11 +61,11 @@ public class SubmitController {
         UserInfo userInfo;
         try {
             userInfo = JwtUtils.getInfoFromToken(token, this.jwtProperties.getPublicKey());
-        }catch (Exception e) {
+        } catch (Exception e) {
             throw new ApiException(ApiExceptionEnum.UNKNOWN_ERROR);
         }
         Submission submission = new Submission(problemId, userInfo.getId(), languageId, new Date(), ipv4, code);
-        if(this.submitService.createSubmission(submission)) {
+        if (this.submitService.createSubmission(submission)) {
             return submission.getId();
         }
         throw new ApiException(ApiExceptionEnum.UNKNOWN_ERROR);
@@ -76,5 +76,20 @@ public class SubmitController {
     public SubmissionJudgeBo queryByJudger(@RequestBody Map json) {
         int id = (int) json.get("id");
         return this.submitService.queryByJudger(id);
+    }
+
+    @PostMapping("/update")
+    @ApiResponseBody
+    public Void updateSubmission(@RequestBody Map json) {
+        int id = (int) json.get("id");
+        int judgeId = (int) json.get("judgeId");
+        String judgeResult = (String) json.get("judgeResult");
+        int judgeScore = (int) json.get("judgeScore");
+        int usedTime = (int) json.get("usedTime");
+        int usedMemory = (int) json.get("usedMemory");
+        String judgeLog = (String) json.get("judgeLog");
+        Submission submission = new Submission(Long.valueOf(id), judgeId, judgeResult, judgeScore, usedTime, usedMemory, judgeLog);
+        this.submitService.updateSubmission(submission);
+        return null;
     }
 }

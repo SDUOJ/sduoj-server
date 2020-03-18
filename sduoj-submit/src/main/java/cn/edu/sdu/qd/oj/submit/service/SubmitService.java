@@ -48,7 +48,6 @@ public class SubmitService {
                 Map<String, Object> msg = new HashMap<>();
                 msg.put("event", "submissionCreated");
                 msg.put("submissionId", submission.getId());
-                msg.put("problemId", submission.getProblemId());
                 this.rabbitTemplate.convertAndSend("", "judge_queue", msg);
             } catch (Exception e) {
                 log.error("提交创建失败, ");
@@ -64,5 +63,10 @@ public class SubmitService {
             throw new ApiException(ApiExceptionEnum.SUBMISSION_NOT_FOUND);
         }
         return submissionJudgeBo;
+    }
+
+    public void updateSubmission(Submission submission) {
+        if(this.submissionMapper.updateByPrimaryKeySelective(submission) != 1)
+            throw new ApiException(ApiExceptionEnum.UNKNOWN_ERROR);
     }
 }
