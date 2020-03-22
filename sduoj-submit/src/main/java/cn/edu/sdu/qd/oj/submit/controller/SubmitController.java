@@ -71,7 +71,7 @@ public class SubmitController {
         throw new ApiException(ApiExceptionEnum.UNKNOWN_ERROR);
     }
 
-    @PostMapping("/queryByJudger")
+    @PostMapping("/querybyjudger")
     @ApiResponseBody
     public SubmissionJudgeBo queryByJudger(@RequestBody Map json) {
         int id = (int) json.get("id");

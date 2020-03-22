@@ -51,3 +51,13 @@ This is the service server of the SDUOJ.
     *   Complete the API of register.
 *   2020-03-14 :
     *   Complete the API of querying submission by judger.
+*   2020-03-15 :
+    *   Complete the API of creating submission.
+*   2020-03-16 :
+    *   Send submissionId to MQ when submission was created
+*   2020-03-17 :
+    *   Complete the API of querying url of checkpoint by judger.
+*   2020-03-18 :
+    *   Complete the API of update submission result by judger.
+*   2020-03-22 :
+    *   Build `config-service`.

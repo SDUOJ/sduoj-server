@@ -15,6 +15,7 @@
         <module>sduoj-gateway</module>
         <module>sduoj-problem</module>
         <module>sduoj-submit</module>
+        <module>sduoj-config</module>
     </modules>
     <!--父工程用 pom 的打包方式-->
     <packaging>pom</packaging>

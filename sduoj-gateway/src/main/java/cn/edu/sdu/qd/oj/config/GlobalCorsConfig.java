@@ -30,6 +30,7 @@ public class GlobalCorsConfig {
         config.addAllowedOrigin("http://api.oj.oops-sdu.cn");
         config.addAllowedOrigin("http://www.oj.oops-sdu.cn");
         config.addAllowedOrigin("http://oj.oops-sdu.cn");
+        config.addAllowedOrigin("http://api.oj.xrvitd.com");
         // 是否发送cookie信息
         config.setAllowCredentials(true);
         // 允许的请求方式

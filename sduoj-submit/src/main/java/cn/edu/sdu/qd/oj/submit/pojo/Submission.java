@@ -43,8 +43,8 @@ public class Submission implements Serializable {
     @Column(name = "s_ipv4")
     private String ipv4;
 
-    @Column(name = "s_judge_id")
-    private Integer judgeId;
+    @Column(name = "s_judger_id")
+    private Integer judgerId;
 
     @Column(name = "s_judge_result")
     private String judgeResult;
@@ -75,7 +75,7 @@ public class Submission implements Serializable {
 
     public Submission(Long id, Integer judgeId, String judgeResult, Integer judgeScore, Integer usedTime, Integer usedMemory, String judgeLog) {
         this.id = id;
-        this.judgeId = judgeId;
+        this.judgerId = judgeId;
         this.judgeResult = judgeResult;
         this.judgeScore = judgeScore;
         this.usedTime = usedTime;
