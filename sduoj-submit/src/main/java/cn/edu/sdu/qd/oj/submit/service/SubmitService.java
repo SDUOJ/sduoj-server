@@ -17,6 +17,7 @@ import org.springframework.amqp.core.AmqpTemplate;
 import org.springframework.amqp.rabbit.core.RabbitTemplate;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -42,6 +43,7 @@ public class SubmitService {
     @Autowired
     private RabbitTemplate rabbitTemplate;
 
+    @Transactional
     public boolean createSubmission(Submission submission) {
         if (this.submissionMapper.insertSelective(submission) == 1) {
             try {
@@ -50,7 +52,8 @@ public class SubmitService {
                 msg.put("submissionId", submission.getId());
                 this.rabbitTemplate.convertAndSend("", "judge_queue", msg);
             } catch (Exception e) {
-                log.error("提交创建失败, ");
+                log.error("[submit] 提交创建失败");
+                throw new ApiException(ApiExceptionEnum.UNKNOWN_ERROR);
             }
             return true;
         }
