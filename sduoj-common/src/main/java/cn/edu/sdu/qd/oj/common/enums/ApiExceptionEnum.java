@@ -23,6 +23,7 @@ public enum ApiExceptionEnum {
     PROBLEM_NOT_FOUND(500, "题目未找到"),
     PROBLEM_NOT_PUBLIC(403, "题目非公开"),
     SUBMISSION_NOT_FOUND(500, "提交未找到"),
+    USER_NOT_MATCHING(403, "用户权限不足");
     ;
 
     public int code;

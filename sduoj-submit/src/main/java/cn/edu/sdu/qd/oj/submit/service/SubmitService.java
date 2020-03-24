@@ -72,4 +72,8 @@ public class SubmitService {
         if(this.submissionMapper.updateByPrimaryKeySelective(submission) != 1)
             throw new ApiException(ApiExceptionEnum.UNKNOWN_ERROR);
     }
+
+    public Submission queryById(int submissionId) {
+        return this.submissionMapper.selectByPrimaryKey(submissionId);
+    }
 }

@@ -36,7 +36,6 @@ import java.util.Map;
  **/
 
 @Controller
-@CrossOrigin
 @EnableConfigurationProperties(JwtProperties.class)
 public class SubmitController {
 
@@ -82,7 +81,7 @@ public class SubmitController {
     @ApiResponseBody
     public Void updateSubmission(@RequestBody Map json) {
         int id = (int) json.get("id");
-        int judgeId = (int) json.get("judgeId");
+        int judgeId = (int) json.get("judgerId");
         String judgeResult = (String) json.get("judgeResult");
         int judgeScore = (int) json.get("judgeScore");
         int usedTime = (int) json.get("usedTime");
@@ -91,5 +90,25 @@ public class SubmitController {
         Submission submission = new Submission(Long.valueOf(id), judgeId, judgeResult, judgeScore, usedTime, usedMemory, judgeLog);
         this.submitService.updateSubmission(submission);
         return null;
+    }
+
+    @PostMapping("/query")
+    @ApiResponseBody
+    public Submission querySubmission(@RequestBody Map json,
+                                      HttpServletRequest request) {
+        System.out.println(json);
+        int submissionId = (int) json.get("id");
+        String token = CookieUtils.getCookieValue(request, this.jwtProperties.getCookieName());
+        UserInfo userInfo;
+        try {
+            userInfo = JwtUtils.getInfoFromToken(token, this.jwtProperties.getPublicKey());
+        } catch (Exception e) {
+            throw new ApiException(ApiExceptionEnum.UNKNOWN_ERROR);
+        }
+        Submission submission = this.submitService.queryById(submissionId);
+        if (submission != null && !submission.getUserId().equals(userInfo.getId())) {
+            throw new ApiException(ApiExceptionEnum.USER_NOT_MATCHING);
+        }
+        return submission;
     }
 }
