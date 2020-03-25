@@ -27,7 +27,6 @@ import java.util.Map;
  **/
 
 @Controller
-@CrossOrigin
 public class UserController {
     @Autowired
     private UserService userService;
@@ -69,7 +68,7 @@ public class UserController {
      * @param password
      * @return
      */
-    @GetMapping("/queryById")
+    @PostMapping("/querybyid")
     @ResponseBody
     public User queryUser(@RequestParam("id") Integer id) {
         User user = this.userService.queryById(id);

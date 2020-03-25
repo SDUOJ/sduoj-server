@@ -27,10 +27,10 @@ public class GlobalCorsConfig {
         CorsConfiguration config = new CorsConfiguration();
         // 允许的域, 不能写*, 否则cookie就不能用了
         config.addAllowedOrigin("http://manage.oj.oops-sdu.cn");
-        config.addAllowedOrigin("http://api.oj.oops-sdu.cn");
-        config.addAllowedOrigin("http://www.oj.oops-sdu.cn");
         config.addAllowedOrigin("http://oj.oops-sdu.cn");
-        config.addAllowedOrigin("http://api.oj.xrvitd.com");
+        config.addAllowedOrigin("http://oj.oops-sdu.cn:8080");
+        config.addAllowedOrigin("http://oj.xrvitd.com");
+        config.addAllowedOrigin("http://oj.xrvitd.com:8080");
         // 是否发送cookie信息
         config.setAllowCredentials(true);
         // 允许的请求方式
