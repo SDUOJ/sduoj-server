@@ -11,9 +11,7 @@ import cn.edu.sdu.qd.oj.submit.mapper.SubmissionJudgeBoMapper;
 import cn.edu.sdu.qd.oj.submit.mapper.SubmissionMapper;
 import cn.edu.sdu.qd.oj.submit.pojo.Submission;
 import cn.edu.sdu.qd.oj.submit.pojo.SubmissionJudgeBo;
-import com.alibaba.fastjson.JSON;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.amqp.core.AmqpTemplate;
 import org.springframework.amqp.rabbit.core.RabbitTemplate;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -49,7 +47,7 @@ public class SubmitService {
             try {
                 Map<String, Object> msg = new HashMap<>();
                 msg.put("event", "submissionCreated");
-                msg.put("submissionId", submission.getId());
+                msg.put("submissionId", submission.getSubmissionId());
                 this.rabbitTemplate.convertAndSend("", "judge_queue", msg);
             } catch (Exception e) {
                 log.error("[submit] 提交创建失败");
@@ -60,8 +58,8 @@ public class SubmitService {
         return false;
     }
 
-    public SubmissionJudgeBo queryByJudger(int id) {
-        SubmissionJudgeBo submissionJudgeBo = this.submissionJudgeBoMapper.selectByPrimaryKey(id);
+    public SubmissionJudgeBo queryByJudger(int submissionId) {
+        SubmissionJudgeBo submissionJudgeBo = this.submissionJudgeBoMapper.selectByPrimaryKey(submissionId);
         if (submissionJudgeBo == null) {
             throw new ApiException(ApiExceptionEnum.SUBMISSION_NOT_FOUND);
         }

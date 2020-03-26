@@ -32,10 +32,10 @@ public class UserController {
     private UserService userService;
 
 
-    @GetMapping("/{id}")
+    @GetMapping("/{userId}")
     @ApiResponseBody
-    public User queryById(@PathVariable("id") Integer id) {
-        return this.userService.queryById(id);
+    public User queryById(@PathVariable("userId") Integer userId) {
+        return this.userService.queryById(userId);
     }
 
     @PostMapping("/register")
@@ -70,8 +70,8 @@ public class UserController {
      */
     @PostMapping("/querybyid")
     @ResponseBody
-    public User queryUser(@RequestParam("id") Integer id) {
-        User user = this.userService.queryById(id);
+    public User queryUser(@RequestParam("userId") Integer userId) {
+        User user = this.userService.queryById(userId);
         return user;
     }
 }

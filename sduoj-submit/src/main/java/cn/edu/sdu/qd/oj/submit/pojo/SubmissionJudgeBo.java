@@ -27,7 +27,7 @@ public class SubmissionJudgeBo implements Serializable {
 
     @Id
     @Column(name = "s_id")
-    private Long id;
+    private Long submissionId;
 
     @Column(name = "p_id")
     private Integer problemId;

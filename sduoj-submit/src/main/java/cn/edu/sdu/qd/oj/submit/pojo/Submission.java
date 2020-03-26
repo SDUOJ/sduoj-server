@@ -30,7 +30,7 @@ public class Submission implements Serializable {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "s_id")
-    private Long id;
+    private Long submissionId;
 
     @Column(name = "p_id")
     private Integer problemId;
@@ -77,9 +77,9 @@ public class Submission implements Serializable {
         this.code = code;
     }
 
-    public Submission(Long id, Integer judgeId, String judgeResult, Integer judgeScore, Integer usedTime, Integer usedMemory, String judgeLog) {
-        this.id = id;
-        this.judgerId = judgeId;
+    public Submission(Long submissionId, Integer judgerId, String judgeResult, Integer judgeScore, Integer usedTime, Integer usedMemory, String judgeLog) {
+        this.submissionId = submissionId;
+        this.judgerId = judgerId;
         this.judgeResult = judgeResult;
         this.judgeScore = judgeScore;
         this.usedTime = usedTime;

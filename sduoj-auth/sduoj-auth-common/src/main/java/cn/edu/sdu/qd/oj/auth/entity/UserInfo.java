@@ -20,6 +20,6 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 @AllArgsConstructor
 public class UserInfo {
-    private Integer id;
+    private Integer userId;
     private String username;
 }

@@ -31,7 +31,7 @@ public class ProblemController {
     @PostMapping("query")
     @ApiResponseBody
     public Problem queryById(@RequestBody Map json) {
-        return this.problemService.queryById((Integer) json.get("id"));
+        return this.problemService.queryById((Integer) json.get("problemId"));
     }
 
     @PostMapping("list")
@@ -49,7 +49,7 @@ public class ProblemController {
     @PostMapping("querybyjudger")
     @ApiResponseBody
     public ProblemJudgerBo queryByJudger(@RequestBody Map json) {
-        return this.problemService.querybujudger((Integer) json.get("id"));
+        return this.problemService.querybujudger((Integer) json.get("problemId"));
     }
 
 }

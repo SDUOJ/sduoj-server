@@ -34,7 +34,7 @@ public class User implements Serializable {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "u_id")
-    private Integer id;
+    private Integer userId;
 
     @Column(name = "u_username")
     @Length(min = 4, max = 16, message = "用户名长度必须在4-16位之间")

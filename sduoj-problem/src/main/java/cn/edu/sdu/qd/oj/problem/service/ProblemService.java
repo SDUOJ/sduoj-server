@@ -35,8 +35,8 @@ public class ProblemService {
     @Autowired
     private ProblemJudgerBoMapper problemJudgerBoMapper;
 
-    public Problem queryById(Integer id) {
-        Problem problem = this.problemMapper.selectByPrimaryKey(id);
+    public Problem queryById(Integer problemId) {
+        Problem problem = this.problemMapper.selectByPrimaryKey(problemId);
         if (problem == null) {
             throw new ApiException(ApiExceptionEnum.PROBLEM_NOT_FOUND);
         }
@@ -46,9 +46,9 @@ public class ProblemService {
         return problem;
     }
 
-    public List<ProblemListBo> queryBoById(Integer id) {
+    public List<ProblemListBo> queryBoById(Integer problemId) {
         List<ProblemListBo> ret = new ArrayList<>();
-        ret.add(this.problemListBoMapper.selectByPrimaryKey(id));
+        ret.add(this.problemListBoMapper.selectByPrimaryKey(problemId));
         return ret;
     }
 

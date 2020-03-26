@@ -24,6 +24,6 @@ public interface UserApi {
     @PostMapping("/query")
     User queryUser(@RequestParam("username") String username,
                    @RequestParam("password") String password) throws InternalApiException;
-    @PostMapping("/queryById")
-    User queryUser(@RequestParam("id") Integer id) throws InternalApiException;
+    @PostMapping("/querybyid")
+    User queryUser(@RequestParam("userId") Integer userId) throws InternalApiException;
 }

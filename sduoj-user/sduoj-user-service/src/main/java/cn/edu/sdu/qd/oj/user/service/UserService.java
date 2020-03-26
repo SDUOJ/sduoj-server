@@ -28,8 +28,8 @@ public class UserService {
     @Autowired
     private UserMapper userMapper;
 
-    public User queryById(Integer id) {
-        User user = this.userMapper.selectByPrimaryKey(id);
+    public User queryById(Integer userId) {
+        User user = this.userMapper.selectByPrimaryKey(userId);
         if (user == null) {
             throw new ApiException(ApiExceptionEnum.USER_NOT_FOUND);
         }
@@ -58,7 +58,7 @@ public class UserService {
     }
 
     public void register(User user) {
-        user.setId(null);
+        user.setUserId(null);
         user.setPassword(CodecUtils.md5Hex(user.getPassword(), "slat_string"));
         if(this.userMapper.insertSelective(user) != 1) {
             throw new ApiException(ApiExceptionEnum.UNKNOWN_ERROR);

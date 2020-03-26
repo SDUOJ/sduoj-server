@@ -10,14 +10,13 @@ import cn.edu.sdu.qd.oj.auth.entity.UserInfo;
 import cn.edu.sdu.qd.oj.auth.service.AuthService;
 import cn.edu.sdu.qd.oj.auth.utils.JwtUtils;
 import cn.edu.sdu.qd.oj.common.entity.ApiResponseBody;
-import cn.edu.sdu.qd.oj.common.entity.ResponseResult;
 import cn.edu.sdu.qd.oj.common.enums.ApiExceptionEnum;
 import cn.edu.sdu.qd.oj.common.exception.ApiException;
 import cn.edu.sdu.qd.oj.common.utils.CookieUtils;
 import cn.edu.sdu.qd.oj.user.pojo.User;
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
-import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.*;
 
@@ -56,7 +55,7 @@ public class AuthController {
             HttpServletResponse response) {
         String username = (String) json.get("username");
         String password = (String) json.get("password");
-        if (username != null && password != null) {
+        if (StringUtils.isNotBlank(username) && StringUtils.isNotBlank(password)) {
             // 登录校验
             User user = this.authService.authentication(username, password);
             if (user == null) {
@@ -65,7 +64,7 @@ public class AuthController {
             // 计算token
             String token = null;
             try {
-                token = JwtUtils.generateToken(new UserInfo(user.getId(), user.getUsername()),
+                token = JwtUtils.generateToken(new UserInfo(user.getUserId(), user.getUsername()),
                                                   prop.getPrivateKey(), prop.getExpire());
             } catch (Exception e) {
                 e.printStackTrace();
@@ -82,7 +81,7 @@ public class AuthController {
             //从Token中获取用户信息
             try {
                 UserInfo userInfo = JwtUtils.getInfoFromToken(token, prop.getPublicKey());
-                User user = this.authService.queryUserById(userInfo.getId());
+                User user = this.authService.queryUserById(userInfo.getUserId());
                 return user;
             } catch (Exception e) {
                 throw new ApiException(ApiExceptionEnum.UNKNOWN_ERROR);

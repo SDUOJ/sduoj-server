@@ -15,16 +15,13 @@ import cn.edu.sdu.qd.oj.submit.config.JwtProperties;
 import cn.edu.sdu.qd.oj.submit.pojo.Submission;
 import cn.edu.sdu.qd.oj.submit.pojo.SubmissionJudgeBo;
 import cn.edu.sdu.qd.oj.submit.service.SubmitService;
-import org.apache.catalina.User;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.*;
 
 import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
 import java.util.Date;
-import java.util.HashMap;
 import java.util.Map;
 
 /**
@@ -63,9 +60,9 @@ public class SubmitController {
         } catch (Exception e) {
             throw new ApiException(ApiExceptionEnum.UNKNOWN_ERROR);
         }
-        Submission submission = new Submission(problemId, userInfo.getId(), languageId, new Date(), ipv4, code);
+        Submission submission = new Submission(problemId, userInfo.getUserId(), languageId, new Date(), ipv4, code);
         if (this.submitService.createSubmission(submission)) {
-            return submission.getId();
+            return submission.getSubmissionId();
         }
         throw new ApiException(ApiExceptionEnum.UNKNOWN_ERROR);
     }
@@ -73,21 +70,21 @@ public class SubmitController {
     @PostMapping("/querybyjudger")
     @ApiResponseBody
     public SubmissionJudgeBo queryByJudger(@RequestBody Map json) {
-        int id = (int) json.get("id");
-        return this.submitService.queryByJudger(id);
+        int submissionId = (int) json.get("submissionId");
+        return this.submitService.queryByJudger(submissionId);
     }
 
     @PostMapping("/update")
     @ApiResponseBody
     public Void updateSubmission(@RequestBody Map json) {
-        int id = (int) json.get("id");
-        int judgeId = (int) json.get("judgerId");
+        int submissionId = (int) json.get("submissionId");
+        int judgerId = (int) json.get("judgerId");
         String judgeResult = (String) json.get("judgeResult");
         int judgeScore = (int) json.get("judgeScore");
         int usedTime = (int) json.get("usedTime");
         int usedMemory = (int) json.get("usedMemory");
         String judgeLog = (String) json.get("judgeLog");
-        Submission submission = new Submission(Long.valueOf(id), judgeId, judgeResult, judgeScore, usedTime, usedMemory, judgeLog);
+        Submission submission = new Submission(Long.valueOf(submissionId), judgerId, judgeResult, judgeScore, usedTime, usedMemory, judgeLog);
         this.submitService.updateSubmission(submission);
         return null;
     }
@@ -96,8 +93,7 @@ public class SubmitController {
     @ApiResponseBody
     public Submission querySubmission(@RequestBody Map json,
                                       HttpServletRequest request) {
-        System.out.println(json);
-        int submissionId = (int) json.get("id");
+        int submissionId = (int) json.get("submissionId");
         String token = CookieUtils.getCookieValue(request, this.jwtProperties.getCookieName());
         UserInfo userInfo;
         try {
@@ -106,7 +102,7 @@ public class SubmitController {
             throw new ApiException(ApiExceptionEnum.UNKNOWN_ERROR);
         }
         Submission submission = this.submitService.queryById(submissionId);
-        if (submission != null && !submission.getUserId().equals(userInfo.getId())) {
+        if (submission != null && !submission.getUserId().equals(userInfo.getUserId())) {
             throw new ApiException(ApiExceptionEnum.USER_NOT_MATCHING);
         }
         return submission;

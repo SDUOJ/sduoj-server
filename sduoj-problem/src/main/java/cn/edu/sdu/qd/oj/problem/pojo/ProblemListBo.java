@@ -28,7 +28,7 @@ public class ProblemListBo implements Serializable {
 
     @Id
     @Column(name = "p_id")
-    private Integer id;
+    private Integer problemId;
 
     @Column(name = "p_is_public")
     @JsonIgnore

@@ -43,10 +43,10 @@ public class AuthService {
         return null;
     }
 
-    public User queryUserById(Integer id) {
+    public User queryUserById(Integer userId) {
         try {
             // 调用微服务，执行查询
-            return this.userClient.queryUser(id);
+            return this.userClient.queryUser(userId);
         } catch (Exception ignore) {
             // TODO: 异常处理
         }
