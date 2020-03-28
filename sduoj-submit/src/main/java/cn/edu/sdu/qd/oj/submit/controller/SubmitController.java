@@ -44,8 +44,8 @@ public class SubmitController {
 
     @PostMapping("/create")
     @ApiResponseBody
-    public Long submissionCreate(@RequestBody Map json,
-                                 HttpServletRequest request) {
+    public Long createSubmission(@RequestBody Map json,
+                                HttpServletRequest request) {
         int problemId = (int) json.get("problemId");
         int languageId = (int) json.get("languageId");
         String code = (String) json.get("code");
@@ -67,16 +67,16 @@ public class SubmitController {
         throw new ApiException(ApiExceptionEnum.UNKNOWN_ERROR);
     }
 
-    @PostMapping("/querybyjudger")
+    @PostMapping("judger/query")
     @ApiResponseBody
-    public SubmissionJudgeBo queryByJudger(@RequestBody Map json) {
+    public SubmissionJudgeBo query(@RequestBody Map json) {
         int submissionId = (int) json.get("submissionId");
-        return this.submitService.queryByJudger(submissionId);
+        return this.submitService.query(submissionId);
     }
 
-    @PostMapping("/update")
+    @PostMapping("judger/update")
     @ApiResponseBody
-    public Void updateSubmission(@RequestBody Map json) {
+    public Void update(@RequestBody Map json) {
         int submissionId = (int) json.get("submissionId");
         int judgerId = (int) json.get("judgerId");
         String judgeResult = (String) json.get("judgeResult");
@@ -91,8 +91,8 @@ public class SubmitController {
 
     @PostMapping("/query")
     @ApiResponseBody
-    public Submission querySubmission(@RequestBody Map json,
-                                      HttpServletRequest request) {
+    public Submission query(@RequestBody Map json,
+                            HttpServletRequest request) {
         int submissionId = (int) json.get("submissionId");
         String token = CookieUtils.getCookieValue(request, this.jwtProperties.getCookieName());
         UserInfo userInfo;

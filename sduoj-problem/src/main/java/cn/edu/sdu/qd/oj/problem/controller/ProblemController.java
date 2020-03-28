@@ -10,16 +10,10 @@ import cn.edu.sdu.qd.oj.problem.pojo.ProblemListBo;
 import cn.edu.sdu.qd.oj.problem.service.ProblemService;
 
 
-import org.json.JSONException;
-import org.json.JSONObject;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.*;
 
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
-import java.util.List;
 import java.util.Map;
 
 @Controller
@@ -46,10 +40,10 @@ public class ProblemController {
         return result;
     }
 
-    @PostMapping("querybyjudger")
+    @PostMapping("judger/query")
     @ApiResponseBody
     public ProblemJudgerBo queryByJudger(@RequestBody Map json) {
-        return this.problemService.querybujudger((Integer) json.get("problemId"));
+        return this.problemService.queryByJudger((Integer) json.get("problemId"));
     }
 
 }

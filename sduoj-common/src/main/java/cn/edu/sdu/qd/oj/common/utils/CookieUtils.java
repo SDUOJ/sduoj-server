@@ -136,12 +136,12 @@ public class CookieUtils {
             String domainName = null;
 
             String serverName = request.getRequestURL().toString();
-            if (serverName == null || serverName.equals("")) {
+            if (serverName == null || serverName.isEmpty()) {
                 domainName = "";
             } else {
                 serverName = serverName.toLowerCase();
                 serverName = serverName.substring(7);
-                final int end = serverName.indexOf("/");
+                final int end = serverName.indexOf('/');
                 serverName = serverName.substring(0, end);
                 final String[] domains = serverName.split("\\.");
                 int len = domains.length;
@@ -156,7 +156,7 @@ public class CookieUtils {
                 }
             }
 
-            if (domainName != null && domainName.indexOf(":") > 0) {
+            if (domainName != null && domainName.indexOf(':') > 0) {
                 String[] ary = domainName.split("\\:");
                 domainName = ary[0];
             }

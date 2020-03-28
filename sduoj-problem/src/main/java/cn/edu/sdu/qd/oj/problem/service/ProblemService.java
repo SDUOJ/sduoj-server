@@ -46,12 +46,6 @@ public class ProblemService {
         return problem;
     }
 
-    public List<ProblemListBo> queryBoById(Integer problemId) {
-        List<ProblemListBo> ret = new ArrayList<>();
-        ret.add(this.problemListBoMapper.selectByPrimaryKey(problemId));
-        return ret;
-    }
-
     public PageResult<ProblemListBo> queryProblemByPage(int page, int limit) {
         PageHelper.startPage(page, limit);
         Example example = new Example(ProblemListBo.class);
@@ -60,7 +54,7 @@ public class ProblemService {
         return new PageResult<>(pageInfo.getPages(), pageInfo);
     }
 
-    public ProblemJudgerBo querybujudger(int problemId) {
+    public ProblemJudgerBo queryByJudger(int problemId) {
         return this.problemJudgerBoMapper.selectByPrimaryKey(problemId);
     }
 }

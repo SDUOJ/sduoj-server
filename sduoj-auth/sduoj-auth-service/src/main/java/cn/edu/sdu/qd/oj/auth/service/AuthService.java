@@ -34,7 +34,7 @@ public class AuthService {
 
     public User authentication(String username, String password) {
         try {
-            User user = this.userClient.queryUser(username, password);
+            User user = this.userClient.verify(username, password);
             return user;
         } catch (InternalApiException e) {
             log.error(e.toString());
@@ -46,7 +46,7 @@ public class AuthService {
     public User queryUserById(Integer userId) {
         try {
             // 调用微服务，执行查询
-            return this.userClient.queryUser(userId);
+            return this.userClient.query(userId);
         } catch (Exception ignore) {
             // TODO: 异常处理
         }

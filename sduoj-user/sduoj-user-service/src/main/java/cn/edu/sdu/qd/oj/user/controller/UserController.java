@@ -31,13 +31,6 @@ public class UserController {
     @Autowired
     private UserService userService;
 
-
-    @GetMapping("/{userId}")
-    @ApiResponseBody
-    public User queryById(@PathVariable("userId") Integer userId) {
-        return this.userService.queryById(userId);
-    }
-
     @PostMapping("/register")
     @ApiResponseBody
     public Void register(@Valid @RequestBody User user) {
@@ -52,12 +45,12 @@ public class UserController {
      * @param password
      * @return
      */
-    @PostMapping("/query")
+    @PostMapping("internal/verify")
     @ResponseBody
-    public User queryUser(
+    public User verify(
             @RequestParam("username") String username,
             @RequestParam("password") String password) throws InternalApiException {
-        User user = this.userService.queryUser(username, password);
+        User user = this.userService.query(username, password);
         return user;
     }
 
@@ -68,10 +61,10 @@ public class UserController {
      * @param password
      * @return
      */
-    @PostMapping("/querybyid")
+    @PostMapping("internal/query")
     @ResponseBody
-    public User queryUser(@RequestParam("userId") Integer userId) {
-        User user = this.userService.queryById(userId);
+    public User query(@RequestParam("userId") Integer userId) {
+        User user = this.userService.query(userId);
         return user;
     }
 }

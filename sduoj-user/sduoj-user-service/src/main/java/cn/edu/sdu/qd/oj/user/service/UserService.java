@@ -28,7 +28,7 @@ public class UserService {
     @Autowired
     private UserMapper userMapper;
 
-    public User queryById(Integer userId) {
+    public User query(Integer userId) {
         User user = this.userMapper.selectByPrimaryKey(userId);
         if (user == null) {
             throw new ApiException(ApiExceptionEnum.USER_NOT_FOUND);
@@ -36,7 +36,7 @@ public class UserService {
         return user;
     }
 
-    public User queryUser(String username, String password) throws InternalApiException {
+    public User query(String username, String password) throws InternalApiException {
         // 查询
         User record = new User();
         record.setUsername(username);
