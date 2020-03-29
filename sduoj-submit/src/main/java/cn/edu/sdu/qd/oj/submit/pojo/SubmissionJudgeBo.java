@@ -5,6 +5,8 @@
 
 package cn.edu.sdu.qd.oj.submit.pojo;
 
+import cn.edu.sdu.qd.oj.common.config.DateToTimestampSerializer;
+import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 import lombok.Data;
 
 import javax.persistence.Column;
@@ -39,6 +41,7 @@ public class SubmissionJudgeBo implements Serializable {
     private Integer languageId;
 
     @Column(name = "s_create_time")
+    @JsonSerialize(using = DateToTimestampSerializer.class)
     private Date createTime;
 
     @Column(name = "s_ipv4")

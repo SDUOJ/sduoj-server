@@ -60,7 +60,7 @@ public class SubmitController {
         } catch (Exception e) {
             throw new ApiException(ApiExceptionEnum.UNKNOWN_ERROR);
         }
-        Submission submission = new Submission(problemId, userInfo.getUserId(), languageId, new Date(), ipv4, code);
+        Submission submission = new Submission(problemId, userInfo.getUserId(), languageId, ipv4, code);
         if (this.submitService.createSubmission(submission)) {
             return submission.getSubmissionId();
         }

@@ -5,6 +5,8 @@
 
 package cn.edu.sdu.qd.oj.submit.pojo;
 
+import cn.edu.sdu.qd.oj.common.config.DateToTimestampSerializer;
+import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
@@ -42,6 +44,7 @@ public class Submission implements Serializable {
     private Integer languageId;
 
     @Column(name = "s_create_time")
+    @JsonSerialize(using = DateToTimestampSerializer.class)
     private Date createTime;
 
     @Column(name = "s_ipv4")
@@ -68,11 +71,10 @@ public class Submission implements Serializable {
     @Column(name = "s_code")
     private String code;
 
-    public Submission(Integer problemId, Integer userId, Integer languageId, Date createTime, String ipv4, String code) {
+    public Submission(Integer problemId, Integer userId, Integer languageId, String ipv4, String code) {
         this.problemId = problemId;
         this.userId = userId;
         this.languageId = languageId;
-        this.createTime = createTime;
         this.ipv4 = ipv4;
         this.code = code;
     }

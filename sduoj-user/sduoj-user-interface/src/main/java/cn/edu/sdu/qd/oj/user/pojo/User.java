@@ -5,8 +5,10 @@
 
 package cn.edu.sdu.qd.oj.user.pojo;
 
+import cn.edu.sdu.qd.oj.common.config.DateToTimestampSerializer;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 import lombok.Data;
 import org.hibernate.validator.constraints.Length;
 import org.hibernate.validator.constraints.Range;
@@ -62,4 +64,8 @@ public class User implements Serializable {
 
     @Column(name = "u_student_id")
     private String studentId;
+
+    @Column(name = "u_create_time")
+    @JsonSerialize(using = DateToTimestampSerializer.class)
+    private Date createTime;
 }

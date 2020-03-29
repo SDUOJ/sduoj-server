@@ -28,11 +28,11 @@ public class ResponseResult <T> implements Serializable {
 
 	private int code;
 	private String message;
-	private long timestamp;
+	private int timestamp;
 	private Object data;
 
 	private ResponseResult() {
-		this.timestamp = System.currentTimeMillis();
+		this.timestamp = (int) (System.currentTimeMillis() / 1000);
 	}
 
 	/**
