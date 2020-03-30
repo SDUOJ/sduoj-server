@@ -18,6 +18,7 @@ import lombok.AllArgsConstructor;
 @AllArgsConstructor
 public enum ApiExceptionEnum {
     UNKNOWN_ERROR(500, "未知错误"),
+    GATEWAY_ERROR(500, "网关错误"),
     USER_NOT_FOUND(500, "该用户不存在"),
     PASSWORD_NOT_MATCHING(500, "该用户账号或密码错误"), // 不能直接提示密码错误哦
     PROBLEM_NOT_FOUND(500, "题目未找到"),
