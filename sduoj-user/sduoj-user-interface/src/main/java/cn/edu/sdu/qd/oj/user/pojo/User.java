@@ -17,6 +17,7 @@ import javax.persistence.*;
 import javax.validation.constraints.Email;
 import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.NotNull;
+import javax.validation.constraints.Pattern;
 import java.io.Serializable;
 import java.util.Date;
 
@@ -39,7 +40,7 @@ public class User implements Serializable {
     private Integer userId;
 
     @Column(name = "u_username")
-    @Length(min = 4, max = 16, message = "用户名长度必须在4-16位之间")
+    @Pattern(regexp="^[A-Za-z0-9_]{4,16}$", message="用户名必须由英文、数字、'_'构成，且长度为4~16")
     @NotBlank(message = "用户名不能为空")
     private String username;
 
@@ -49,10 +50,6 @@ public class User implements Serializable {
     @NotBlank(message = "密码不能为空")
     private String password;
 
-    @Column(name = "u_nickname")
-    @NotBlank(message = "昵称不能为空")
-    private String nickname;
-
     @Column(name = "u_email")
     @Email(message = "邮箱不合法")
     @NotBlank(message = "邮箱不能为空")
@@ -60,7 +57,7 @@ public class User implements Serializable {
 
     @Column(name = "u_gender")
     @Range(min = 0, max = 2, message = "性别不合法, 0.女, 1.男, 2.问号")
-    private Short gender;
+    private Byte gender;
 
     @Column(name = "u_student_id")
     private String studentId;
@@ -68,4 +65,8 @@ public class User implements Serializable {
     @Column(name = "u_create_time")
     @JsonSerialize(using = DateToTimestampSerializer.class)
     private Date createTime;
+
+    @Column(name = "u_role")
+    @JsonProperty(access = JsonProperty.Access.READ_ONLY)
+    private Byte role;
 }

@@ -31,10 +31,7 @@ public class ProblemJudgerBo implements Serializable {
     private Integer problemId;
 
     @Column(name = "p_is_public")
-    private Integer isPublic;
-
-    @Column(name = "p_checkpoint_url")
-    private String checkpointUrl;
+    private Byte isPublic;
 
     @Column(name = "p_time_limit")
     private Integer timeLimit;

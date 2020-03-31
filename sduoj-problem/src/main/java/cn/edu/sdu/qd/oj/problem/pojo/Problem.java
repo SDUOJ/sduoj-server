@@ -20,17 +20,13 @@ public class Problem implements Serializable {
 
     @Column(name = "p_is_public")
     @JsonProperty(access = JsonProperty.Access.WRITE_ONLY)
-    private Integer isPublic;
+    private Byte isPublic;
 
     @Column(name = "u_id")
     private Integer userId;
 
-    @Column(name = "p_name")
-    private String problemName;
-
-    @Column(name = "p_checkpoint_url")
-    @JsonProperty(access = JsonProperty.Access.WRITE_ONLY)
-    private String checkpointUrl;
+    @Column(name = "p_title")
+    private String problemTitle;
 
     @Column(name = "p_submit_num")
     private Integer submitNum;
@@ -44,22 +40,7 @@ public class Problem implements Serializable {
     @Column(name = "p_memory_limit")
     private Integer memoryLimit;
 
-    @Column(name = "p_description")
-    private String description;
-
-    @Column(name = "p_input_format")
-    private String inputFormat;
-
-    @Column(name = "p_output_format")
-    private String outputFormat;
-
-    @Column(name = "p_sample_input")
-    private String sampleInput;
-
-    @Column(name = "p_sample_output")
-    private String sampleOutput;
-
-    @Column(name = "p_hint")
-    private String hint;
+    @Column(name = "p_markdown")
+    private String markdown;
 
 }
