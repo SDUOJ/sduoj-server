@@ -31,9 +31,9 @@ public class ProblemController {
     @PostMapping("list")
     @ApiResponseBody
     public PageResult<ProblemListBo> queryList(@RequestBody Map json) {
-        int page = (int) json.get("page");
-        int limit = (int) json.get("limit");
-        PageResult<ProblemListBo> result = this.problemService.queryProblemByPage(page, limit);
+        int pageNow = (int) json.get("pageNow");
+        int pageSize = (int) json.get("pageSize");
+        PageResult<ProblemListBo> result = this.problemService.queryProblemByPage(pageNow, pageSize);
         if (result == null || result.getRows().size() == 0) {
             throw new ApiException(ApiExceptionEnum.PROBLEM_NOT_FOUND);
         }

@@ -46,8 +46,8 @@ public class ProblemService {
         return problem;
     }
 
-    public PageResult<ProblemListBo> queryProblemByPage(int page, int limit) {
-        PageHelper.startPage(page, limit);
+    public PageResult<ProblemListBo> queryProblemByPage(int pageNow, int pageSize) {
+        PageHelper.startPage(pageNow, pageSize);
         Example example = new Example(ProblemListBo.class);
         example.createCriteria().andEqualTo("isPublic", 1);
         Page<ProblemListBo> pageInfo = (Page<ProblemListBo>) problemListBoMapper.selectByExample(example);
