@@ -38,14 +38,11 @@ public class SubmissionJudgeBo implements Serializable {
     private Integer userId;
 
     @Column(name = "l_id")
-    private Integer languageId;
+    private Byte languageId;
 
     @Column(name = "s_create_time")
     @JsonSerialize(using = DateToTimestampSerializer.class)
     private Date createTime;
-
-    @Column(name = "s_ipv4")
-    private String ipv4;
 
     @Column(name = "s_code")
     private String code;

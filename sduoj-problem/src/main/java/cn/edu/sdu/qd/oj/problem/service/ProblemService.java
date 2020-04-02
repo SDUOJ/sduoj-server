@@ -5,11 +5,13 @@ import cn.edu.sdu.qd.oj.common.enums.ApiExceptionEnum;
 import cn.edu.sdu.qd.oj.common.exception.ApiException;
 import cn.edu.sdu.qd.oj.problem.mapper.ProblemJudgerBoMapper;
 import cn.edu.sdu.qd.oj.problem.mapper.ProblemListBoMapper;
+import cn.edu.sdu.qd.oj.problem.mapper.ProblemManageBoMapper;
 import cn.edu.sdu.qd.oj.problem.mapper.ProblemMapper;
 import cn.edu.sdu.qd.oj.problem.pojo.Problem;
 
 import cn.edu.sdu.qd.oj.problem.pojo.ProblemJudgerBo;
 import cn.edu.sdu.qd.oj.problem.pojo.ProblemListBo;
+import cn.edu.sdu.qd.oj.problem.pojo.ProblemManageBo;
 import com.github.pagehelper.Page;
 import com.github.pagehelper.PageHelper;
 import net.minidev.json.JSONArray;
@@ -35,6 +37,9 @@ public class ProblemService {
     @Autowired
     private ProblemJudgerBoMapper problemJudgerBoMapper;
 
+    @Autowired
+    private ProblemManageBoMapper problemManageBoMapper;
+
     public Problem queryById(Integer problemId) {
         Problem problem = this.problemMapper.selectByPrimaryKey(problemId);
         if (problem == null) {
@@ -56,5 +61,9 @@ public class ProblemService {
 
     public ProblemJudgerBo queryByJudger(int problemId) {
         return this.problemJudgerBoMapper.selectByPrimaryKey(problemId);
+    }
+
+    public ProblemManageBo queryManageBoById(Integer problemId) {
+        return this.problemManageBoMapper.selectByPrimaryKey(problemId);
     }
 }

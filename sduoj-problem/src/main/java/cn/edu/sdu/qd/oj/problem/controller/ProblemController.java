@@ -7,6 +7,7 @@ import cn.edu.sdu.qd.oj.common.exception.ApiException;
 import cn.edu.sdu.qd.oj.problem.pojo.Problem;
 import cn.edu.sdu.qd.oj.problem.pojo.ProblemJudgerBo;
 import cn.edu.sdu.qd.oj.problem.pojo.ProblemListBo;
+import cn.edu.sdu.qd.oj.problem.pojo.ProblemManageBo;
 import cn.edu.sdu.qd.oj.problem.service.ProblemService;
 
 
@@ -44,6 +45,12 @@ public class ProblemController {
     @ApiResponseBody
     public ProblemJudgerBo queryByJudger(@RequestBody Map json) {
         return this.problemService.queryByJudger((Integer) json.get("problemId"));
+    }
+
+    @PostMapping("manage/query")
+    @ApiResponseBody
+    public ProblemManageBo queryManageBoById(@RequestBody Map json) {
+        return this.problemService.queryManageBoById((Integer) json.get("problemId"));
     }
 
 }

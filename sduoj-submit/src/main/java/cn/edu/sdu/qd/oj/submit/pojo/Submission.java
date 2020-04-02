@@ -41,11 +41,15 @@ public class Submission implements Serializable {
     private Integer userId;
 
     @Column(name = "l_id")
-    private Integer languageId;
+    private Byte languageId;
 
     @Column(name = "s_create_time")
     @JsonSerialize(using = DateToTimestampSerializer.class)
     private Date createTime;
+
+    @Column(name = "s_judge_time")
+    @JsonSerialize(using = DateToTimestampSerializer.class)
+    private Date judgeTime;
 
     @Column(name = "s_ipv4")
     private String ipv4;
@@ -71,7 +75,7 @@ public class Submission implements Serializable {
     @Column(name = "s_code")
     private String code;
 
-    public Submission(Integer problemId, Integer userId, Integer languageId, String ipv4, String code) {
+    public Submission(Integer problemId, Integer userId, Byte languageId, String ipv4, String code) {
         this.problemId = problemId;
         this.userId = userId;
         this.languageId = languageId;

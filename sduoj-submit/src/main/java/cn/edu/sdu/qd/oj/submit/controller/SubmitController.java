@@ -47,7 +47,7 @@ public class SubmitController {
     public Long createSubmission(@RequestBody Map json,
                                 HttpServletRequest request) {
         int problemId = (int) json.get("problemId");
-        int languageId = (int) json.get("languageId");
+        Byte languageId = (byte) json.get("languageId");
         String code = (String) json.get("code");
         String ipv4 = request.getHeader("X-FORWARDED-FOR");
         if (ipv4 == null) {
