@@ -60,6 +60,7 @@ public class UserService {
     public void register(User user) {
         user.setUserId(null);
         user.setPassword(CodecUtils.md5Hex(user.getPassword(), "slat_string"));
+        // TODO: username 重复时插入失败的异常处理器
         if(this.userMapper.insertSelective(user) != 1) {
             throw new ApiException(ApiExceptionEnum.UNKNOWN_ERROR);
         }

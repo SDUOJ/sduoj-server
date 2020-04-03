@@ -33,6 +33,7 @@ import java.util.Map;
  **/
 
 @Controller
+@RequestMapping("/submit")
 @EnableConfigurationProperties(JwtProperties.class)
 public class SubmitController {
 
@@ -41,6 +42,7 @@ public class SubmitController {
 
     @Autowired
     private JwtProperties jwtProperties;
+
 
     @PostMapping("/create")
     @ApiResponseBody
@@ -65,28 +67,6 @@ public class SubmitController {
             return submission.getSubmissionId();
         }
         throw new ApiException(ApiExceptionEnum.UNKNOWN_ERROR);
-    }
-
-    @PostMapping("judger/query")
-    @ApiResponseBody
-    public SubmissionJudgeBo query(@RequestBody Map json) {
-        int submissionId = (int) json.get("submissionId");
-        return this.submitService.query(submissionId);
-    }
-
-    @PostMapping("judger/update")
-    @ApiResponseBody
-    public Void update(@RequestBody Map json) {
-        int submissionId = (int) json.get("submissionId");
-        int judgerId = (int) json.get("judgerId");
-        String judgeResult = (String) json.get("judgeResult");
-        int judgeScore = (int) json.get("judgeScore");
-        int usedTime = (int) json.get("usedTime");
-        int usedMemory = (int) json.get("usedMemory");
-        String judgeLog = (String) json.get("judgeLog");
-        Submission submission = new Submission(Long.valueOf(submissionId), judgerId, judgeResult, judgeScore, usedTime, usedMemory, judgeLog);
-        this.submitService.updateSubmission(submission);
-        return null;
     }
 
     @PostMapping("/query")

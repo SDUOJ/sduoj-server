@@ -34,12 +34,6 @@ public class ProblemService {
     @Autowired
     private ProblemListBoMapper problemListBoMapper;
 
-    @Autowired
-    private ProblemJudgerBoMapper problemJudgerBoMapper;
-
-    @Autowired
-    private ProblemManageBoMapper problemManageBoMapper;
-
     public Problem queryById(Integer problemId) {
         Problem problem = this.problemMapper.selectByPrimaryKey(problemId);
         if (problem == null) {
@@ -57,13 +51,5 @@ public class ProblemService {
         example.createCriteria().andEqualTo("isPublic", 1);
         Page<ProblemListBo> pageInfo = (Page<ProblemListBo>) problemListBoMapper.selectByExample(example);
         return new PageResult<>(pageInfo.getPages(), pageInfo);
-    }
-
-    public ProblemJudgerBo queryByJudger(int problemId) {
-        return this.problemJudgerBoMapper.selectByPrimaryKey(problemId);
-    }
-
-    public ProblemManageBo queryManageBoById(Integer problemId) {
-        return this.problemManageBoMapper.selectByPrimaryKey(problemId);
     }
 }

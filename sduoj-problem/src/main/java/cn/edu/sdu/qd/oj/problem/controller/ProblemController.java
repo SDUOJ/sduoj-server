@@ -18,18 +18,19 @@ import org.springframework.web.bind.annotation.*;
 import java.util.Map;
 
 @Controller
+@RequestMapping("/problem")
 public class ProblemController {
 
     @Autowired
     private ProblemService problemService;
 
-    @PostMapping("query")
+    @PostMapping("/query")
     @ApiResponseBody
     public Problem queryById(@RequestBody Map json) {
         return this.problemService.queryById((Integer) json.get("problemId"));
     }
 
-    @PostMapping("list")
+    @PostMapping("/list")
     @ApiResponseBody
     public PageResult<ProblemListBo> queryList(@RequestBody Map json) {
         int pageNow = (int) json.get("pageNow");
@@ -40,17 +41,4 @@ public class ProblemController {
         }
         return result;
     }
-
-    @PostMapping("judger/query")
-    @ApiResponseBody
-    public ProblemJudgerBo queryByJudger(@RequestBody Map json) {
-        return this.problemService.queryByJudger((Integer) json.get("problemId"));
-    }
-
-    @PostMapping("manage/query")
-    @ApiResponseBody
-    public ProblemManageBo queryManageBoById(@RequestBody Map json) {
-        return this.problemService.queryManageBoById((Integer) json.get("problemId"));
-    }
-
 }

@@ -36,9 +36,6 @@ public class SubmitService {
     private SubmissionMapper submissionMapper;
 
     @Autowired
-    private SubmissionJudgeBoMapper submissionJudgeBoMapper;
-
-    @Autowired
     private RabbitTemplate rabbitTemplate;
 
     @Transactional
@@ -58,18 +55,6 @@ public class SubmitService {
         return false;
     }
 
-    public SubmissionJudgeBo query(int submissionId) {
-        SubmissionJudgeBo submissionJudgeBo = this.submissionJudgeBoMapper.selectByPrimaryKey(submissionId);
-        if (submissionJudgeBo == null) {
-            throw new ApiException(ApiExceptionEnum.SUBMISSION_NOT_FOUND);
-        }
-        return submissionJudgeBo;
-    }
-
-    public void updateSubmission(Submission submission) {
-        if(this.submissionMapper.updateByPrimaryKeySelective(submission) != 1)
-            throw new ApiException(ApiExceptionEnum.UNKNOWN_ERROR);
-    }
 
     public Submission queryById(int submissionId) {
         return this.submissionMapper.selectByPrimaryKey(submissionId);
