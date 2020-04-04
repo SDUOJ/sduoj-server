@@ -31,7 +31,7 @@ public class ProblemJudgerBo implements Serializable {
     private Integer problemId;
 
     @Column(name = "p_is_public")
-    private Byte isPublic;
+    private Integer isPublic;
 
     @Column(name = "p_time_limit")
     private Integer timeLimit;

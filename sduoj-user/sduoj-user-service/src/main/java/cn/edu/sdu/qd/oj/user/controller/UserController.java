@@ -27,6 +27,7 @@ import java.util.Map;
  **/
 
 @Controller
+@RequestMapping("/user")
 public class UserController {
     @Autowired
     private UserService userService;
@@ -36,35 +37,5 @@ public class UserController {
     public Void register(@Valid @RequestBody User user) {
         this.userService.register(user);
         return null;
-    }
-
-    /**
-     * 根据用户名和密码查询用户, 内部接口
-     * TODO: 实现通用返回类
-     * @param username
-     * @param password
-     * @return
-     */
-    @PostMapping("internal/verify")
-    @ResponseBody
-    public User verify(
-            @RequestParam("username") String username,
-            @RequestParam("password") String password) throws InternalApiException {
-        User user = this.userService.query(username, password);
-        return user;
-    }
-
-    /**
-     * 根据用户id查询用户, 内部接口
-     * TODO: 实现通用返回类
-     * @param username
-     * @param password
-     * @return
-     */
-    @PostMapping("internal/query")
-    @ResponseBody
-    public User query(@RequestParam("userId") Integer userId) {
-        User user = this.userService.query(userId);
-        return user;
     }
 }

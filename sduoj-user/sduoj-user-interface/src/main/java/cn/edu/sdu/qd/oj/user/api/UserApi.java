@@ -21,9 +21,9 @@ import org.springframework.web.bind.annotation.RequestParam;
  **/
 
 public interface UserApi {
-    @PostMapping("internal/verify")
+    @PostMapping("/internal/user/verify")
     User verify(@RequestParam("username") String username,
                 @RequestParam("password") String password) throws InternalApiException;
-    @PostMapping("internal/query")
+    @PostMapping("/internal/user/query")
     User query(@RequestParam("userId") Integer userId) throws InternalApiException;
 }

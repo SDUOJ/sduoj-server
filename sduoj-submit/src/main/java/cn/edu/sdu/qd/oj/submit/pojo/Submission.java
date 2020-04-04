@@ -41,7 +41,7 @@ public class Submission implements Serializable {
     private Integer userId;
 
     @Column(name = "l_id")
-    private Byte languageId;
+    private Integer languageId;
 
     @Column(name = "s_create_time")
     @JsonSerialize(using = DateToTimestampSerializer.class)
@@ -58,7 +58,7 @@ public class Submission implements Serializable {
     private Integer judgerId;
 
     @Column(name = "s_judge_result")
-    private String judgeResult;
+    private Integer judgeResult;
 
     @Column(name = "s_judge_score")
     private Integer judgeScore;
@@ -75,7 +75,7 @@ public class Submission implements Serializable {
     @Column(name = "s_code")
     private String code;
 
-    public Submission(Integer problemId, Integer userId, Byte languageId, String ipv4, String code) {
+    public Submission(Integer problemId, Integer userId, Integer languageId, String ipv4, String code) {
         this.problemId = problemId;
         this.userId = userId;
         this.languageId = languageId;
@@ -83,7 +83,7 @@ public class Submission implements Serializable {
         this.code = code;
     }
 
-    public Submission(Long submissionId, Integer judgerId, String judgeResult, Integer judgeScore, Integer usedTime, Integer usedMemory, String judgeLog) {
+    public Submission(Long submissionId, Integer judgerId, Integer judgeResult, Integer judgeScore, Integer usedTime, Integer usedMemory, String judgeLog) {
         this.submissionId = submissionId;
         this.judgerId = judgerId;
         this.judgeResult = judgeResult;

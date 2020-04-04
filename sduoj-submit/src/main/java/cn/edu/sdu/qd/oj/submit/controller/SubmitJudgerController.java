@@ -28,7 +28,7 @@ import java.util.Map;
  **/
 
 @Controller
-@RequestMapping("/submit/judger")
+@RequestMapping("/judger/submit")
 public class SubmitJudgerController {
 
     @Autowired
@@ -47,7 +47,7 @@ public class SubmitJudgerController {
     public Void update(@RequestBody Map json) {
         int submissionId = (int) json.get("submissionId");
         int judgerId = (int) json.get("judgerId");
-        String judgeResult = (String) json.get("judgeResult");
+        int judgeResult = (int) json.get("judgeResult");
         int judgeScore = (int) json.get("judgeScore");
         int usedTime = (int) json.get("usedTime");
         int usedMemory = (int) json.get("usedMemory");

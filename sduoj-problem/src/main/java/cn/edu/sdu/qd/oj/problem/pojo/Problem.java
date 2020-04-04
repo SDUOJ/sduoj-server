@@ -24,7 +24,7 @@ public class Problem implements Serializable {
 
     @Column(name = "p_is_public")
     @JsonProperty(access = JsonProperty.Access.WRITE_ONLY)
-    private Byte isPublic;
+    private Integer isPublic;
 
     @Column(name = "u_id")
     private Integer userId;

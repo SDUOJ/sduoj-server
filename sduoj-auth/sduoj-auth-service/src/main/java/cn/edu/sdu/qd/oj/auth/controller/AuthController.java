@@ -47,7 +47,7 @@ public class AuthController {
     * @param password
     * @return
     **/
-    @PostMapping(value={"login","judger/login"})
+    @PostMapping(value={"/auth/login","/judger/auth/login"})
     @ApiResponseBody
     public User authentication(
             @RequestBody Map json,
@@ -89,7 +89,7 @@ public class AuthController {
         }
     }
 
-    @GetMapping(value={"logout","judger/logout"})
+    @GetMapping(value={"/auth/logout","/judger/auth/logout"})
     @ApiResponseBody
     public Void logout(
             HttpServletRequest request,

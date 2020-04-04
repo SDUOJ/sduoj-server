@@ -32,7 +32,7 @@ public class ProblemListBo implements Serializable {
 
     @Column(name = "p_is_public")
     @JsonIgnore
-    private Byte isPublic;
+    private Integer isPublic;
 
     @Column(name = "p_title")
     private String problemTitle;

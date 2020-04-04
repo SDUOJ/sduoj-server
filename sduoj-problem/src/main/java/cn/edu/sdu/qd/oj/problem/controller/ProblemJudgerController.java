@@ -25,7 +25,7 @@ import java.util.Map;
  **/
 
 @Controller
-@RequestMapping("/problem/judger")
+@RequestMapping("/judger/problem")
 public class ProblemJudgerController {
     @Autowired
     private ProblemJudgerService problemJudgerService;
