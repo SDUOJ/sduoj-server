@@ -75,12 +75,16 @@ public class Submission implements Serializable {
     @Column(name = "s_code")
     private String code;
 
+    @Column(name = "s_code_length")
+    private Integer codeLength;
+
     public Submission(Integer problemId, Integer userId, Integer languageId, String ipv4, String code) {
         this.problemId = problemId;
         this.userId = userId;
         this.languageId = languageId;
         this.ipv4 = ipv4;
         this.code = code;
+        this.codeLength = code.length();
     }
 
     public Submission(Long submissionId, Integer judgerId, Integer judgeResult, Integer judgeScore, Integer usedTime, Integer usedMemory, String judgeLog) {

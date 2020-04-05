@@ -46,4 +46,7 @@ public class SubmissionJudgeBo implements Serializable {
 
     @Column(name = "s_code")
     private String code;
+
+    @Column(name = "s_code_length")
+    private Integer codeLength;
 }
