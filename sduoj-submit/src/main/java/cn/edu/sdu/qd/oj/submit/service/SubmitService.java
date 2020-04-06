@@ -5,18 +5,26 @@
 
 package cn.edu.sdu.qd.oj.submit.service;
 
+import cn.edu.sdu.qd.oj.common.entity.PageResult;
 import cn.edu.sdu.qd.oj.common.enums.ApiExceptionEnum;
 import cn.edu.sdu.qd.oj.common.exception.ApiException;
-import cn.edu.sdu.qd.oj.submit.mapper.SubmissionJudgeBoMapper;
+import cn.edu.sdu.qd.oj.common.exception.InternalApiException;
+import cn.edu.sdu.qd.oj.submit.client.UserClient;
+import cn.edu.sdu.qd.oj.submit.mapper.SubmissionListBoMapper;
 import cn.edu.sdu.qd.oj.submit.mapper.SubmissionMapper;
 import cn.edu.sdu.qd.oj.submit.pojo.Submission;
-import cn.edu.sdu.qd.oj.submit.pojo.SubmissionJudgeBo;
+import cn.edu.sdu.qd.oj.submit.pojo.SubmissionListBo;
+import com.github.pagehelper.Page;
+import com.github.pagehelper.PageHelper;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.amqp.rabbit.core.RabbitTemplate;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import tk.mybatis.mapper.entity.Example;
 
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -38,6 +46,12 @@ public class SubmitService {
     @Autowired
     private RabbitTemplate rabbitTemplate;
 
+    @Autowired
+    private SubmissionListBoMapper submissionListBoMapper;
+
+    @Autowired
+    private UserClient userClient;
+
     @Transactional
     public boolean createSubmission(Submission submission) {
         if (this.submissionMapper.insertSelective(submission) == 1) {
@@ -58,5 +72,40 @@ public class SubmitService {
 
     public Submission queryById(int submissionId) {
         return this.submissionMapper.selectByPrimaryKey(submissionId);
+    }
+
+    public PageResult<SubmissionListBo> querySubmissionByPage(String username, Integer problemId, int pageNow, int pageSize) {
+        Integer userId = null;
+        if (StringUtils.isNotBlank(username)) {
+            try {
+                userId = userClient.queryUserId(username);
+                if (userId == null) {
+                    return null;
+                }
+            } catch (InternalApiException ignore) {
+                // TODO: 异常处理
+                log.error("[Submission] ", ignore.getMessage());
+            }
+        }
+        Example example = new Example(SubmissionListBo.class);
+        if (userId != null) {
+            example.createCriteria().andEqualTo("userId", userId);
+        }
+        if (problemId != null) {
+            example.createCriteria().andEqualTo("problemId", problemId);
+        }
+        PageHelper.startPage(pageNow, pageSize);
+        Page<SubmissionListBo> pageInfo = (Page<SubmissionListBo>) submissionListBoMapper.selectByExample(example);
+        if (problemId != null) {
+            // TODO: 设计缓存 (problemId->problemTitle) 的映射
+            pageInfo.forEach(submissionListBo -> submissionListBo.setProblemTitle("TODO: build cache"));
+        }
+        if (userId != null) {
+            pageInfo.forEach(submissionListBo -> submissionListBo.setUsername(username));
+        } else {
+            // TODO: 设计缓存 (userId->username) 的映射
+            pageInfo.forEach(submissionListBo -> submissionListBo.setUsername("TODO: build cache"));
+        }
+        return new PageResult<>(pageInfo.getPages(), pageInfo);
     }
 }

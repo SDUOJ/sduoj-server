@@ -65,4 +65,8 @@ public class UserService {
             throw new ApiException(ApiExceptionEnum.UNKNOWN_ERROR);
         }
     }
+
+    public Integer queryUserId(String username) {
+        return userMapper.queryUserId(username);
+    }
 }

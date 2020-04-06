@@ -8,20 +8,22 @@ package cn.edu.sdu.qd.oj.submit.controller;
 import cn.edu.sdu.qd.oj.auth.entity.UserInfo;
 import cn.edu.sdu.qd.oj.auth.utils.JwtUtils;
 import cn.edu.sdu.qd.oj.common.entity.ApiResponseBody;
+import cn.edu.sdu.qd.oj.common.entity.PageResult;
 import cn.edu.sdu.qd.oj.common.enums.ApiExceptionEnum;
 import cn.edu.sdu.qd.oj.common.exception.ApiException;
 import cn.edu.sdu.qd.oj.common.utils.CookieUtils;
 import cn.edu.sdu.qd.oj.submit.config.JwtProperties;
 import cn.edu.sdu.qd.oj.submit.pojo.Submission;
-import cn.edu.sdu.qd.oj.submit.pojo.SubmissionJudgeBo;
+import cn.edu.sdu.qd.oj.submit.pojo.SubmissionListBo;
 import cn.edu.sdu.qd.oj.submit.service.SubmitService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.stereotype.Controller;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
 
 import javax.servlet.http.HttpServletRequest;
-import java.util.Date;
 import java.util.Map;
 
 /**
@@ -47,7 +49,7 @@ public class SubmitController {
     @PostMapping("/create")
     @ApiResponseBody
     public Long createSubmission(@RequestBody Map json,
-                                HttpServletRequest request) {
+                                 HttpServletRequest request) {
         int problemId = (int) json.get("problemId");
         int languageId = (int) json.get("languageId");
         String code = (String) json.get("code");
@@ -86,5 +88,19 @@ public class SubmitController {
             throw new ApiException(ApiExceptionEnum.USER_NOT_MATCHING);
         }
         return submission;
+    }
+
+    @PostMapping("/list")
+    @ApiResponseBody
+    public PageResult<SubmissionListBo> queryList(@RequestBody Map json) {
+        String username = (String) json.get("username");
+        Integer problemId = (Integer) json.get("problemId");
+        int pageNow = (int) json.get("pageNow");
+        int pageSize = (int) json.get("pageSize");
+        PageResult<SubmissionListBo> result = this.submitService.querySubmissionByPage(username, problemId, pageNow, pageSize);
+        if (result == null || result.getRows().size() == 0) {
+            throw new ApiException(ApiExceptionEnum.SUBMISSION_NOT_FOUND);
+        }
+        return result;
     }
 }

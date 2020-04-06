@@ -31,10 +31,9 @@ public class UserInternalController {
 
     /**
      * 根据用户名和密码查询用户, 内部接口
-     * TODO: 实现通用返回类
      * @param username
      * @param password
-     * @return
+     * @return user
      */
     @PostMapping("/verify")
     @ResponseBody
@@ -47,15 +46,24 @@ public class UserInternalController {
 
     /**
      * 根据用户id查询用户, 内部接口
-     * TODO: 实现通用返回类
-     * @param username
-     * @param password
-     * @return
+     * @param userId
+     * @return user
      */
     @PostMapping("/query")
     @ResponseBody
     public User query(@RequestParam("userId") Integer userId) {
         User user = this.userService.query(userId);
         return user;
+    }
+
+    /**
+     * 根据用户名查询用户id, 内部接口
+     * @param username
+     * @return userId
+     */
+    @PostMapping("/queryuserid")
+    @ResponseBody
+    public Integer queryUserId(@RequestParam("username") String username) {
+        return this.userService.queryUserId(username);
     }
 }
