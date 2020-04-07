@@ -7,7 +7,7 @@ import tk.mybatis.spring.annotation.MapperScan;
 
 @SpringBootApplication
 @EnableDiscoveryClient
-@MapperScan(basePackages = {"cn.edu.sdu.qd.oj.problem.mapper"})
+@MapperScan(basePackages = {"cn.edu.sdu.qd.oj.problem.mapper", "cn.edu.sdu.qd.oj.checkpoint.mapper"})
 public class ProblemApplication {
     public static void main(String[] args) {
         SpringApplication.run(ProblemApplication.class,args);

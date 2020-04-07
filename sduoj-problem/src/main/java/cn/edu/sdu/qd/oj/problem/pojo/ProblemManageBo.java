@@ -5,13 +5,11 @@
 
 package cn.edu.sdu.qd.oj.problem.pojo;
 
-import cn.edu.sdu.qd.oj.config.BytesToCheckpointIdsSerializer;
-import com.fasterxml.jackson.annotation.JsonProperty;
+import cn.edu.sdu.qd.oj.problem.utils.BytesToCheckpointIdsSerializer;
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 import lombok.Data;
 
 import javax.persistence.Column;
-import javax.persistence.Id;
 import javax.persistence.Table;
 
 /**

@@ -3,7 +3,7 @@
  * Copyright (c) 2020-2020 zhangt2333@gmail.com
  **/
 
-package cn.edu.sdu.qd.oj.config;
+package cn.edu.sdu.qd.oj.problem.utils;
 
 import com.fasterxml.jackson.core.JsonGenerator;
 import com.fasterxml.jackson.databind.JsonSerializer;
@@ -11,9 +11,6 @@ import com.fasterxml.jackson.databind.SerializerProvider;
 
 import java.io.IOException;
 import java.nio.ByteBuffer;
-import java.util.ArrayList;
-import java.util.Date;
-import java.util.List;
 
 /**
  * @ClassName BytesToCheckpointIdsSerializer

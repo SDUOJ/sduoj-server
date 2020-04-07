@@ -1,17 +1,12 @@
 package cn.edu.sdu.qd.oj.problem.pojo;
 
-import cn.edu.sdu.qd.oj.config.BytesToCheckpointIdsSerializer;
-import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
-import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 import lombok.Data;
-import tk.mybatis.mapper.annotation.ColumnType;
 
 import javax.persistence.Column;
 import javax.persistence.Id;
 import javax.persistence.Table;
 import java.io.Serializable;
-import java.sql.Blob;
 
 @Data
 @Table(name = "oj_problems")
