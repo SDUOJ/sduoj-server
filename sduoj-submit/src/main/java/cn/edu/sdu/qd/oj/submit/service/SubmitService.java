@@ -52,6 +52,9 @@ public class SubmitService {
     @Autowired
     private UserClient userClient;
 
+    @Autowired
+    private UserCacheService userCacheService;
+
     @Transactional
     public boolean createSubmission(Submission submission) {
         if (this.submissionMapper.insertSelective(submission) == 1) {
@@ -103,9 +106,9 @@ public class SubmitService {
         if (userId != null) {
             pageInfo.forEach(submissionListBo -> submissionListBo.setUsername(username));
         } else {
-            // TODO: 设计缓存 (userId->username) 的映射
-            pageInfo.forEach(submissionListBo -> submissionListBo.setUsername("TODO: build cache"));
+            pageInfo.forEach(submissionListBo -> submissionListBo.setUsername(userCacheService.getUsername(submissionListBo.getUserId())));
         }
         return new PageResult<>(pageInfo.getPages(), pageInfo);
     }
+
 }

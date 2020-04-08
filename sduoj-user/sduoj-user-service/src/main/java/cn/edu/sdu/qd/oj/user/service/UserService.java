@@ -14,6 +14,10 @@ import cn.edu.sdu.qd.oj.user.utils.CodecUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+
 /**
  * @ClassName UserService
  * @Description TODO
@@ -68,5 +72,14 @@ public class UserService {
 
     public Integer queryUserId(String username) {
         return userMapper.queryUserId(username);
+    }
+
+
+    public Map<Integer, String> queryIdToNameMap() {
+        List<Map> list = userMapper.queryIdToNameMap();
+        Map<Integer, String> ret = new HashMap<>(list.size());
+        // TODO: 魔法值解决
+        list.stream().forEach(map -> ret.put((Integer)map.get("u_id"), (String)map.get("u_username")));
+        return ret;
     }
 }

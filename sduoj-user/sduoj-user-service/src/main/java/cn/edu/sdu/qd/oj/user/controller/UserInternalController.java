@@ -10,10 +10,9 @@ import cn.edu.sdu.qd.oj.user.pojo.User;
 import cn.edu.sdu.qd.oj.user.service.UserService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.ResponseBody;
+import org.springframework.web.bind.annotation.*;
+
+import java.util.Map;
 
 /**
  * @ClassName UserInternalController
@@ -66,4 +65,12 @@ public class UserInternalController {
     public Integer queryUserId(@RequestParam("username") String username) {
         return this.userService.queryUserId(username);
     }
+
+
+    @GetMapping("/queryid2name")
+    @ResponseBody
+    Map<Integer, String> queryAll() {
+        return userService.queryIdToNameMap();
+    }
+
 }
