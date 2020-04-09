@@ -78,6 +78,7 @@ public class LoginFilter extends ZuulFilter {
             // 校验通过什么都不做，即放行
             JwtUtils.getInfoFromToken(token, this.properties.getPublicKey());
         } catch (Exception e) {
+            // TODO: 加一个未登录提示
             // 校验出现异常，返回403
             context.setSendZuulResponse(false);
             context.setResponseStatusCode(HttpStatus.FORBIDDEN.value());

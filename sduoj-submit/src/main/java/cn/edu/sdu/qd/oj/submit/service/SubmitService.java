@@ -24,7 +24,6 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import tk.mybatis.mapper.entity.Example;
 
-import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -54,6 +53,9 @@ public class SubmitService {
 
     @Autowired
     private UserCacheService userCacheService;
+
+    @Autowired
+    private ProblemCacheService problemCacheService;
 
     @Transactional
     public boolean createSubmission(Submission submission) {
@@ -100,8 +102,10 @@ public class SubmitService {
         PageHelper.startPage(pageNow, pageSize);
         Page<SubmissionListBo> pageInfo = (Page<SubmissionListBo>) submissionListBoMapper.selectByExample(example);
         if (problemId != null) {
-            // TODO: 设计缓存 (problemId->problemTitle) 的映射
-            pageInfo.forEach(submissionListBo -> submissionListBo.setProblemTitle("TODO: build cache"));
+            String problemTitle = problemCacheService.getProblemTitle(problemId);
+            pageInfo.forEach(submissionListBo -> submissionListBo.setProblemTitle(problemTitle));
+        } else {
+            pageInfo.forEach(submissionListBo -> submissionListBo.setProblemTitle(problemCacheService.getProblemTitle(submissionListBo.getProblemId())));
         }
         if (userId != null) {
             pageInfo.forEach(submissionListBo -> submissionListBo.setUsername(username));

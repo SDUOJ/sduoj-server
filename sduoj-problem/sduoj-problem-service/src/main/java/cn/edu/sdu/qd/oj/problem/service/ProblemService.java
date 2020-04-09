@@ -3,28 +3,20 @@ package cn.edu.sdu.qd.oj.problem.service;
 import cn.edu.sdu.qd.oj.common.entity.PageResult;
 import cn.edu.sdu.qd.oj.common.enums.ApiExceptionEnum;
 import cn.edu.sdu.qd.oj.common.exception.ApiException;
-import cn.edu.sdu.qd.oj.problem.mapper.ProblemJudgerBoMapper;
 import cn.edu.sdu.qd.oj.problem.mapper.ProblemListBoMapper;
-import cn.edu.sdu.qd.oj.problem.mapper.ProblemManageBoMapper;
 import cn.edu.sdu.qd.oj.problem.mapper.ProblemMapper;
 import cn.edu.sdu.qd.oj.problem.pojo.Problem;
 
-import cn.edu.sdu.qd.oj.problem.pojo.ProblemJudgerBo;
 import cn.edu.sdu.qd.oj.problem.pojo.ProblemListBo;
-import cn.edu.sdu.qd.oj.problem.pojo.ProblemManageBo;
 import com.github.pagehelper.Page;
 import com.github.pagehelper.PageHelper;
-import net.minidev.json.JSONArray;
-import org.json.JSONException;
-import org.json.JSONObject;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import tk.mybatis.mapper.entity.Example;
-import tk.mybatis.mapper.genid.GenId;
 
-import java.lang.reflect.Array;
-import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 @Service
 public class ProblemService {
@@ -51,5 +43,13 @@ public class ProblemService {
         example.createCriteria().andEqualTo("isPublic", 1);
         Page<ProblemListBo> pageInfo = (Page<ProblemListBo>) problemListBoMapper.selectByExample(example);
         return new PageResult<>(pageInfo.getPages(), pageInfo);
+    }
+
+    public Map<Integer, String> queryIdToTitleMap() {
+        List<Map> list = problemMapper.queryIdToTitleMap();
+        Map<Integer, String> ret = new HashMap<>(list.size());
+        // TODO: 魔法值解决
+        list.stream().forEach(map -> ret.put((Integer)map.get("p_id"), (String)map.get("p_title")));
+        return ret;
     }
 }
