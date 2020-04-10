@@ -57,7 +57,7 @@ public class User implements Serializable {
 
     @Column(name = "u_gender")
     @Range(min = 0, max = 2, message = "性别不合法, 0.女, 1.男, 2.问号")
-    private Byte gender;
+    private Integer gender;
 
     @Column(name = "u_student_id")
     private String studentId;
@@ -68,5 +68,5 @@ public class User implements Serializable {
 
     @Column(name = "u_role")
     @JsonProperty(access = JsonProperty.Access.READ_ONLY)
-    private Byte role;
+    private Integer role;
 }
