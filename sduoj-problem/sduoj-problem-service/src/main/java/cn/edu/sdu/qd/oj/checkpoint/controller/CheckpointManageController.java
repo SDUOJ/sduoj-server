@@ -20,7 +20,6 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.multipart.MultipartFile;
 
-import java.util.Arrays;
 import java.util.Map;
 
 /**
@@ -42,10 +41,10 @@ public class CheckpointManageController {
     private CheckpointFileService checkpointFileService;
 
     /**
-    * @Description 查看某个测试点详情
-    * @param checkpointId
-    * @return cn.edu.sdu.qd.oj.checkpoint.pojo.Checkpoint
-    **/
+     * @param checkpointId
+     * @return cn.edu.sdu.qd.oj.checkpoint.pojo.Checkpoint
+     * @Description 查看某个测试点详情
+     **/
     @PostMapping("/query")
     @ApiResponseBody
     public Checkpoint query(@RequestBody Map json) {
@@ -54,11 +53,11 @@ public class CheckpointManageController {
 
 
     /**
-    * @Description 上传单对文本文件作为测试点文件
-    * @param input
-    * @param output
-    * @return cn.edu.sdu.qd.oj.checkpoint.pojo.Checkpoint
-    **/
+     * @param input
+     * @param output
+     * @return cn.edu.sdu.qd.oj.checkpoint.pojo.Checkpoint
+     * @Description 上传单对文本文件作为测试点文件
+     **/
     @PostMapping(value = "/upload", headers = "content-type=application/json")
     @ApiResponseBody
     public Checkpoint upload(@RequestBody Map json) {
@@ -71,10 +70,10 @@ public class CheckpointManageController {
     }
 
     /**
-    * @Description 批量上传成对的测试点文件，如果不配对或者写入到文件系统中出现错误，则全部回滚
-    * @param files
-    * @return cn.edu.sdu.qd.oj.checkpoint.pojo.Checkpoint[]
-    **/
+     * @param files
+     * @return cn.edu.sdu.qd.oj.checkpoint.pojo.Checkpoint[]
+     * @Description 批量上传成对的测试点文件，如果不配对或者写入到文件系统中出现错误，则全部回滚
+     **/
     @PostMapping(value = "/upload", headers = "content-type=multipart/form-data")
     @ApiResponseBody
     public Checkpoint[] upload(@RequestParam("files") MultipartFile[] files) {

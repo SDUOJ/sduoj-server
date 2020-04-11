@@ -11,18 +11,22 @@ import cn.edu.sdu.qd.oj.checkpoint.pojo.Checkpoint;
 import cn.edu.sdu.qd.oj.common.enums.ApiExceptionEnum;
 import cn.edu.sdu.qd.oj.common.exception.ApiException;
 import cn.edu.sdu.qd.oj.common.utils.SnowflakeIdWorker;
+import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.FilenameUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
+import org.springframework.core.io.FileSystemResource;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.util.StreamUtils;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.File;
 import java.io.IOException;
-import java.nio.ByteBuffer;
 import java.util.*;
+import java.util.zip.ZipEntry;
+import java.util.zip.ZipOutputStream;
 
 /**
  * @ClassName CheckpointFileService
@@ -46,10 +50,10 @@ public class CheckpointFileService {
     private CheckpointMapper checkpointMapper;
 
     /**
-    * @Description 批量上传成对的测试点文件，如果不配对或者写入到文件系统中出现错误，则全部回滚
-    * @param files
-    * @return cn.edu.sdu.qd.oj.checkpoint.pojo.Checkpoint[]
-    **/
+     * @param files
+     * @return cn.edu.sdu.qd.oj.checkpoint.pojo.Checkpoint[]
+     * @Description 批量上传成对的测试点文件，如果不配对或者写入到文件系统中出现错误，则全部回滚
+     **/
     @Transactional
     public Checkpoint[] uploadCheckpointFiles(MultipartFile[] files) {
         List<Checkpoint> list = new ArrayList<>(files.length / 2 + 1);
@@ -63,7 +67,7 @@ public class CheckpointFileService {
         for (MultipartFile input : files) {
             if ("in".equals(FilenameUtils.getExtension(input.getOriginalFilename()))) {
                 MultipartFile output = map.get(FilenameUtils.getBaseName(input.getOriginalFilename()) + ".out");
-                if(output == null) {
+                if (output == null) {
                     throw new ApiException(ApiExceptionEnum.FILE_NOT_DOUBLE);
                 }
             }
@@ -92,11 +96,11 @@ public class CheckpointFileService {
                     FileUtils.writeByteArrayToFile(outputFile, outputBytes);
                 }
             }
-            for(Checkpoint checkpoint : list) {
+            for (Checkpoint checkpoint : list) {
                 checkpointMapper.insert(checkpoint);
             }
         } catch (Exception e) {
-            for(Checkpoint checkpoint : list) {
+            for (Checkpoint checkpoint : list) {
                 new File(checkpointFileSystemProperties.getBaseDir() + File.separator + checkpoint.getCheckpointId() + ".in").delete();
                 new File(checkpointFileSystemProperties.getBaseDir() + File.separator + checkpoint.getCheckpointId() + ".out").delete();
             }
@@ -106,13 +110,12 @@ public class CheckpointFileService {
     }
 
 
-
     /*
-    * @Description 上传单对文本文件作为测试点文件
-    * @param input
-    * @param output
-    * @return cn.edu.sdu.qd.oj.checkpoint.pojo.Checkpoint
-    **/
+     * @Description 上传单对文本文件作为测试点文件
+     * @param input
+     * @param output
+     * @return cn.edu.sdu.qd.oj.checkpoint.pojo.Checkpoint
+     **/
     @Transactional
     public Checkpoint updateCheckpointFile(String input, String output) {
         long snowflaskId = snowflakeIdWorker.nextId();
@@ -135,5 +138,28 @@ public class CheckpointFileService {
             throw new ApiException(ApiExceptionEnum.FILE_WRITE_ERROR);
         }
         return checkpoint;
+    }
+
+    /**
+    * @Description 向输出流写出 zip 文件
+    * @param checkpointIds
+    * @param zipOut
+    * @return void
+    **/
+    public void downloadCheckpointFiles(List<String> checkpointIds, ZipOutputStream zipOut) throws IOException {
+        // TODO: 文件存在性、安全性 校验
+        for (String checkpointId : checkpointIds) {
+            for (String file : new String[]{checkpointFileSystemProperties.getBaseDir() + File.separator + checkpointId + ".in",
+                                 checkpointFileSystemProperties.getBaseDir() + File.separator + checkpointId + ".out"}) {
+                FileSystemResource resource = new FileSystemResource(file);
+                ZipEntry zipEntry = new ZipEntry(resource.getFilename());
+                zipEntry.setSize(resource.contentLength());
+                zipOut.putNextEntry(zipEntry);
+                StreamUtils.copy(resource.getInputStream(), zipOut);
+                zipOut.closeEntry();
+            }
+        }
+        zipOut.finish();
+        zipOut.close();
     }
 }
