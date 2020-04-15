@@ -16,7 +16,7 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
 /**
- * @ClassName RabbitConfig
+ * @ClassName RabbitPublisherConfig
  * @Description TODO
  * @Author zhangt2333
  * @Date 2020/3/6 17:02
@@ -24,11 +24,16 @@ import org.springframework.context.annotation.Configuration;
  **/
 
 @Configuration
-public class RabbitConfig {
+public class RabbitPublisherConfig {
     @Bean
     public RabbitTemplate rabbitTemplate(final ConnectionFactory connectionFactory) {
         final RabbitTemplate rabbitTemplate = new RabbitTemplate(connectionFactory);
-        rabbitTemplate.setMessageConverter(new Jackson2JsonMessageConverter());
+        rabbitTemplate.setMessageConverter(producerJackson2MessageConverter());
         return rabbitTemplate;
+    }
+
+    @Bean
+    public Jackson2JsonMessageConverter producerJackson2MessageConverter() {
+        return new Jackson2JsonMessageConverter();
     }
 }
