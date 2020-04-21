@@ -35,7 +35,7 @@ public class JwtProperties {
 
     private String priKeyPath;    // 私钥
 
-    private int expire;           // token过期时间
+    private int expire;          // token过期时间
 
     private PublicKey publicKey;  // 公钥
 
@@ -43,7 +43,7 @@ public class JwtProperties {
 
     private String cookieName;    // cookie的name
 
-    private Integer cookieMaxAge; // cookie的存活时间
+    private Long cookieMaxAge; // cookie的存活时间
 
     private static final Logger logger = LoggerFactory.getLogger(JwtProperties.class);
 

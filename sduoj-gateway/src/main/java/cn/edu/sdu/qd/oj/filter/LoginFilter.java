@@ -5,31 +5,33 @@
 
 package cn.edu.sdu.qd.oj.filter;
 
-import cn.edu.sdu.qd.oj.auth.utils.JwtUtils;
-import cn.edu.sdu.qd.oj.common.utils.CookieUtils;
 import cn.edu.sdu.qd.oj.config.FilterProperties;
 import cn.edu.sdu.qd.oj.config.JwtProperties;
-import com.netflix.zuul.ZuulFilter;
-import com.netflix.zuul.context.RequestContext;
-import com.netflix.zuul.exception.ZuulException;
+import cn.hutool.core.collection.CollectionUtil;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
-import org.springframework.http.HttpStatus;
+import org.springframework.cloud.gateway.filter.GatewayFilterChain;
+import org.springframework.cloud.gateway.filter.GlobalFilter;
+import org.springframework.core.Ordered;
+import org.springframework.http.HttpCookie;
+import org.springframework.http.server.reactive.ServerHttpResponse;
 import org.springframework.stereotype.Component;
+import org.springframework.web.server.ServerWebExchange;
+import reactor.core.publisher.Mono;
 
-import javax.servlet.http.HttpServletRequest;
+import java.util.Collection;
 
 /**
  * @ClassName LoginFilter
  * @Description TODO
  * @Author zhangt2333
- * @Date 2020/3/1 14:33
+ * @Date 2020/4/21 21:16
  * @Version V1.0
  **/
 
 @Component
 @EnableConfigurationProperties({JwtProperties.class, FilterProperties.class})
-public class LoginFilter extends ZuulFilter {
+public class LoginFilter implements GlobalFilter, Ordered {
 
     @Autowired
     private JwtProperties properties;
@@ -37,52 +39,54 @@ public class LoginFilter extends ZuulFilter {
     @Autowired
     private FilterProperties filterProp;
 
+    /**
+    * @Description 拦截所有请求头
+    * @param exchange
+    * @param chain
+    * @return reactor.core.publisher.Mono<java.lang.Void>
+    **/
     @Override
-    public String filterType() {
-        return "pre";
-    }
-
-    @Override
-    public int filterOrder() {
-        return 5;
-    }
-
-    @Override
-    public boolean shouldFilter() {
-        // 获取上下文
-        RequestContext ctx = RequestContext.getCurrentContext();
-        // 获取request
-        HttpServletRequest req = ctx.getRequest();
-        // 获取路径
-        String requestURI = req.getRequestURI();
-        // 判断白名单, 遍历允许访问的路径
-        for (String path : this.filterProp.getAllowPaths()) {
-            // 然后判断是否是符合
-            if(requestURI.startsWith(path)){
-                return false;
-            }
+    public Mono<Void> filter(ServerWebExchange exchange, GatewayFilterChain chain) {
+        String requestUrl = exchange.getRequest().getPath().toString();
+        if (!CollectionUtil.contains(this.filterProp.getAllowPaths(), requestUrl)) {
+            HttpCookie cookie = exchange.getRequest().getCookies().getFirst(this.properties.getCookieName());
+            System.out.println(cookie);
+//            if (StrUtil.isBlank(token) || StrUtil.isBlank(type)) {
+//                JSONObject message = new JSONObject();
+//                message.put("code", StatusCodeConstants.TOKEN_NONE);
+//                message.put("message", "鉴权失败，无token或类型");
+//                byte[] bits = message.toString().getBytes(StandardCharsets.UTF_8);
+//                DataBuffer buffer = response.bufferFactory().wrap(bits);
+//                response.setStatusCode(HttpStatus.UNAUTHORIZED);
+//                response.getHeaders().add("Content-Type", "text/json;charset=UTF-8");
+//                return response.writeWith(Mono.just(buffer));
+//                //有数据
+//            }else {
+//                String prefix = this.getPrefix(type);
+//                //校验token
+//                String userPhone = verifyJWT(token ,prefix);
+//                if (StrUtil.isEmpty(userPhone)){
+//                    JSONObject message = new JSONObject();
+//                    message.put("message", "token错误");
+//                    message.put("code", StatusCodeConstants.TOKEN_ERROR);
+//                    byte[] bits = message.toString().getBytes(StandardCharsets.UTF_8);
+//                    DataBuffer buffer = response.bufferFactory().wrap(bits);
+//                    response.setStatusCode(HttpStatus.UNAUTHORIZED);
+//                    response.getHeaders().add("Content-Type", "text/json;charset=UTF-8");
+//                    return response.writeWith(Mono.just(buffer));
+//                }
+//                //将现在的request，添加当前身份
+//                ServerHttpRequest mutableReq = exchange.getRequest().mutate().header("Authorization-UserName", userPhone).build();
+//                ServerWebExchange mutableExchange = exchange.mutate().request(mutableReq).build();
+//                return chain.filter(mutableExchange);
+//            }
         }
-        return true;
+        return chain.filter(exchange);
     }
 
     @Override
-    public Object run() throws ZuulException {
-        // 获取上下文
-        RequestContext context = RequestContext.getCurrentContext();
-        // 获取request
-        HttpServletRequest request = context.getRequest();
-        // 获取token
-        String token = CookieUtils.getCookieValue(request, this.properties.getCookieName());
-        // 校验
-        try {
-            // 校验通过什么都不做，即放行
-            JwtUtils.getInfoFromToken(token, this.properties.getPublicKey());
-        } catch (Exception e) {
-            // TODO: 加一个未登录提示
-            // 校验出现异常，返回403
-            context.setSendZuulResponse(false);
-            context.setResponseStatusCode(HttpStatus.FORBIDDEN.value());
-        }
-        return null;
+    public int getOrder() {
+        return 0;
     }
+
 }

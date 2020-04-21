@@ -8,21 +8,30 @@ package cn.edu.sdu.qd.oj.auth.controller;
 import cn.edu.sdu.qd.oj.auth.config.JwtProperties;
 import cn.edu.sdu.qd.oj.auth.entity.UserInfo;
 import cn.edu.sdu.qd.oj.auth.service.AuthService;
+import cn.edu.sdu.qd.oj.auth.utils.CookieBuilder;
 import cn.edu.sdu.qd.oj.auth.utils.JwtUtils;
 import cn.edu.sdu.qd.oj.common.entity.ApiResponseBody;
+import cn.edu.sdu.qd.oj.common.entity.ResponseResult;
 import cn.edu.sdu.qd.oj.common.enums.ApiExceptionEnum;
 import cn.edu.sdu.qd.oj.common.exception.ApiException;
 import cn.edu.sdu.qd.oj.common.utils.CookieUtils;
 import cn.edu.sdu.qd.oj.user.pojo.User;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.RequestEntity;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.*;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
-import java.util.Map;
+import java.io.IOException;
+import java.text.SimpleDateFormat;
+import java.util.*;
 
 /**
  * @ClassName AuthController
@@ -48,11 +57,14 @@ public class AuthController {
     * @return
     **/
     @PostMapping(value={"/auth/login","/judger/auth/login"})
-    @ApiResponseBody
-    public User authentication(
-            @RequestBody Map json,
-            HttpServletRequest request,
-            HttpServletResponse response) {
+    @ResponseBody
+    public ResponseEntity<ResponseResult<User>> login(RequestEntity<String> entity) {
+        Map json = null;
+        try {
+            json = new ObjectMapper().readValue(entity.getBody(), Map.class);
+        } catch (IOException e) {
+            throw new ApiException(ApiExceptionEnum.PARAMETER_ERROR);
+        }
         String username = (String) json.get("username");
         String password = (String) json.get("password");
         if (StringUtils.isNotBlank(username) && StringUtils.isNotBlank(password)) {
@@ -69,20 +81,23 @@ public class AuthController {
             } catch (Exception e) {
                 e.printStackTrace();
             }
-            // 将token写入cookie,并指定httpOnly为true，防止通过JS获取和修改
-            CookieUtils.newBuilder(response)
-                       .httpOnly()
-                       .maxAge(prop.getCookieMaxAge())
-                       .request(request).build(prop.getCookieName(), token);
-            return user;
+            HttpHeaders headers = new HttpHeaders();
+            String cookie = new CookieBuilder().setKey(prop.getCookieName())
+                            .setValue(token)
+                            .setMaxAge(prop.getCookieMaxAge())
+                            .setPath("/")
+                            .build();
+            headers.set("Set-Cookie", cookie);
+            return new ResponseEntity<>(ResponseResult.ok(user), headers, HttpStatus.OK);
         } else {
-            String token = CookieUtils.getCookieValue(request, this.prop.getCookieName());
-            // TODO: 校验现有 cookie 超时与否
-            //从Token中获取用户信息
+            // 从Token中获取用户信息
             try {
+                HttpHeaders headers = entity.getHeaders();
+                String token = headers.get("Cookie").get(0);
                 UserInfo userInfo = JwtUtils.getInfoFromToken(token, prop.getPublicKey());
+                // TODO: 校验现有 cookie 超时与否
                 User user = this.authService.queryUserById(userInfo.getUserId());
-                return user;
+                return new ResponseEntity<>(ResponseResult.ok(user), HttpStatus.OK);
             } catch (Exception e) {
                 throw new ApiException(ApiExceptionEnum.UNKNOWN_ERROR);
             }
@@ -91,14 +106,14 @@ public class AuthController {
 
     @GetMapping(value={"/auth/logout","/judger/auth/logout"})
     @ApiResponseBody
-    public Void logout(
-            HttpServletRequest request,
-            HttpServletResponse response) {
-        CookieUtils.newBuilder(response)
-                   .httpOnly()
-                   .maxAge(0)
-                   .request(request)
-                   .build(prop.getCookieName(), null);
-        return null;
+    public ResponseEntity<ResponseResult<Void>> logout() {
+        String cookie = new CookieBuilder().setKey(prop.getCookieName())
+                .setValue("")
+                .setMaxAge(0)
+                .setPath("/")
+                .build();
+        HttpHeaders headers = new HttpHeaders();
+        headers.set("Set-Cookie", cookie);
+        return new ResponseEntity<>(ResponseResult.ok(), headers, HttpStatus.OK);
     }
 }
