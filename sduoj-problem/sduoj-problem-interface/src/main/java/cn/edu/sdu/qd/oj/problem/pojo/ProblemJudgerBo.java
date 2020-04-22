@@ -5,7 +5,9 @@
 
 package cn.edu.sdu.qd.oj.problem.pojo;
 
+import cn.edu.sdu.qd.oj.problem.utils.BytesToCheckpointIdsSerializer;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 import lombok.Data;
 
 import javax.persistence.Column;
@@ -38,4 +40,8 @@ public class ProblemJudgerBo implements Serializable {
 
     @Column(name = "p_memory_limit")
     private Integer memoryLimit;
+
+    @Column(name = "p_checkpoint_ids")
+    @JsonSerialize(using = BytesToCheckpointIdsSerializer.class)
+    private byte[] checkpointIds;
 }
