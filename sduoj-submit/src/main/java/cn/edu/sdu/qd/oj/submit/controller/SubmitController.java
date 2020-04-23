@@ -5,25 +5,20 @@
 
 package cn.edu.sdu.qd.oj.submit.controller;
 
-import cn.edu.sdu.qd.oj.auth.entity.UserInfo;
-import cn.edu.sdu.qd.oj.auth.utils.JwtUtils;
 import cn.edu.sdu.qd.oj.common.entity.ApiResponseBody;
 import cn.edu.sdu.qd.oj.common.entity.PageResult;
 import cn.edu.sdu.qd.oj.common.enums.ApiExceptionEnum;
 import cn.edu.sdu.qd.oj.common.exception.ApiException;
-import cn.edu.sdu.qd.oj.common.utils.CookieUtils;
-import cn.edu.sdu.qd.oj.submit.config.JwtProperties;
 import cn.edu.sdu.qd.oj.submit.pojo.Submission;
 import cn.edu.sdu.qd.oj.submit.pojo.SubmissionListBo;
 import cn.edu.sdu.qd.oj.submit.service.SubmitService;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RequestMapping;
 
-import javax.servlet.http.HttpServletRequest;
 import java.util.Map;
 
 /**
@@ -36,35 +31,21 @@ import java.util.Map;
 
 @Controller
 @RequestMapping("/submit")
-@EnableConfigurationProperties(JwtProperties.class)
 public class SubmitController {
 
     @Autowired
     private SubmitService submitService;
 
-    @Autowired
-    private JwtProperties jwtProperties;
-
 
     @PostMapping("/create")
     @ApiResponseBody
     public Long createSubmission(@RequestBody Map json,
-                                 HttpServletRequest request) {
+                                 @RequestHeader("X-FORWARDED-FOR") String ipv4,
+                                 @RequestHeader("authorization-userId") Integer userId) {
         int problemId = (int) json.get("problemId");
         int languageId = (int) json.get("languageId");
         String code = (String) json.get("code");
-        String ipv4 = request.getHeader("X-FORWARDED-FOR");
-        if (ipv4 == null) {
-            ipv4 = request.getRemoteAddr();
-        }
-        String token = CookieUtils.getCookieValue(request, this.jwtProperties.getCookieName());
-        UserInfo userInfo;
-        try {
-            userInfo = JwtUtils.getInfoFromToken(token, this.jwtProperties.getPublicKey());
-        } catch (Exception e) {
-            throw new ApiException(ApiExceptionEnum.UNKNOWN_ERROR);
-        }
-        Submission submission = new Submission(problemId, userInfo.getUserId(), languageId, ipv4, code);
+        Submission submission = new Submission(problemId, userId, languageId, ipv4, code);
         if (this.submitService.createSubmission(submission)) {
             return submission.getSubmissionId();
         }
@@ -74,17 +55,12 @@ public class SubmitController {
     @PostMapping("/query")
     @ApiResponseBody
     public Submission query(@RequestBody Map json,
-                            HttpServletRequest request) {
+                            @RequestHeader("authorization-userId") Integer userId,
+                            @RequestHeader Map map) {
         int submissionId = (int) json.get("submissionId");
-        String token = CookieUtils.getCookieValue(request, this.jwtProperties.getCookieName());
-        UserInfo userInfo;
-        try {
-            userInfo = JwtUtils.getInfoFromToken(token, this.jwtProperties.getPublicKey());
-        } catch (Exception e) {
-            throw new ApiException(ApiExceptionEnum.UNKNOWN_ERROR);
-        }
+        System.out.println(map);
         Submission submission = this.submitService.queryById(submissionId);
-        if (submission != null && !submission.getUserId().equals(userInfo.getUserId())) {
+        if (submission != null && !submission.getUserId().equals(userId)) {
             throw new ApiException(ApiExceptionEnum.USER_NOT_MATCHING);
         }
         return submission;

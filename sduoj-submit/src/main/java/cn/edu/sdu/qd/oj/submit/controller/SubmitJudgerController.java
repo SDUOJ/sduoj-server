@@ -6,12 +6,10 @@
 package cn.edu.sdu.qd.oj.submit.controller;
 
 import cn.edu.sdu.qd.oj.common.entity.ApiResponseBody;
-import cn.edu.sdu.qd.oj.submit.config.JwtProperties;
 import cn.edu.sdu.qd.oj.submit.pojo.Submission;
 import cn.edu.sdu.qd.oj.submit.pojo.SubmissionJudgeBo;
 import cn.edu.sdu.qd.oj.submit.service.SubmitJudgerService;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;

@@ -10,7 +10,7 @@
     <modelVersion>4.0.0</modelVersion>
 
     <groupId>cn.edu.sdu.qd.oj.common</groupId>
-    <artifactId>sduoj-gateway</artifactId>
+    <artifactId>sduoj-oldgateway</artifactId>
     <version>1.0.0-SNAPSHOT</version>
 
     <dependencies>
@@ -49,7 +49,7 @@
     </dependencies>
 
     <build>
-        <finalName>sduoj-gateway</finalName>
+        <finalName>sduoj-oldgateway</finalName>
         <plugins>
             <plugin>
                 <groupId>org.springframework.boot</groupId>
