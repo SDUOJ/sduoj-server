@@ -58,7 +58,6 @@ public class SubmitController {
                             @RequestHeader("authorization-userId") Integer userId,
                             @RequestHeader Map map) {
         int submissionId = (int) json.get("submissionId");
-        System.out.println(map);
         Submission submission = this.submitService.queryById(submissionId);
         if (submission != null && !submission.getUserId().equals(userId)) {
             throw new ApiException(ApiExceptionEnum.USER_NOT_MATCHING);

@@ -12,7 +12,6 @@
         <module>sduoj-user</module>
         <module>sduoj-auth</module>
         <module>sduoj-registry</module>
-        <module>sduoj-oldgateway</module>
         <module>sduoj-gateway</module>
         <module>sduoj-problem</module>
         <module>sduoj-submit</module>

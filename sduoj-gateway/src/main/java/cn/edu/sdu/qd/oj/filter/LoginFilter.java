@@ -73,7 +73,7 @@ public class LoginFilter implements GlobalFilter, Ordered {
     @Override
     public Mono<Void> filter(ServerWebExchange exchange, GatewayFilterChain chain) {
         String requestUrl = exchange.getRequest().getPath().toString();
-        if (!CollectionUtil.contains(this.filterProp.getAllowPaths(), requestUrl)) {
+        if (!isAllowPath(requestUrl)) {
             // 取 token 并解密
             HttpCookie cookie = exchange.getRequest().getCookies().getFirst(this.jwtProperties.getCookieName());
             String token = null;
@@ -127,6 +127,13 @@ public class LoginFilter implements GlobalFilter, Ordered {
         response.setStatusCode(HttpStatus.UNAUTHORIZED);
         response.getHeaders().add("Content-Type", "application/json;charset=UTF-8");
         return response.writeWith(Mono.just(buffer));
+    }
+
+    private boolean isAllowPath(String requestUrl) {
+        for (String allowPath : filterProp.getAllowPaths())
+            if (requestUrl.startsWith(requestUrl))
+                return true;
+        return false;
     }
 
     @Override

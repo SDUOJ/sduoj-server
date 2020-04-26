@@ -27,7 +27,7 @@ import java.util.concurrent.CopyOnWriteArraySet;
  * @Version V1.0
  **/
 
-@ServerEndpoint("/api/submit/listen/{submissionId}") // TODO: Gateway 组件更换以通过网关支持长连接
+@ServerEndpoint("/submit/listen/{submissionId}")
 @Component
 @Slf4j
 public class WebSocketServer {
@@ -71,7 +71,7 @@ public class WebSocketServer {
             webSocketServers.add(this);
             webSocketMap.put(submissionId, webSocketServers);
         } else {
-            webSocketServers.add(this );
+            webSocketServers.add(this);
         }
         log.info("[Submission WebSocket]: " + submissionId + " 连接!");
     }
