@@ -46,21 +46,21 @@ public class CookieBuilder {
         sb.append(this.key);
         sb.append("=");
         sb.append(this.value);
-        sb.append(";");
+        sb.append("; ");
         if (null != this.expires) {
-            sb.append("expires=");
+            sb.append("Expires=");
             sb.append(this.expires);
-            sb.append(";");
+            sb.append("; ");
         }
         if (null != this.domain) {
-            sb.append("domain=");
+            sb.append("Domain=");
             sb.append(this.domain);
-            sb.append(";");
+            sb.append("; ");
         }
         if (null != this.path) {
-            sb.append("path=");
+            sb.append("Path=");
             sb.append(this.path);
-            sb.append(";");
+            sb.append("; ");
         }
         return sb.toString();
     }

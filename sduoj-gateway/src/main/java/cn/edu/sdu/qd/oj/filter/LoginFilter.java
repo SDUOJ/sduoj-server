@@ -119,7 +119,7 @@ public class LoginFilter implements GlobalFilter, Ordered {
         message.put("data", null);
         byte[] bits = null;
         try {
-            bits = objectMapper.writerWithDefaultPrettyPrinter().writeValueAsString(message).toString().getBytes(StandardCharsets.UTF_8);
+            bits = objectMapper.writerWithDefaultPrettyPrinter().writeValueAsString(message).getBytes(StandardCharsets.UTF_8);
         } catch (JsonProcessingException e) {
             e.printStackTrace();
         }
@@ -131,7 +131,7 @@ public class LoginFilter implements GlobalFilter, Ordered {
 
     private boolean isAllowPath(String requestUrl) {
         for (String allowPath : filterProp.getAllowPaths())
-            if (requestUrl.startsWith(requestUrl))
+            if (requestUrl.startsWith(allowPath))
                 return true;
         return false;
     }
