@@ -3,9 +3,7 @@ package cn.edu.sdu.qd.oj.problem.pojo;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.Data;
 
-import javax.persistence.Column;
-import javax.persistence.Id;
-import javax.persistence.Table;
+import javax.persistence.*;
 import java.io.Serializable;
 
 @Data
@@ -15,6 +13,7 @@ public class Problem implements Serializable {
 
     @Id
     @Column(name = "p_id")
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Integer problemId;
 
     @Column(name = "p_is_public")

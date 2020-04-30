@@ -9,9 +9,10 @@ import cn.edu.sdu.qd.oj.problem.utils.BytesToCheckpointIdsSerializer;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 import lombok.Data;
-import lombok.ToString;
 
-import javax.persistence.*;
+import javax.persistence.Column;
+import javax.persistence.Id;
+import javax.persistence.Table;
 import java.io.Serializable;
 import java.util.Arrays;
 
@@ -25,12 +26,11 @@ import java.util.Arrays;
 
 @Data
 @Table(name = "oj_problems")
-public class ProblemManageBo implements Serializable {
+public class ProblemManageListBo implements Serializable {
     private static final long serialVersionUID = 1L;
 
     @Id
     @Column(name = "p_id")
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Integer problemId;
 
     @Column(name = "p_is_public")
@@ -39,10 +39,14 @@ public class ProblemManageBo implements Serializable {
     @Column(name = "u_id")
     private Integer userId;
 
-    // TODO: username
-
     @Column(name = "p_title")
     private String problemTitle;
+
+    @Column(name = "p_submit_num")
+    private Integer submitNum;
+
+    @Column(name = "p_accept_num")
+    private Integer acceptNum;
 
     @Column(name = "p_time_limit")
     private Integer timeLimit;
@@ -50,10 +54,6 @@ public class ProblemManageBo implements Serializable {
     @Column(name = "p_memory_limit")
     private Integer memoryLimit;
 
-    @Column(name = "p_markdown")
-    private String markdown;
-
-    @Column(name = "p_checkpoint_ids")
-    @JsonSerialize(using = BytesToCheckpointIdsSerializer.class)
-    private byte[] checkpointIds;
+    @Column(name = "p_checkpoint_num")
+    private Integer checkpointNum;
 }

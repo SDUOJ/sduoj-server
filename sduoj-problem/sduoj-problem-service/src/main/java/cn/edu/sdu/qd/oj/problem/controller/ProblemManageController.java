@@ -6,7 +6,11 @@
 package cn.edu.sdu.qd.oj.problem.controller;
 
 import cn.edu.sdu.qd.oj.common.entity.ApiResponseBody;
+import cn.edu.sdu.qd.oj.common.entity.PageResult;
+import cn.edu.sdu.qd.oj.common.enums.ApiExceptionEnum;
+import cn.edu.sdu.qd.oj.common.exception.ApiException;
 import cn.edu.sdu.qd.oj.problem.pojo.ProblemManageBo;
+import cn.edu.sdu.qd.oj.problem.pojo.ProblemManageListBo;
 import cn.edu.sdu.qd.oj.problem.service.ProblemManageService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
@@ -42,11 +46,30 @@ public class ProblemManageController {
     @PostMapping("/create")
     @ApiResponseBody
     public Integer createProblemManageBo(@RequestBody ProblemManageBo problem,
-                                         @RequestHeader("authorization-userId") Integer userId)
-    {
-        // TODO: 鉴权
+                                         @RequestHeader("authorization-userId") Integer userId) {
         problem.setUserId(userId);
         this.problemManageService.createProblem(problem);
         return problem.getProblemId();
     }
+
+
+    @PostMapping("/list")
+    @ApiResponseBody
+    public PageResult<ProblemManageListBo> queryList(@RequestBody Map json
+    // TODO: 只能查到自己有权限的题目
+    ) {
+        int pageNow = (int) json.get("pageNow");
+        int pageSize = (int) json.get("pageSize");
+        PageResult<ProblemManageListBo> result = this.problemManageService.queryProblemByPage(pageNow, pageSize);
+        return result;
+    }
+
+    @PostMapping("/update")
+    @ApiResponseBody
+    public Void updateProblem(@RequestBody ProblemManageBo problem) {
+        problemManageService.update(problem);
+        return null;
+    }
+
+
 }
