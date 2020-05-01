@@ -6,9 +6,11 @@
 package cn.edu.sdu.qd.oj.submit.controller;
 
 import cn.edu.sdu.qd.oj.common.entity.ApiResponseBody;
+import cn.edu.sdu.qd.oj.submit.config.WebSocketServer;
 import cn.edu.sdu.qd.oj.submit.pojo.Submission;
 import cn.edu.sdu.qd.oj.submit.pojo.SubmissionJudgeBo;
 import cn.edu.sdu.qd.oj.submit.service.SubmitJudgerService;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -52,8 +54,8 @@ public class SubmitJudgerController {
         String judgeLog = (String) json.get("judgeLog");
         Submission submission = new Submission(Long.valueOf(submissionId), judgerId, judgeResult, judgeScore, usedTime, usedMemory, judgeLog);
         this.submitJudgerService.updateSubmission(submission);
+        WebSocketServer.finishJudge(Long.valueOf(submissionId), json);
         return null;
     }
-
 
 }

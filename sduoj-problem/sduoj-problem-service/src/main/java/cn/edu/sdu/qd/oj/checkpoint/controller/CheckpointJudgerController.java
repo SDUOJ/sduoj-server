@@ -6,6 +6,7 @@
 package cn.edu.sdu.qd.oj.checkpoint.controller;
 
 import cn.edu.sdu.qd.oj.checkpoint.service.CheckpointFileService;
+import com.netflix.ribbon.proxy.annotation.Http;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpHeaders;
 import org.springframework.stereotype.Controller;
@@ -38,11 +39,12 @@ public class CheckpointJudgerController {
      * @param checkpointIds
      * @return void
      **/
-    @PostMapping(value = "/download", produces = "application/zip")
+    @PostMapping(value = "/download")
     public void zipDownload(@RequestBody List<String> checkpointIds, HttpServletResponse response) throws IOException {
-        checkpointFileService.downloadCheckpointFiles(checkpointIds, new ZipOutputStream(response.getOutputStream()));
-        String zipFileName = "checkpoints"; // TODO: 下载文件名定义问题
-        response.setStatus(HttpServletResponse.SC_OK);
+        String zipFileName = "checkpoints.zip"; // TODO: 下载文件名定义问题
         response.addHeader(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=\"" + zipFileName + "\"");
+        response.setHeader(HttpHeaders.CONTENT_TYPE, "application/zip");
+        response.setStatus(HttpServletResponse.SC_OK);
+        checkpointFileService.downloadCheckpointFiles(checkpointIds, new ZipOutputStream(response.getOutputStream()));
     }
 }
