@@ -38,21 +38,21 @@ public class SubmitJudgerController {
     @PostMapping("/query")
     @ApiResponseBody
     public SubmissionJudgeBo query(@RequestBody Map json) {
-        int submissionId = (int) json.get("submissionId");
+        long submissionId = (long) json.get("submissionId");
         return this.submitJudgerService.query(submissionId);
     }
 
     @PostMapping("/update")
     @ApiResponseBody
     public Void update(@RequestBody Map json) {
-        int submissionId = (int) json.get("submissionId");
+        long submissionId = (long) json.get("submissionId");
         int judgerId = (int) json.get("judgerId");
         int judgeResult = (int) json.get("judgeResult");
         int judgeScore = (int) json.get("judgeScore");
         int usedTime = (int) json.get("usedTime");
         int usedMemory = (int) json.get("usedMemory");
         String judgeLog = (String) json.get("judgeLog");
-        Submission submission = new Submission(Long.valueOf(submissionId), judgerId, judgeResult, judgeScore, usedTime, usedMemory, judgeLog);
+        Submission submission = new Submission(submissionId, judgerId, judgeResult, judgeScore, usedTime, usedMemory, judgeLog);
         this.submitJudgerService.updateSubmission(submission);
         WebSocketServer.finishJudge(Long.valueOf(submissionId), json);
         return null;

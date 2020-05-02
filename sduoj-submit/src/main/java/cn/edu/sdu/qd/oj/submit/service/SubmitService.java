@@ -9,6 +9,8 @@ import cn.edu.sdu.qd.oj.common.entity.PageResult;
 import cn.edu.sdu.qd.oj.common.enums.ApiExceptionEnum;
 import cn.edu.sdu.qd.oj.common.exception.ApiException;
 import cn.edu.sdu.qd.oj.common.exception.InternalApiException;
+import cn.edu.sdu.qd.oj.common.utils.RedisUtils;
+import cn.edu.sdu.qd.oj.common.utils.SnowflakeIdWorker;
 import cn.edu.sdu.qd.oj.submit.client.UserClient;
 import cn.edu.sdu.qd.oj.submit.mapper.SubmissionListBoMapper;
 import cn.edu.sdu.qd.oj.submit.mapper.SubmissionMapper;
@@ -57,8 +59,13 @@ public class SubmitService {
     @Autowired
     private ProblemCacheService problemCacheService;
 
+    // TODO: 临时采用 IP+PID 格式, 生产时加配置文件 Autowired
+    private SnowflakeIdWorker snowflakeIdWorker = new SnowflakeIdWorker();
+
     @Transactional
     public boolean createSubmission(Submission submission) {
+        long snowflaskId = snowflakeIdWorker.nextId();
+        submission.setSubmissionId(snowflaskId);
         if (this.submissionMapper.insertSelective(submission) == 1) {
             try {
                 Map<String, Object> msg = new HashMap<>();
@@ -75,7 +82,7 @@ public class SubmitService {
     }
 
 
-    public Submission queryById(int submissionId) {
+    public Submission queryById(long submissionId) {
         return this.submissionMapper.selectByPrimaryKey(submissionId);
     }
 

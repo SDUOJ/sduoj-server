@@ -33,7 +33,7 @@ public class SubmitJudgerService {
     private SubmissionJudgeBoMapper submissionJudgeBoMapper;
 
 
-    public SubmissionJudgeBo query(int submissionId) {
+    public SubmissionJudgeBo query(long submissionId) {
         SubmissionJudgeBo submissionJudgeBo = this.submissionJudgeBoMapper.selectByPrimaryKey(submissionId);
         if (submissionJudgeBo == null) {
             throw new ApiException(ApiExceptionEnum.SUBMISSION_NOT_FOUND);
