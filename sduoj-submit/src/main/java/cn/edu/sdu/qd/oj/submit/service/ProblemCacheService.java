@@ -5,14 +5,11 @@
 
 package cn.edu.sdu.qd.oj.submit.service;
 
-import cn.edu.sdu.qd.oj.common.exception.InternalApiException;
-import cn.edu.sdu.qd.oj.submit.client.ProblemClient;
+import cn.edu.sdu.qd.oj.common.config.RedisConstants;
+import cn.edu.sdu.qd.oj.common.utils.RedisUtils;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
-
-import javax.annotation.PostConstruct;
-import java.util.Map;
 
 /**
  * @ClassName UserCacheService
@@ -25,32 +22,13 @@ import java.util.Map;
 @Service
 @Slf4j
 public class ProblemCacheService {
-    // TODO: 结合 MQ 保证数据一致性
-    private Map<Integer, String> problemIdToProblemTitleMap;
 
     @Autowired
-    private ProblemClient problemClient;
+    private RedisUtils redisUtils;
 
-    @PostConstruct
-    public void init() {
-        try {
-            problemIdToProblemTitleMap = problemClient.queryIdToTitleMap();
-        } catch (InternalApiException e) {
-            log.error("[Problem]: ProblemCacheService Init Failed!");
-            problemIdToProblemTitleMap = null;
-        }
-    }
-
-    public String getProblemTitle(Integer problemId) {
-        if (problemId == null) {
-            return null;
-        }
-        if (problemIdToProblemTitleMap == null) {
-            init();
-            if (problemIdToProblemTitleMap == null) {
-                return String.valueOf(problemId);
-            }
-        }
-        return problemIdToProblemTitleMap.get(problemId);
+    public String getProblemTitle(int problemId) {
+        Object o = redisUtils.hget(RedisConstants.REDIS_KEY_FOR_PROBLEM_ID_TO_TITLE, String.valueOf(problemId));
+        // TODO: 设计本地 Guava 缓存
+        return o == null ? null : (String) o;
     }
 }

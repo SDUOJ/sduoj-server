@@ -5,7 +5,9 @@
 
 package cn.edu.sdu.qd.oj.submit.service;
 
+import cn.edu.sdu.qd.oj.common.config.RedisConstants;
 import cn.edu.sdu.qd.oj.common.exception.InternalApiException;
+import cn.edu.sdu.qd.oj.common.utils.RedisUtils;
 import cn.edu.sdu.qd.oj.submit.client.UserClient;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -25,32 +27,13 @@ import java.util.Map;
 @Service
 @Slf4j
 public class UserCacheService {
-    // TODO: 结合 MQ 保证数据一致性
-    private Map<Integer, String> userIdToUsernameMap;
 
     @Autowired
-    private UserClient userClient;
+    private RedisUtils redisUtils;
 
-    @PostConstruct
-    public void init() {
-        try {
-            userIdToUsernameMap = userClient.queryIdToNameMap();
-        } catch (InternalApiException e) {
-            log.error("[Problem]: UserCacheService Init Failed!");
-            userIdToUsernameMap = null;
-        }
-    }
-
-    public String getUsername(Integer userId) {
-        if (userId == null) {
-            return null;
-        }
-        if (userIdToUsernameMap == null) {
-            init();
-            if (userIdToUsernameMap == null) {
-                return String.valueOf(userId);
-            }
-        }
-        return userIdToUsernameMap.get(userId);
+    public String getUsername(int userId) {
+        Object o = redisUtils.hget(RedisConstants.REDIS_KEY_FOR_USER_ID_TO_USERNAME, String.valueOf(userId));
+        // TODO: 设计本地 Guava 缓存
+        return o == null ? null : (String) o;
     }
 }

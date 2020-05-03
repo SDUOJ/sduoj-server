@@ -5,9 +5,11 @@
 
 package cn.edu.sdu.qd.oj.problem.service;
 
+import cn.edu.sdu.qd.oj.common.config.RedisConstants;
 import cn.edu.sdu.qd.oj.common.entity.PageResult;
 import cn.edu.sdu.qd.oj.common.enums.ApiExceptionEnum;
 import cn.edu.sdu.qd.oj.common.exception.ApiException;
+import cn.edu.sdu.qd.oj.common.utils.RedisUtils;
 import cn.edu.sdu.qd.oj.problem.mapper.ProblemManageBoMapper;
 import cn.edu.sdu.qd.oj.problem.mapper.ProblemManageListBoMapper;
 import cn.edu.sdu.qd.oj.problem.pojo.ProblemManageBo;
@@ -34,6 +36,9 @@ public class ProblemManageService {
     @Autowired
     private ProblemManageListBoMapper problemManageListBoMapper;
 
+    @Autowired
+    private RedisUtils redisUtils;
+
     public ProblemManageBo queryById(Integer problemId) {
         return this.problemManageBoMapper.selectByPrimaryKey(problemId);
     }
@@ -43,6 +48,10 @@ public class ProblemManageService {
         if (this.problemManageBoMapper.insertSelective(problem) != 1) {
             throw new ApiException(ApiExceptionEnum.UNKNOWN_ERROR);
         }
+        // 更新缓存
+        redisUtils.hset(RedisConstants.REDIS_KEY_FOR_PROBLEM_ID_TO_TITLE,
+                String.valueOf(problem.getProblemId()),
+                problem.getProblemTitle());
         return true;
     }
 
@@ -56,5 +65,10 @@ public class ProblemManageService {
     public void update(ProblemManageBo problem) {
         if (this.problemManageBoMapper.updateByPrimaryKeySelective(problem) != 1)
             throw new ApiException(ApiExceptionEnum.UNKNOWN_ERROR);
+        if (problem.getProblemTitle() != null) {
+            redisUtils.hset(RedisConstants.REDIS_KEY_FOR_PROBLEM_ID_TO_TITLE,
+                    String.valueOf(problem.getProblemId()),
+                    problem.getProblemTitle());
+        }
     }
 }

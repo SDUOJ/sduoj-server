@@ -1,8 +1,10 @@
 package cn.edu.sdu.qd.oj.problem.service;
 
+import cn.edu.sdu.qd.oj.common.config.RedisConstants;
 import cn.edu.sdu.qd.oj.common.entity.PageResult;
 import cn.edu.sdu.qd.oj.common.enums.ApiExceptionEnum;
 import cn.edu.sdu.qd.oj.common.exception.ApiException;
+import cn.edu.sdu.qd.oj.common.utils.RedisUtils;
 import cn.edu.sdu.qd.oj.problem.mapper.ProblemListBoMapper;
 import cn.edu.sdu.qd.oj.problem.mapper.ProblemMapper;
 import cn.edu.sdu.qd.oj.problem.pojo.Problem;
@@ -14,6 +16,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import tk.mybatis.mapper.entity.Example;
 
+import javax.annotation.PostConstruct;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -25,6 +28,9 @@ public class ProblemService {
 
     @Autowired
     private ProblemListBoMapper problemListBoMapper;
+
+    @Autowired
+    private RedisUtils redisUtils;
 
     public Problem queryById(Integer problemId) {
         Problem problem = this.problemMapper.selectByPrimaryKey(problemId);
@@ -51,5 +57,14 @@ public class ProblemService {
         // TODO: 魔法值解决
         list.stream().forEach(map -> ret.put((Integer)map.get("p_id"), (String)map.get("p_title")));
         return ret;
+    }
+
+    @PostConstruct
+    private void initRedisProblemHash() {
+        List<Map> list = problemMapper.queryIdToTitleMap();
+        Map<String, Object> ret = new HashMap<>(list.size());
+        // TODO: 魔法值解决
+        list.stream().forEach(map -> ret.put(String.valueOf(map.get("p_id")), map.get("p_title")));
+        redisUtils.hmset(RedisConstants.REDIS_KEY_FOR_PROBLEM_ID_TO_TITLE, ret);
     }
 }
