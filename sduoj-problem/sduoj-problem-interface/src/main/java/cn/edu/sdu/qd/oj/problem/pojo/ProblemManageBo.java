@@ -39,8 +39,6 @@ public class ProblemManageBo implements Serializable {
     @Column(name = "u_id")
     private Integer userId;
 
-    // TODO: username
-
     @Column(name = "p_title")
     private String problemTitle;
 
@@ -53,7 +51,14 @@ public class ProblemManageBo implements Serializable {
     @Column(name = "p_markdown")
     private String markdown;
 
+    @Column(name = "p_checkpoint_num")
+    private Integer checkpointNum;
+
     @Column(name = "p_checkpoint_ids")
     @JsonSerialize(using = BytesToCheckpointIdsSerializer.class)
     private byte[] checkpointIds;
+
+
+    @Transient
+    private String username;
 }

@@ -40,4 +40,7 @@ public class Problem implements Serializable {
 
     @Column(name = "p_markdown")
     private String markdown;
+
+    @Column(name = "p_checkpoint_num")
+    private Integer checkpointNum;
 }

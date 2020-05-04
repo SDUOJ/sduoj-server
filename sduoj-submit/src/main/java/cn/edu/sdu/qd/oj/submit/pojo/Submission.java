@@ -78,6 +78,11 @@ public class Submission implements Serializable {
     @Column(name = "s_code_length")
     private Integer codeLength;
 
+
+    @Transient
+    private Integer checkpointNum;
+
+
     public Submission(Integer problemId, Integer userId, Integer languageId, String ipv4, String code) {
         this.problemId = problemId;
         this.userId = userId;

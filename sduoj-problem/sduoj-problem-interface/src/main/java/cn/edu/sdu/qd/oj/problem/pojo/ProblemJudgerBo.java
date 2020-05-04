@@ -41,6 +41,9 @@ public class ProblemJudgerBo implements Serializable {
     @Column(name = "p_memory_limit")
     private Integer memoryLimit;
 
+    @Column(name = "p_checkpoint_num")
+    private Integer checkpointNum;
+
     @Column(name = "p_checkpoint_ids")
     @JsonSerialize(using = BytesToCheckpointIdsSerializer.class)
     private byte[] checkpointIds;

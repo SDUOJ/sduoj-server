@@ -9,8 +9,9 @@ import cn.edu.sdu.qd.oj.common.entity.PageResult;
 import cn.edu.sdu.qd.oj.common.enums.ApiExceptionEnum;
 import cn.edu.sdu.qd.oj.common.exception.ApiException;
 import cn.edu.sdu.qd.oj.common.exception.InternalApiException;
-import cn.edu.sdu.qd.oj.common.utils.RedisUtils;
+import cn.edu.sdu.qd.oj.common.utils.ProblemCacheUtils;
 import cn.edu.sdu.qd.oj.common.utils.SnowflakeIdWorker;
+import cn.edu.sdu.qd.oj.common.utils.UserCacheUtils;
 import cn.edu.sdu.qd.oj.submit.client.UserClient;
 import cn.edu.sdu.qd.oj.submit.mapper.SubmissionListBoMapper;
 import cn.edu.sdu.qd.oj.submit.mapper.SubmissionMapper;
@@ -54,10 +55,10 @@ public class SubmitService {
     private UserClient userClient;
 
     @Autowired
-    private UserCacheService userCacheService;
+    private UserCacheUtils userCacheUtils;
 
     @Autowired
-    private ProblemCacheService problemCacheService;
+    private ProblemCacheUtils problemCacheUtils;
 
     // TODO: 临时采用 IP+PID 格式, 生产时加配置文件 Autowired
     private SnowflakeIdWorker snowflakeIdWorker = new SnowflakeIdWorker();
@@ -83,7 +84,11 @@ public class SubmitService {
 
 
     public Submission queryById(long submissionId) {
-        return this.submissionMapper.selectByPrimaryKey(submissionId);
+        Submission submission = this.submissionMapper.selectByPrimaryKey(submissionId);
+        // 取 checkpointNum
+        if (submission != null)
+            submission.setCheckpointNum(problemCacheUtils.getProblemCheckpointNum(submission.getProblemId()));
+        return submission;
     }
 
     public PageResult<SubmissionListBo> querySubmissionByPage(String username, Integer problemId, int pageNow, int pageSize) {
@@ -109,15 +114,15 @@ public class SubmitService {
         PageHelper.startPage(pageNow, pageSize);
         Page<SubmissionListBo> pageInfo = (Page<SubmissionListBo>) submissionListBoMapper.selectByExample(example);
         if (problemId != null) {
-            String problemTitle = problemCacheService.getProblemTitle(problemId);
+            String problemTitle = problemCacheUtils.getProblemTitle(problemId);
             pageInfo.forEach(submissionListBo -> submissionListBo.setProblemTitle(problemTitle));
         } else {
-            pageInfo.forEach(submissionListBo -> submissionListBo.setProblemTitle(problemCacheService.getProblemTitle(submissionListBo.getProblemId())));
+            pageInfo.forEach(submissionListBo -> submissionListBo.setProblemTitle(problemCacheUtils.getProblemTitle(submissionListBo.getProblemId())));
         }
         if (userId != null) {
             pageInfo.forEach(submissionListBo -> submissionListBo.setUsername(username));
         } else {
-            pageInfo.forEach(submissionListBo -> submissionListBo.setUsername(userCacheService.getUsername(submissionListBo.getUserId())));
+            pageInfo.forEach(submissionListBo -> submissionListBo.setUsername(userCacheUtils.getUsername(submissionListBo.getUserId())));
         }
         return new PageResult<>(pageInfo.getPages(), pageInfo);
     }

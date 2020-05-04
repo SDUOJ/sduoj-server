@@ -15,5 +15,6 @@ package cn.edu.sdu.qd.oj.common.config;
 
 public class RedisConstants {
     public static final String REDIS_KEY_FOR_PROBLEM_ID_TO_TITLE = "hash_problemIdToTitle";
+    public static final String REDIS_KEY_FOR_PROBLEM_ID_TO_CHECKPOINTNUM = "hash_problemIdToCheckpointNum";
     public static final String REDIS_KEY_FOR_USER_ID_TO_USERNAME = "hash_userIdToUsername";
 }

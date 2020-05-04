@@ -9,6 +9,6 @@ import java.util.Map;
 
 public interface ProblemMapper extends Mapper<Problem> {
 
-    @Select("SELECT p_id,p_title FROM oj_problems")
-    public List<Map> queryIdToTitleMap();
+    @Select("SELECT p_id,p_title,p_checkpoint_num FROM oj_problems")
+    public List<Map> queryIdToRedisHash();
 }

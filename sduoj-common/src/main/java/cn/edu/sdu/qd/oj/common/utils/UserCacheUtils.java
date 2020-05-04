@@ -3,12 +3,11 @@
  * Copyright (c) 2020-2020 zhangt2333@gmail.com
  **/
 
-package cn.edu.sdu.qd.oj.submit.service;
+package cn.edu.sdu.qd.oj.common.utils;
 
 import cn.edu.sdu.qd.oj.common.config.RedisConstants;
 import cn.edu.sdu.qd.oj.common.exception.InternalApiException;
 import cn.edu.sdu.qd.oj.common.utils.RedisUtils;
-import cn.edu.sdu.qd.oj.submit.client.UserClient;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -26,7 +25,7 @@ import java.util.Map;
 
 @Service
 @Slf4j
-public class UserCacheService {
+public class UserCacheUtils {
 
     @Autowired
     private RedisUtils redisUtils;

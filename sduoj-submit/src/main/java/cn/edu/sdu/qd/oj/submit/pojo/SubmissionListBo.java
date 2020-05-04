@@ -37,14 +37,8 @@ public class SubmissionListBo {
     @Column(name = "p_id")
     private Integer problemId;
 
-    @Transient
-    private String problemTitle;
-
     @Column(name = "u_id")
     private Integer userId;
-
-    @Transient
-    private String username;
 
     @Column(name = "l_id")
     private Integer languageId;
@@ -71,4 +65,11 @@ public class SubmissionListBo {
 
     @Column(name = "s_code_length")
     private Integer codeLength;
+
+
+    @Transient
+    private String problemTitle;
+
+    @Transient
+    private String username;
 }

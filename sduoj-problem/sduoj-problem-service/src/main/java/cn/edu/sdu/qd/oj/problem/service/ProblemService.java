@@ -52,7 +52,7 @@ public class ProblemService {
     }
 
     public Map<Integer, String> queryIdToTitleMap() {
-        List<Map> list = problemMapper.queryIdToTitleMap();
+        List<Map> list = problemMapper.queryIdToRedisHash();
         Map<Integer, String> ret = new HashMap<>(list.size());
         // TODO: 魔法值解决
         list.stream().forEach(map -> ret.put((Integer)map.get("p_id"), (String)map.get("p_title")));
@@ -61,10 +61,15 @@ public class ProblemService {
 
     @PostConstruct
     private void initRedisProblemHash() {
-        List<Map> list = problemMapper.queryIdToTitleMap();
-        Map<String, Object> ret = new HashMap<>(list.size());
+        List<Map> list = problemMapper.queryIdToRedisHash();
+        Map<String, Object> ret1 = new HashMap<>(list.size());
+        Map<String, Object> ret2 = new HashMap<>(list.size());
         // TODO: 魔法值解决
-        list.stream().forEach(map -> ret.put(String.valueOf(map.get("p_id")), map.get("p_title")));
-        redisUtils.hmset(RedisConstants.REDIS_KEY_FOR_PROBLEM_ID_TO_TITLE, ret);
+        list.stream().forEach(map -> {
+            ret1.put(String.valueOf(map.get("p_id")), map.get("p_title"));
+            ret2.put(String.valueOf(map.get("p_id")), map.get("p_checkpoint_num"));
+        });
+        redisUtils.hmset(RedisConstants.REDIS_KEY_FOR_PROBLEM_ID_TO_TITLE, ret1);
+        redisUtils.hmset(RedisConstants.REDIS_KEY_FOR_PROBLEM_ID_TO_CHECKPOINTNUM, ret2);
     }
 }
