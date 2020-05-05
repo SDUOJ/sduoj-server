@@ -50,23 +50,27 @@ public class AuthController {
     @Autowired
     private JwtProperties prop;
 
+    private ObjectMapper objectMapper = new ObjectMapper();
+
     /**
     * @Description TODO
     * @param username
     * @param password
     * @return
     **/
-    @PostMapping(value={"/auth/login","/judger/auth/login"})
+    @PostMapping(value={"/auth/login", "/judger/auth/login", "/manage/auth/login"})
     @ResponseBody
     public ResponseEntity<ResponseResult<User>> login(RequestEntity<String> entity) {
         Map json = null;
+        String username = null, password = null;
+
         try {
-            json = new ObjectMapper().readValue(entity.getBody(), Map.class);
-        } catch (IOException e) {
-            throw new ApiException(ApiExceptionEnum.PARAMETER_ERROR);
+            json = objectMapper.readValue(entity.getBody(), Map.class);
+            username = (String) json.get("username");
+            password = (String) json.get("password");
+        } catch (Exception ignore) {
         }
-        String username = (String) json.get("username");
-        String password = (String) json.get("password");
+
         if (StringUtils.isNotBlank(username) && StringUtils.isNotBlank(password)) {
             // 登录校验
             User user = this.authService.authentication(username, password);
@@ -92,10 +96,11 @@ public class AuthController {
         } else {
             // 从Token中获取用户信息
             try {
+                // TODO: 校验现有 cookie 超时与否
                 HttpHeaders headers = entity.getHeaders();
                 String token = headers.get("Cookie").get(0);
+                token = token.replace(this.prop.getCookieName() + "=", "");
                 UserInfo userInfo = JwtUtils.getInfoFromToken(token, prop.getPublicKey());
-                // TODO: 校验现有 cookie 超时与否
                 User user = this.authService.queryUserById(userInfo.getUserId());
                 return new ResponseEntity<>(ResponseResult.ok(user), HttpStatus.OK);
             } catch (Exception e) {
