@@ -6,6 +6,7 @@
 package cn.edu.sdu.qd.oj.submit.pojo;
 
 import cn.edu.sdu.qd.oj.common.config.DateToTimestampSerializer;
+import cn.edu.sdu.qd.oj.submit.utils.BytesToCheckpointResultsSerializer;
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 import lombok.AllArgsConstructor;
 import lombok.Data;
@@ -77,6 +78,10 @@ public class Submission implements Serializable {
 
     @Column(name = "s_code_length")
     private Integer codeLength;
+
+    @Column(name = "s_checkpoint_results")
+    @JsonSerialize(using = BytesToCheckpointResultsSerializer.class)
+    private byte[] checkpointResults;
 
 
     @Transient

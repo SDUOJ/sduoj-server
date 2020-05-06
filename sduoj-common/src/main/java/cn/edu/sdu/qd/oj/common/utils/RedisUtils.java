@@ -373,6 +373,7 @@ public final class RedisUtils {
             return 0;
         }
     }
+
     // ===============================list=================================
     /**
      * 获取list缓存的内容
@@ -389,6 +390,7 @@ public final class RedisUtils {
             return null;
         }
     }
+
     /**
      * 获取list缓存的长度
      * @param key 键
@@ -402,6 +404,7 @@ public final class RedisUtils {
             return 0;
         }
     }
+
     /**
      * 通过索引 获取list中的值
      * @param key 键
@@ -416,6 +419,7 @@ public final class RedisUtils {
             return null;
         }
     }
+
     /**
      * 将list放入缓存
      * @param key 键
@@ -432,6 +436,7 @@ public final class RedisUtils {
             return false;
         }
     }
+
     /**
      * 将list放入缓存
      * @param key 键
@@ -450,6 +455,7 @@ public final class RedisUtils {
             return false;
         }
     }
+
     /**
      * 将list放入缓存
      * @param key 键
@@ -466,6 +472,7 @@ public final class RedisUtils {
             return false;
         }
     }
+
     /**
      * 将list放入缓存
      *
@@ -485,6 +492,7 @@ public final class RedisUtils {
             return false;
         }
     }
+
     /**
      * 根据索引修改list中的某条数据
      * @param key 键
@@ -501,6 +509,7 @@ public final class RedisUtils {
             return false;
         }
     }
+
     /**
      * 移除N个值为value
      * @param key 键
