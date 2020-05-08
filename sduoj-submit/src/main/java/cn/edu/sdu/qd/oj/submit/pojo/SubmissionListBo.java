@@ -6,6 +6,9 @@
 package cn.edu.sdu.qd.oj.submit.pojo;
 
 import cn.edu.sdu.qd.oj.common.config.DateToTimestampSerializer;
+import cn.edu.sdu.qd.oj.common.utils.HexStringToLongDeserializer;
+import cn.edu.sdu.qd.oj.common.utils.LongToHexStringSerializer;
+import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 import lombok.AllArgsConstructor;
 import lombok.Data;
@@ -30,8 +33,9 @@ public class SubmissionListBo {
     private static final long serialVersionUID = 1L;
 
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "s_id")
+    @JsonSerialize(using = LongToHexStringSerializer.class)
+    @JsonDeserialize(using = HexStringToLongDeserializer.class)
     private Long submissionId;
 
     @Column(name = "p_id")

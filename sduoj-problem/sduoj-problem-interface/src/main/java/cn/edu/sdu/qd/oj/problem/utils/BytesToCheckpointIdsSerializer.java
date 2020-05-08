@@ -32,7 +32,7 @@ public class BytesToCheckpointIdsSerializer extends JsonSerializer<byte[]> {
         ByteBuffer wrap = ByteBuffer.wrap(bytes);
         jsonGenerator.writeStartArray();
         for (int i = 0; i < size; i += 8) {
-            jsonGenerator.writeNumber(wrap.getLong(i));
+            jsonGenerator.writeString(Long.toHexString(wrap.getLong(i)));
         }
         jsonGenerator.writeEndArray();
     }

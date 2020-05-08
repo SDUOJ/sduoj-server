@@ -7,6 +7,7 @@ package cn.edu.sdu.qd.oj.submit.controller;
 
 import cn.edu.sdu.qd.oj.common.entity.ApiResponseBody;
 import cn.edu.sdu.qd.oj.common.entity.PageResult;
+import cn.edu.sdu.qd.oj.common.entity.ResponseResult;
 import cn.edu.sdu.qd.oj.common.enums.ApiExceptionEnum;
 import cn.edu.sdu.qd.oj.common.exception.ApiException;
 import cn.edu.sdu.qd.oj.submit.pojo.Submission;
@@ -14,10 +15,7 @@ import cn.edu.sdu.qd.oj.submit.pojo.SubmissionListBo;
 import cn.edu.sdu.qd.oj.submit.service.SubmitService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestHeader;
-import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.*;
 
 import java.util.Map;
 
@@ -38,8 +36,8 @@ public class SubmitController {
 
 
     @PostMapping("/create")
-    @ApiResponseBody
-    public Long createSubmission(@RequestBody Map json,
+    @ResponseBody
+    public ResponseResult<String> createSubmission(@RequestBody Map json,
                                  @RequestHeader("X-FORWARDED-FOR") String ipv4,
                                  @RequestHeader("authorization-userId") Integer userId) {
         int problemId = (int) json.get("problemId");
@@ -47,7 +45,7 @@ public class SubmitController {
         String code = (String) json.get("code");
         Submission submission = new Submission(problemId, userId, languageId, ipv4, code);
         if (this.submitService.createSubmission(submission)) {
-            return submission.getSubmissionId();
+            return ResponseResult.ok(Long.toHexString(submission.getSubmissionId()));
         }
         throw new ApiException(ApiExceptionEnum.UNKNOWN_ERROR);
     }
@@ -57,7 +55,7 @@ public class SubmitController {
     public Submission query(@RequestBody Map json,
                             @RequestHeader("authorization-userId") Integer userId,
                             @RequestHeader Map map) {
-        long submissionId = (long) json.get("submissionId");
+        long submissionId = Long.valueOf((String) json.get("submissionId"), 16);
         Submission submission = this.submitService.queryById(submissionId);
         if (submission != null && !submission.getUserId().equals(userId)) {
             throw new ApiException(ApiExceptionEnum.USER_NOT_MATCHING);

@@ -6,7 +6,9 @@
 package cn.edu.sdu.qd.oj.problem.pojo;
 
 import cn.edu.sdu.qd.oj.problem.utils.BytesToCheckpointIdsSerializer;
+import cn.edu.sdu.qd.oj.problem.utils.CheckpointIdsToBytesDeserializer;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 import lombok.Data;
 import lombok.ToString;
@@ -56,8 +58,8 @@ public class ProblemManageBo implements Serializable {
 
     @Column(name = "p_checkpoint_ids")
     @JsonSerialize(using = BytesToCheckpointIdsSerializer.class)
+    @JsonDeserialize(using = CheckpointIdsToBytesDeserializer.class)
     private byte[] checkpointIds;
-
 
     @Transient
     private String username;

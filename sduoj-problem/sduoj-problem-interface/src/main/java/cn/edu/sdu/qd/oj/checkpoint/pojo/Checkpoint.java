@@ -5,6 +5,10 @@
 
 package cn.edu.sdu.qd.oj.checkpoint.pojo;
 
+import cn.edu.sdu.qd.oj.common.utils.HexStringToLongDeserializer;
+import cn.edu.sdu.qd.oj.common.utils.LongToHexStringSerializer;
+import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
+import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import tk.mybatis.mapper.annotation.ColumnType;
@@ -32,6 +36,8 @@ public class Checkpoint implements Serializable {
 
     @Id
     @Column(name = "c_id")
+    @JsonSerialize(using = LongToHexStringSerializer.class)
+    @JsonDeserialize(using = HexStringToLongDeserializer.class)
     private Long checkpointId;
 
     @Column(name = "c_input_desc")

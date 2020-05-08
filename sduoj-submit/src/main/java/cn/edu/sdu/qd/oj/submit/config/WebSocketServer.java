@@ -5,7 +5,9 @@
 
 package cn.edu.sdu.qd.oj.submit.config;
 
+import cn.edu.sdu.qd.oj.common.utils.HexStringToLongDeserializer;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
 
@@ -51,7 +53,7 @@ public class WebSocketServer {
      * @param submissionId
      * @return void
      **/
-    public static void sendInfo(String message, @PathParam("userId") Long submissionId) throws IOException {
+    public static void sendInfo(String message, Long submissionId) throws IOException {
         log.info("[Submission WebSocket]: 发送消息到:" + submissionId + "，报文:" + message);
         if (submissionId != null) {
             // 缓存起消息来
@@ -79,14 +81,14 @@ public class WebSocketServer {
     }
 
     @OnOpen
-    public void onOpen(Session session, @PathParam("submissionId") Long submissionId) throws IOException {
+    public void onOpen(Session session, @PathParam("submissionId") String submissionId) throws IOException {
         this.session = session;
-        this.submissionId = submissionId;
+        this.submissionId = Long.valueOf(submissionId, 16);
         CopyOnWriteArraySet<WebSocketServer> webSocketServers = webSocketMap.get(submissionId);
         if (webSocketServers == null) {
             webSocketServers = new CopyOnWriteArraySet<>();
             webSocketServers.add(this);
-            webSocketMap.put(submissionId, webSocketServers);
+            webSocketMap.put(this.submissionId, webSocketServers);
         } else {
             webSocketServers.add(this);
         }
@@ -118,7 +120,7 @@ public class WebSocketServer {
     * @return void
     **/
     // TODO: 现在是较为糟糕的设计, 后期->减少耦合性、集群部署问题
-    public static void finishJudge(Long submissionId, Map json) {
+    public static void finishJudge(long submissionId, Map json) {
         try {
             sendInfo(objectMapper.writeValueAsString(json), submissionId);
         } catch (IOException e) {

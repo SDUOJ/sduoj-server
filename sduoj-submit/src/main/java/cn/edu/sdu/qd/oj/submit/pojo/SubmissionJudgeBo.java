@@ -6,6 +6,9 @@
 package cn.edu.sdu.qd.oj.submit.pojo;
 
 import cn.edu.sdu.qd.oj.common.config.DateToTimestampSerializer;
+import cn.edu.sdu.qd.oj.common.utils.HexStringToLongDeserializer;
+import cn.edu.sdu.qd.oj.common.utils.LongToHexStringSerializer;
+import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 import lombok.Data;
 
@@ -29,6 +32,8 @@ public class SubmissionJudgeBo implements Serializable {
 
     @Id
     @Column(name = "s_id")
+    @JsonSerialize(using = LongToHexStringSerializer.class)
+    @JsonDeserialize(using = HexStringToLongDeserializer.class)
     private Long submissionId;
 
     @Column(name = "p_id")

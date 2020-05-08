@@ -43,14 +43,14 @@ public class SubmitJudgerController {
     @PostMapping("/query")
     @ApiResponseBody
     public SubmissionJudgeBo query(@RequestBody Map json) {
-        long submissionId = (long) json.get("submissionId");
+        long submissionId = Long.valueOf((String) json.get("submissionId"), 16);
         return this.submitJudgerService.query(submissionId);
     }
 
     @PostMapping("/update")
     @ApiResponseBody
     public Void update(@RequestBody Map json) {
-        long submissionId = (long) json.get("submissionId");
+        long submissionId = Long.valueOf((String) json.get("submissionId"), 16);
         int judgerId = (int) json.get("judgerId");
         int judgeResult = (int) json.get("judgeResult");
         int judgeScore = (int) json.get("judgeScore");
@@ -67,7 +67,7 @@ public class SubmitJudgerController {
         Submission submission = new Submission(submissionId, judgerId, judgeResult, judgeScore, usedTime, usedMemory, judgeLog);
         submission.setCheckpointResults(byteBuf.array());
         this.submitJudgerService.updateSubmission(submission);
-        WebSocketServer.finishJudge(Long.valueOf(submissionId), json);
+        WebSocketServer.finishJudge(submissionId, json);
         return null;
     }
 
