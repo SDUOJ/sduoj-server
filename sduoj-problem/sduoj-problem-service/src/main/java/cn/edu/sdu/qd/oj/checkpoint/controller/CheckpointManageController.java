@@ -9,18 +9,25 @@ import cn.edu.sdu.qd.oj.checkpoint.pojo.Checkpoint;
 import cn.edu.sdu.qd.oj.checkpoint.service.CheckpointFileService;
 import cn.edu.sdu.qd.oj.checkpoint.service.CheckpointManageService;
 import cn.edu.sdu.qd.oj.common.entity.ApiResponseBody;
+import cn.edu.sdu.qd.oj.common.entity.ResponseResult;
 import cn.edu.sdu.qd.oj.common.enums.ApiExceptionEnum;
 import cn.edu.sdu.qd.oj.common.exception.ApiException;
+import cn.edu.sdu.qd.oj.problem.pojo.Problem;
+import cn.edu.sdu.qd.oj.problem.pojo.ProblemManageBo;
+import cn.edu.sdu.qd.oj.problem.service.ProblemJudgerService;
+import cn.edu.sdu.qd.oj.problem.service.ProblemManageService;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import org.apache.commons.lang.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpHeaders;
 import org.springframework.stereotype.Controller;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
-import java.util.Map;
+import javax.servlet.http.HttpServletResponse;
+import java.io.IOException;
+import java.util.*;
+import java.util.zip.ZipOutputStream;
 
 /**
  * @ClassName checkpointManageController
@@ -46,9 +53,14 @@ public class CheckpointManageController {
      * @Description 查看某个测试点详情
      **/
     @PostMapping("/query")
-    @ApiResponseBody
-    public Checkpoint query(@RequestBody Map json) {
-        return this.checkpointManageService.queryById((long) json.get("checkpointId"));
+    @ResponseBody // TODO: 返回值处理器重构，增强适配性
+    public ResponseResult<Map> query(@RequestBody Map json) throws IOException {
+        String[] contents = this.checkpointFileService.queryCheckpointFileContent((String) json.get("checkpointId"));
+        Map<String, Object> ret = new HashMap<>(3);
+        ret.put("checkpointId", json.get("checkpointId"));
+        ret.put("input", contents[0]);
+        ret.put("output", contents[1]);
+        return ResponseResult.ok(ret);
     }
 
 
@@ -78,5 +90,31 @@ public class CheckpointManageController {
     @ApiResponseBody
     public Checkpoint[] upload(@RequestParam("files") MultipartFile[] files) {
         return checkpointFileService.uploadCheckpointFiles(files);
+    }
+
+    /**
+     * @Description 传入 checkpoint id 数组，以 zip 包形式下载数据
+     * @param checkpointIds
+     * @return void
+     **/
+    @PostMapping(value = "/download")
+    public void zipDownload(@RequestBody List<String> checkpointIds, HttpServletResponse response) throws IOException {
+        String zipFileName = "checkpoints.zip"; // TODO: 下载文件名定义问题
+        response.addHeader(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=\"" + zipFileName + "\"");
+        response.setHeader(HttpHeaders.CONTENT_TYPE, "application/zip");
+        response.setStatus(HttpServletResponse.SC_OK);
+        checkpointFileService.downloadCheckpointFiles(checkpointIds, new ZipOutputStream(response.getOutputStream()));
+    }
+
+    /**
+    * @Description 传入 checkpintId 的列表，批量查询
+    * @param checkpointIds
+    * @return java.util.List<cn.edu.sdu.qd.oj.checkpoint.pojo.Checkpoint>
+    **/
+    @PostMapping(value = "/list")
+    @ApiResponseBody
+    public List<Checkpoint> getCheckpoints(@RequestBody Map json) {
+        int problemId = (Integer) json.get("problemId");
+        return checkpointManageService.getCheckpoints(problemId);
     }
 }

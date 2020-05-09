@@ -6,7 +6,13 @@
 package cn.edu.sdu.qd.oj.checkpoint.mapper;
 
 import cn.edu.sdu.qd.oj.checkpoint.pojo.Checkpoint;
+import cn.edu.sdu.qd.oj.common.mapper.BaseMapper;
+import org.apache.ibatis.annotations.Param;
+import org.apache.ibatis.annotations.Select;
 import tk.mybatis.mapper.common.Mapper;
+
+import java.util.List;
+import java.util.Map;
 
 /**
  * @ClassName checkpointMapper
@@ -16,5 +22,5 @@ import tk.mybatis.mapper.common.Mapper;
  * @Version V1.0
  **/
 
-public interface CheckpointMapper extends Mapper<Checkpoint> {
+public interface CheckpointMapper extends BaseMapper<Checkpoint, Long> {
 }

@@ -29,6 +29,8 @@ public enum ApiExceptionEnum {
     CONTENT_IS_BLANK(500, "文件内容为空"),
     FILE_WRITE_ERROR(500, "文件写入错误"),
     FILE_NOT_DOUBLE(400, "文件不配对"),
+    FILE_NOT_EXISTS(400, "文件不存在"),
+    FILE_TOO_LARGE(400, "文件过大，无法预览，请选择下载"),
     ;
 
     public int code;

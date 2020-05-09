@@ -6,7 +6,12 @@
 package cn.edu.sdu.qd.oj.problem.mapper;
 
 import cn.edu.sdu.qd.oj.problem.pojo.ProblemManageBo;
+import org.apache.ibatis.annotations.Param;
+import org.apache.ibatis.annotations.Select;
 import tk.mybatis.mapper.common.Mapper;
+
+import java.util.List;
+import java.util.Map;
 
 /**
  * @InterfaceName ProblemManageBoMapper
@@ -17,4 +22,6 @@ import tk.mybatis.mapper.common.Mapper;
  **/
 
 public interface ProblemManageBoMapper extends Mapper<ProblemManageBo> {
+    @Select("SELECT p_checkpoint_ids FROM oj_problems WHERE p_id=#{problemId}")
+    public List<Map> queryCheckpointIds(@Param("problemId") int problemId);
 }
