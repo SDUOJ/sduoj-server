@@ -36,7 +36,8 @@ public class SubmissionListener {
             key = {"submission.checkpoint.push"})
     )
     public void pushSubmissionResult(List list) throws Exception {
-        Long submissionId = Long.valueOf((String) list.get(0));
+        long submissionId = Long.valueOf((String) list.get(0), 16);
+        list.remove(0);
         WebSocketServer.sendInfo(objectMapper.writeValueAsString(list), submissionId);
     }
 
