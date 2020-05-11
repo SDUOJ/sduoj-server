@@ -20,6 +20,9 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import tk.mybatis.mapper.entity.Example;
 
+import java.util.Collections;
+import java.util.HashMap;
+
 /**
  * @ClassName ProblemManageService
  * @Description TODO
@@ -69,6 +72,9 @@ public class ProblemManageService {
             redisUtils.hset(RedisConstants.REDIS_KEY_FOR_PROBLEM_ID_TO_TITLE,
                     String.valueOf(problem.getProblemId()),
                     problem.getProblemTitle());
+        }
+        if (problem.getCheckpointNum() != null) {
+            redisUtils.hset(RedisConstants.REDIS_KEY_FOR_PROBLEM_ID_TO_CHECKPOINTNUM, String.valueOf(problem.getProblemId()), problem.getCheckpointNum());
         }
     }
 }

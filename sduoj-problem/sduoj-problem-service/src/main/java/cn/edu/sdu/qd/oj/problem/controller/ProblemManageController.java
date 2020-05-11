@@ -67,6 +67,10 @@ public class ProblemManageController {
     @PostMapping("/update")
     @ApiResponseBody
     public Void updateProblem(@RequestBody ProblemManageBo problem) {
+        if (problem.getProblemId() == null)
+            throw new ApiException(ApiExceptionEnum.PARAMETER_ERROR);
+        if (problem.getCheckpointIds() != null)
+            problem.setCheckpointNum(problem.getCheckpointIds().length / 8);
         problemManageService.update(problem);
         return null;
     }
