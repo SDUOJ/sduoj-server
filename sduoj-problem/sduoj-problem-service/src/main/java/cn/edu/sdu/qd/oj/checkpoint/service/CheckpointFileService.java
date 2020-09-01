@@ -177,7 +177,7 @@ public class CheckpointFileService {
     **/
     public String[] queryCheckpointFileContent(String checkpointId) throws IOException {
         File inputFile = new File(checkpointFileSystemProperties.getBaseDir() + File.separator + checkpointId + ".in");
-        File outputFile = new File(checkpointFileSystemProperties.getBaseDir() + File.separator + checkpointId + ".in");
+        File outputFile = new File(checkpointFileSystemProperties.getBaseDir() + File.separator + checkpointId + ".out");
         if (!inputFile.exists() || !outputFile.exists()) {
             throw new ApiException(ApiExceptionEnum.FILE_NOT_EXISTS);
         }
