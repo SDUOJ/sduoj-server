@@ -12,6 +12,7 @@ import cn.edu.sdu.qd.oj.common.exception.ApiException;
 import cn.edu.sdu.qd.oj.problem.pojo.ProblemManageBo;
 import cn.edu.sdu.qd.oj.problem.pojo.ProblemManageListBo;
 import cn.edu.sdu.qd.oj.problem.service.ProblemManageService;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -31,6 +32,7 @@ import java.util.Map;
 
 @Controller
 @RequestMapping("/manage/problem")
+@Slf4j
 public class ProblemManageController {
 
     @Autowired
@@ -56,7 +58,6 @@ public class ProblemManageController {
     @PostMapping("/list")
     @ApiResponseBody
     public PageResult<ProblemManageListBo> queryList(@RequestBody Map json
-    // TODO: 只能查到自己有权限的题目
     ) {
         int pageNow = (int) json.get("pageNow");
         int pageSize = (int) json.get("pageSize");
@@ -67,6 +68,7 @@ public class ProblemManageController {
     @PostMapping("/update")
     @ApiResponseBody
     public Void updateProblem(@RequestBody ProblemManageBo problem) {
+        log.warn("updateProblem: {}", problem);
         if (problem.getProblemId() == null)
             throw new ApiException(ApiExceptionEnum.PARAMETER_ERROR);
         if (problem.getCheckpointIds() != null)

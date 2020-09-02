@@ -11,13 +11,14 @@ import java.net.NetworkInterface;
 
 /**
  * @ClassName SnowflakeIdWorker
- * @Description Twitter 的 Snowflakes 实现，分布式自增ID，64位ID (42(毫秒级时间戳)+5(数据中心ID 或 网络IP哈希)+5(线程PID 或 机器ID)+12(重复累加))
+ * @Description Twitter 的 Snowflakes 实现，分布式自增ID
+ *              64位ID = 1(始终为0符号位) + 42(毫秒级时间戳) + 5(数据中心ID 或 网络IP哈希) + 5(线程PID 或 机器ID) + 12(重复累加))
  * @Date 2020/4/6 14:40
  * @Version V1.0
  **/
 
 public class SnowflakeIdWorker {
-    // 时间起始标记点，作为基准，一般取系统的最近时间（一旦确定不能变动）
+    // 时间起始标记点，作为基准，一般取系统的最近时间 （一旦确定不能变动！）
     private final static long TWEPOCH = 1577808000000L; // 2020-01-01 00:00:00
     // 机器标识位数
     private final static long WORKER_ID_BITS = 5L;
@@ -37,16 +38,17 @@ public class SnowflakeIdWorker {
     private final static long TIMESTAMP_LEFT_SHIFT = SEQUENCE_BITS + WORKER_ID_BITS + DATACENTER_ID_BITS;
     private final static long SEQUENCE_MASK = -1L ^ (-1L << SEQUENCE_BITS);
 
-    /* 上次生产id时间戳 */
+    // 上次生产id时间戳
     private static long lastTimestamp = -1L;
 
-    // 0，并发控制
-    private long sequence = 0L;
+    // 数据中心ID 或 网络IP哈希
+    private final long datacenterId;
 
+    // 线程PID 或 机器ID
     private final long workerId;
 
-    // 数据标识id部分
-    private final long datacenterId;
+    // 并发控制，重复累加序列
+    private long sequence = 0L;
 
     public SnowflakeIdWorker() {
         this.datacenterId = getDatacenterId(MAX_DATACENTER_ID);
@@ -69,7 +71,7 @@ public class SnowflakeIdWorker {
     }
 
     /**
-     * 获取下一个ID
+     * 获取下一个64位雪花ID
      * @return
      */
     public synchronized long nextId() {
@@ -78,6 +80,8 @@ public class SnowflakeIdWorker {
             throw new RuntimeException(String.format("Clock moved backwards. Refusing to generate id for %d milliseconds", lastTimestamp - timestamp));
         }
 
+        /* 系统并发量不大时，sequence 一直为 0
+         * 导致生成的 Id，后 12 位一直为 0，前端体验不友好
         if (lastTimestamp == timestamp) {
             // 当前毫秒内，则+1
             sequence = (sequence + 1) & SEQUENCE_MASK;
@@ -86,6 +90,17 @@ public class SnowflakeIdWorker {
             }
         } else {
             sequence = 0L;
+        }
+        */
+
+        /* 改成以下代码
+         * 好处：前端体验较友好
+         * 缺点：每 2^12 次请求会阻塞 1ms
+         * TODO: 如果使用雪花 id 的并发量大起来了，就再把下面代码的换回上面的
+         */
+        sequence = (sequence + 1) & SEQUENCE_MASK;
+        if (sequence == 0) { // 当前毫秒内计数满了，则等待下一秒
+            timestamp = waitForNextMillis(lastTimestamp);
         }
 
         lastTimestamp = timestamp;

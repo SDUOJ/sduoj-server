@@ -17,6 +17,7 @@ import cn.edu.sdu.qd.oj.problem.pojo.ProblemManageBo;
 import cn.edu.sdu.qd.oj.problem.service.ProblemJudgerService;
 import cn.edu.sdu.qd.oj.problem.service.ProblemManageService;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpHeaders;
@@ -39,6 +40,7 @@ import java.util.zip.ZipOutputStream;
 
 @Controller
 @RequestMapping("/manage/checkpoint")
+@Slf4j
 public class CheckpointManageController {
 
     @Autowired
@@ -99,6 +101,7 @@ public class CheckpointManageController {
      **/
     @PostMapping(value = "/download")
     public void zipDownload(@RequestBody List<String> checkpointIds, HttpServletResponse response) throws IOException {
+        log.warn("zipDownload: {}", checkpointIds);
         String zipFileName = "checkpoints.zip"; // TODO: 下载文件名定义问题
         response.addHeader(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=\"" + zipFileName + "\"");
         response.setHeader(HttpHeaders.CONTENT_TYPE, "application/zip");

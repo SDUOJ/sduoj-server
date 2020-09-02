@@ -105,6 +105,7 @@ public class SubmitService {
             }
         }
         Example example = new Example(SubmissionListBo.class);
+        example.orderBy("createTime").desc();
         if (userId != null) {
             example.createCriteria().andEqualTo("userId", userId);
         }
