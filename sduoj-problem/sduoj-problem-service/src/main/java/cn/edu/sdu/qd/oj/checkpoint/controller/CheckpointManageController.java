@@ -5,18 +5,13 @@
 
 package cn.edu.sdu.qd.oj.checkpoint.controller;
 
-import cn.edu.sdu.qd.oj.checkpoint.pojo.Checkpoint;
+import cn.edu.sdu.qd.oj.checkpoint.dto.CheckpointDTO;
 import cn.edu.sdu.qd.oj.checkpoint.service.CheckpointFileService;
 import cn.edu.sdu.qd.oj.checkpoint.service.CheckpointManageService;
 import cn.edu.sdu.qd.oj.common.entity.ApiResponseBody;
 import cn.edu.sdu.qd.oj.common.entity.ResponseResult;
 import cn.edu.sdu.qd.oj.common.enums.ApiExceptionEnum;
 import cn.edu.sdu.qd.oj.common.exception.ApiException;
-import cn.edu.sdu.qd.oj.problem.pojo.Problem;
-import cn.edu.sdu.qd.oj.problem.pojo.ProblemManageBo;
-import cn.edu.sdu.qd.oj.problem.service.ProblemJudgerService;
-import cn.edu.sdu.qd.oj.problem.service.ProblemManageService;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -74,7 +69,7 @@ public class CheckpointManageController {
      **/
     @PostMapping(value = "/upload", headers = "content-type=application/json")
     @ApiResponseBody
-    public Checkpoint upload(@RequestBody Map json) {
+    public CheckpointDTO upload(@RequestBody Map json) {
         String input = (String) json.get("input");
         String output = (String) json.get("output");
         if (StringUtils.isBlank(input) || StringUtils.isBlank(output)) {
@@ -90,7 +85,7 @@ public class CheckpointManageController {
      **/
     @PostMapping(value = "/upload", headers = "content-type=multipart/form-data")
     @ApiResponseBody
-    public Checkpoint[] upload(@RequestParam("files") MultipartFile[] files) {
+    public CheckpointDTO[] upload(@RequestParam("files") MultipartFile[] files) {
         return checkpointFileService.uploadCheckpointFiles(files);
     }
 
@@ -116,7 +111,7 @@ public class CheckpointManageController {
     **/
     @PostMapping(value = "/list")
     @ApiResponseBody
-    public List<Checkpoint> getCheckpoints(@RequestBody Map json) {
+    public List<CheckpointDTO> getCheckpoints(@RequestBody Map json) {
         int problemId = (Integer) json.get("problemId");
         return checkpointManageService.getCheckpoints(problemId);
     }

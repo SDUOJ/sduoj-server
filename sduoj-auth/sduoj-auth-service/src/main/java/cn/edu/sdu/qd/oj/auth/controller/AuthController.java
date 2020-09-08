@@ -15,7 +15,7 @@ import cn.edu.sdu.qd.oj.common.entity.ResponseResult;
 import cn.edu.sdu.qd.oj.common.enums.ApiExceptionEnum;
 import cn.edu.sdu.qd.oj.common.exception.ApiException;
 import cn.edu.sdu.qd.oj.common.utils.CookieUtils;
-import cn.edu.sdu.qd.oj.user.pojo.User;
+import cn.edu.sdu.qd.oj.user.dto.UserDTO;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -60,7 +60,7 @@ public class AuthController {
     **/
     @PostMapping(value={"/auth/login", "/judger/auth/login", "/manage/auth/login"})
     @ResponseBody
-    public ResponseEntity<ResponseResult<User>> login(RequestEntity<String> entity) {
+    public ResponseEntity<ResponseResult<UserDTO>> login(RequestEntity<String> entity) {
         Map json = null;
         String username = null, password = null;
 
@@ -73,14 +73,14 @@ public class AuthController {
 
         if (StringUtils.isNotBlank(username) && StringUtils.isNotBlank(password)) {
             // 登录校验
-            User user = this.authService.authentication(username, password);
-            if (user == null) {
+            UserDTO userDTO = this.authService.authentication(username, password);
+            if (userDTO == null) {
                 throw new ApiException(ApiExceptionEnum.PASSWORD_NOT_MATCHING);
             }
             // 计算token
             String token = null;
             try {
-                token = JwtUtils.generateToken(new UserInfo(user.getUserId(), user.getUsername()),
+                token = JwtUtils.generateToken(new UserInfo(userDTO.getUserId(), userDTO.getUsername()),
                                                   prop.getPrivateKey(), prop.getExpire());
             } catch (Exception e) {
                 e.printStackTrace();
@@ -92,7 +92,7 @@ public class AuthController {
                             .setPath("/")
                             .build();
             headers.set("Set-Cookie", cookie);
-            return new ResponseEntity<>(ResponseResult.ok(user), headers, HttpStatus.OK);
+            return new ResponseEntity<>(ResponseResult.ok(userDTO), headers, HttpStatus.OK);
         } else {
             // 从Token中获取用户信息
             try {
@@ -101,8 +101,8 @@ public class AuthController {
                 String token = headers.get("Cookie").get(0);
                 token = token.replace(this.prop.getCookieName() + "=", "");
                 UserInfo userInfo = JwtUtils.getInfoFromToken(token, prop.getPublicKey());
-                User user = this.authService.queryUserById(userInfo.getUserId());
-                return new ResponseEntity<>(ResponseResult.ok(user), HttpStatus.OK);
+                UserDTO userDTO = this.authService.queryUserById(userInfo.getUserId());
+                return new ResponseEntity<>(ResponseResult.ok(userDTO), HttpStatus.OK);
             } catch (Exception e) {
                 throw new ApiException(ApiExceptionEnum.UNKNOWN_ERROR);
             }

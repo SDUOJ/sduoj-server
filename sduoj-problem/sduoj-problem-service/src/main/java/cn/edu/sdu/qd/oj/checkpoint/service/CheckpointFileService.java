@@ -6,12 +6,12 @@
 package cn.edu.sdu.qd.oj.checkpoint.service;
 
 import cn.edu.sdu.qd.oj.checkpoint.config.CheckpointFileSystemProperties;
-import cn.edu.sdu.qd.oj.checkpoint.mapper.CheckpointMapper;
-import cn.edu.sdu.qd.oj.checkpoint.pojo.Checkpoint;
+import cn.edu.sdu.qd.oj.checkpoint.entity.CheckpointDO;
+import cn.edu.sdu.qd.oj.checkpoint.mapper.CheckpointDOMapper;
+import cn.edu.sdu.qd.oj.checkpoint.dto.CheckpointDTO;
 import cn.edu.sdu.qd.oj.common.enums.ApiExceptionEnum;
 import cn.edu.sdu.qd.oj.common.exception.ApiException;
 import cn.edu.sdu.qd.oj.common.utils.SnowflakeIdWorker;
-import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.FilenameUtils;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -24,8 +24,8 @@ import org.springframework.web.multipart.MultipartFile;
 
 import java.io.File;
 import java.io.IOException;
-import java.nio.file.Files;
 import java.util.*;
+import java.util.stream.Collectors;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipOutputStream;
 
@@ -48,7 +48,7 @@ public class CheckpointFileService {
     private SnowflakeIdWorker snowflakeIdWorker = new SnowflakeIdWorker();
 
     @Autowired
-    private CheckpointMapper checkpointMapper;
+    private CheckpointDOMapper checkpointDOMapper;
 
     /**
      * @param files
@@ -56,9 +56,8 @@ public class CheckpointFileService {
      * @Description 批量上传成对的测试点文件，如果不配对或者写入到文件系统中出现错误，则全部回滚
      **/
     @Transactional
-    public Checkpoint[] uploadCheckpointFiles(MultipartFile[] files) {
-        List<Checkpoint> list = new ArrayList<>(files.length / 2 + 1);
-        int n = 0;
+    public CheckpointDTO[] uploadCheckpointFiles(MultipartFile[] files) {
+        List<CheckpointDTO> checkpointDTOList = new ArrayList<>(files.length / 2 + 1);
         Arrays.sort(files, Comparator.comparing(MultipartFile::getOriginalFilename));
         Map<String, MultipartFile> map = new HashMap<>();
         for (MultipartFile file : files) {
@@ -82,31 +81,40 @@ public class CheckpointFileService {
                     byte[] outputBytes = output.getBytes();
                     long snowflaskId = snowflakeIdWorker.nextId();
                     String snowflaskIdString = Long.toHexString(snowflaskId);
-                    Checkpoint checkpoint = new Checkpoint(
+                    CheckpointDTO checkpointDTO = new CheckpointDTO(
                             snowflaskId,
-                            new String(inputBytes, 0, Math.min(Checkpoint.MAX_DESCRIPTION_LENGTH, inputBytes.length)),
-                            new String(outputBytes, 0, Math.min(Checkpoint.MAX_DESCRIPTION_LENGTH, outputBytes.length)),
+                            new String(inputBytes, 0, Math.min(CheckpointDTO.MAX_DESCRIPTION_LENGTH, inputBytes.length)),
+                            new String(outputBytes, 0, Math.min(CheckpointDTO.MAX_DESCRIPTION_LENGTH, outputBytes.length)),
                             inputBytes.length,
                             outputBytes.length,
                             input.getOriginalFilename(),
                             output.getOriginalFilename()
                     );
-                    list.add(checkpoint);
+                    checkpointDTOList.add(checkpointDTO);
                     File inputFile = new File(checkpointFileSystemProperties.getBaseDir() + File.separator + snowflaskIdString + ".in");
                     File outputFile = new File(checkpointFileSystemProperties.getBaseDir() + File.separator + snowflaskIdString + ".out");
                     FileUtils.writeByteArrayToFile(inputFile, inputBytes);
                     FileUtils.writeByteArrayToFile(outputFile, outputBytes);
                 }
             }
-            checkpointMapper.insertList(list);
+            List<CheckpointDO> checkpointDOList = checkpointDTOList.stream().map(checkpointDTO -> CheckpointDO.builder()
+                    .checkpointId(checkpointDTO.getCheckpointId())
+                    .inputDescription(checkpointDTO.getInputDescription())
+                    .inputFileName(checkpointDTO.getInputFileName())
+                    .inputSize(checkpointDTO.getInputSize())
+                    .outputDescription(checkpointDTO.getOutputDescription())
+                    .outputFileName(checkpointDTO.getOutputFileName())
+                    .outputSize(checkpointDTO.getOutputSize())
+                    .build()).collect(Collectors.toList());
+            checkpointDOMapper.insertList(checkpointDOList);
         } catch (Exception e) {
-            for (Checkpoint checkpoint : list) {
-                new File(checkpointFileSystemProperties.getBaseDir() + File.separator + Long.toHexString(checkpoint.getCheckpointId()) + ".in").delete();
-                new File(checkpointFileSystemProperties.getBaseDir() + File.separator + Long.toHexString(checkpoint.getCheckpointId()) + ".out").delete();
+            for (CheckpointDTO checkpointDTO : checkpointDTOList) {
+                new File(checkpointFileSystemProperties.getBaseDir() + File.separator + Long.toHexString(checkpointDTO.getCheckpointId()) + ".in").delete();
+                new File(checkpointFileSystemProperties.getBaseDir() + File.separator + Long.toHexString(checkpointDTO.getCheckpointId()) + ".out").delete();
             }
             throw new ApiException(ApiExceptionEnum.FILE_WRITE_ERROR);
         }
-        return list.toArray(new Checkpoint[list.size()]);
+        return checkpointDTOList.toArray(new CheckpointDTO[0]);
     }
 
 
@@ -117,20 +125,28 @@ public class CheckpointFileService {
      * @return cn.edu.sdu.qd.oj.checkpoint.pojo.Checkpoint
      **/
     @Transactional
-    public Checkpoint updateCheckpointFile(String input, String output) {
+    public CheckpointDTO updateCheckpointFile(String input, String output) {
         long snowflaskId = snowflakeIdWorker.nextId();
         String snowflaskIdString = Long.toHexString(snowflaskId);
         File inputFile = new File(checkpointFileSystemProperties.getBaseDir() + File.separator + snowflaskIdString + ".in");
         File outputFile = new File(checkpointFileSystemProperties.getBaseDir() + File.separator + snowflaskIdString + ".out");
-        Checkpoint checkpoint = new Checkpoint(
+        CheckpointDTO checkpointDTO = new CheckpointDTO(
                 snowflaskId,
-                input.substring(0, Math.min(Checkpoint.MAX_DESCRIPTION_LENGTH, input.length())),
-                output.substring(0, Math.min(Checkpoint.MAX_DESCRIPTION_LENGTH, output.length())),
+                input.substring(0, Math.min(CheckpointDTO.MAX_DESCRIPTION_LENGTH, input.length())),
+                output.substring(0, Math.min(CheckpointDTO.MAX_DESCRIPTION_LENGTH, output.length())),
                 input.length(),
                 output.length()
         );
         try {
-            checkpointMapper.insert(checkpoint);
+            checkpointDOMapper.insert(CheckpointDO.builder()
+                    .checkpointId(checkpointDTO.getCheckpointId())
+                    .inputDescription(checkpointDTO.getInputDescription())
+                    .inputFileName(checkpointDTO.getInputFileName())
+                    .inputSize(checkpointDTO.getInputSize())
+                    .outputDescription(checkpointDTO.getOutputDescription())
+                    .outputFileName(checkpointDTO.getOutputFileName())
+                    .outputSize(checkpointDTO.getOutputSize())
+                    .build());
             FileUtils.writeStringToFile(inputFile, input);
             FileUtils.writeStringToFile(outputFile, output); 
         } catch (IOException e) {
@@ -138,7 +154,7 @@ public class CheckpointFileService {
             outputFile.delete();
             throw new ApiException(ApiExceptionEnum.FILE_WRITE_ERROR);
         }
-        return checkpoint;
+        return checkpointDTO;
     }
 
     /**

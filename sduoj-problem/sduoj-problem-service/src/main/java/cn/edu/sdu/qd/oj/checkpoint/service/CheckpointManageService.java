@@ -5,16 +5,16 @@
 
 package cn.edu.sdu.qd.oj.checkpoint.service;
 
-import cn.edu.sdu.qd.oj.checkpoint.mapper.CheckpointMapper;
-import cn.edu.sdu.qd.oj.checkpoint.pojo.Checkpoint;
-import cn.edu.sdu.qd.oj.problem.mapper.ProblemManageBoMapper;
+import cn.edu.sdu.qd.oj.checkpoint.entity.CheckpointDO;
+import cn.edu.sdu.qd.oj.checkpoint.mapper.CheckpointDOMapper;
+import cn.edu.sdu.qd.oj.checkpoint.dto.CheckpointDTO;
+import cn.edu.sdu.qd.oj.problem.mapper.ProblemManageDOMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
-import org.springframework.web.bind.annotation.RequestBody;
-import tk.mybatis.mapper.entity.Example;
 
 import java.nio.ByteBuffer;
 import java.util.*;
+import java.util.stream.Collectors;
 
 /**
  * @ClassName checkpointManageService
@@ -28,13 +28,13 @@ import java.util.*;
 public class CheckpointManageService {
 
     @Autowired
-    private CheckpointMapper checkpointMapper;
+    private CheckpointDOMapper checkpointDOMapper;
 
     @Autowired
-    private ProblemManageBoMapper problemManageBoMapper;
+    private ProblemManageDOMapper problemManageDOMapper;
 
-    public List<Checkpoint> getCheckpoints(int problemId) {
-        List<Map> list = problemManageBoMapper.queryCheckpointIds(problemId);
+    public List<CheckpointDTO> getCheckpoints(int problemId) {
+        List<Map> list = problemManageDOMapper.queryCheckpointIds(problemId);
         byte[] bytes = (byte[]) list.get(0).get("p_checkpoint_ids");
         if (bytes.length == 0) {
             return new ArrayList<>();
@@ -46,8 +46,17 @@ public class CheckpointManageService {
             checkpointIds.add(wrap.getLong(i));
             indexMap.put(wrap.getLong(i), i);
         }
-        List<Checkpoint> checkpoints = checkpointMapper.selectByIdList(checkpointIds);
-        checkpoints.sort(Comparator.comparing(o -> indexMap.get(o.getCheckpointId())));
-        return checkpoints;
+        List<CheckpointDO> checkpointDOList = checkpointDOMapper.selectByIdList(checkpointIds);
+        List<CheckpointDTO> checkpointDTOList = checkpointDOList.stream().map(checkpointDO -> CheckpointDTO.builder()
+                .checkpointId(checkpointDO.getCheckpointId())
+                .inputDescription(checkpointDO.getInputDescription())
+                .inputFileName(checkpointDO.getInputFileName())
+                .inputSize(checkpointDO.getInputSize())
+                .outputDescription(checkpointDO.getOutputDescription())
+                .outputFileName(checkpointDO.getOutputFileName())
+                .outputSize(checkpointDO.getOutputSize())
+                .build()).collect(Collectors.toList());
+        checkpointDTOList.sort(Comparator.comparing(o -> indexMap.get(o.getCheckpointId())));
+        return checkpointDTOList;
     }
 }

@@ -9,8 +9,8 @@ import cn.edu.sdu.qd.oj.common.entity.ApiResponseBody;
 import cn.edu.sdu.qd.oj.common.entity.PageResult;
 import cn.edu.sdu.qd.oj.common.enums.ApiExceptionEnum;
 import cn.edu.sdu.qd.oj.common.exception.ApiException;
-import cn.edu.sdu.qd.oj.problem.pojo.ProblemManageBo;
-import cn.edu.sdu.qd.oj.problem.pojo.ProblemManageListBo;
+import cn.edu.sdu.qd.oj.problem.dto.ProblemManageDTO;
+import cn.edu.sdu.qd.oj.problem.dto.ProblemManageListDTO;
 import cn.edu.sdu.qd.oj.problem.service.ProblemManageService;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -41,13 +41,13 @@ public class ProblemManageController {
 
     @PostMapping("/query")
     @ApiResponseBody
-    public ProblemManageBo queryManageBoById(@RequestBody Map json) {
+    public ProblemManageDTO queryManageBoById(@RequestBody Map json) {
         return this.problemManageService.queryById((Integer) json.get("problemId"));
     }
 
     @PostMapping("/create")
     @ApiResponseBody
-    public Integer createProblemManageBo(@RequestBody ProblemManageBo problem,
+    public Integer createProblemManageBo(@RequestBody ProblemManageDTO problem,
                                          @RequestHeader("authorization-userId") Integer userId) {
         problem.setUserId(userId);
         this.problemManageService.createProblem(problem);
@@ -57,17 +57,17 @@ public class ProblemManageController {
 
     @PostMapping("/list")
     @ApiResponseBody
-    public PageResult<ProblemManageListBo> queryList(@RequestBody Map json
+    public PageResult<ProblemManageListDTO> queryList(@RequestBody Map json
     ) {
         int pageNow = (int) json.get("pageNow");
         int pageSize = (int) json.get("pageSize");
-        PageResult<ProblemManageListBo> result = this.problemManageService.queryProblemByPage(pageNow, pageSize);
+        PageResult<ProblemManageListDTO> result = this.problemManageService.queryProblemByPage(pageNow, pageSize);
         return result;
     }
 
     @PostMapping("/update")
     @ApiResponseBody
-    public Void updateProblem(@RequestBody ProblemManageBo problem) {
+    public Void updateProblem(@RequestBody ProblemManageDTO problem) {
         log.warn("updateProblem: {}", problem);
         if (problem.getProblemId() == null)
             throw new ApiException(ApiExceptionEnum.PARAMETER_ERROR);

@@ -10,18 +10,21 @@ import cn.edu.sdu.qd.oj.common.entity.PageResult;
 import cn.edu.sdu.qd.oj.common.enums.ApiExceptionEnum;
 import cn.edu.sdu.qd.oj.common.exception.ApiException;
 import cn.edu.sdu.qd.oj.common.utils.RedisUtils;
-import cn.edu.sdu.qd.oj.problem.mapper.ProblemManageBoMapper;
-import cn.edu.sdu.qd.oj.problem.mapper.ProblemManageListBoMapper;
-import cn.edu.sdu.qd.oj.problem.pojo.ProblemManageBo;
-import cn.edu.sdu.qd.oj.problem.pojo.ProblemManageListBo;
+import cn.edu.sdu.qd.oj.problem.entity.ProblemManageDO;
+import cn.edu.sdu.qd.oj.problem.entity.ProblemManageListDO;
+import cn.edu.sdu.qd.oj.problem.mapper.ProblemManageDOMapper;
+import cn.edu.sdu.qd.oj.problem.mapper.ProblemManageListDOMapper;
+import cn.edu.sdu.qd.oj.problem.dto.ProblemManageDTO;
+import cn.edu.sdu.qd.oj.problem.dto.ProblemManageListDTO;
 import com.github.pagehelper.Page;
 import com.github.pagehelper.PageHelper;
+import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import tk.mybatis.mapper.entity.Example;
 
-import java.util.Collections;
-import java.util.HashMap;
+import java.util.List;
+import java.util.stream.Collectors;
 
 /**
  * @ClassName ProblemManageService
@@ -34,21 +37,27 @@ import java.util.HashMap;
 @Service
 public class ProblemManageService {
     @Autowired
-    private ProblemManageBoMapper problemManageBoMapper;
+    private ProblemManageDOMapper problemManageDOMapper;
 
     @Autowired
-    private ProblemManageListBoMapper problemManageListBoMapper;
+    private ProblemManageListDOMapper problemManageListDOMapper;
 
     @Autowired
     private RedisUtils redisUtils;
 
-    public ProblemManageBo queryById(Integer problemId) {
-        return this.problemManageBoMapper.selectByPrimaryKey(problemId);
+    public ProblemManageDTO queryById(Integer problemId) {
+        ProblemManageDO problemManageDO = this.problemManageDOMapper.selectByPrimaryKey(problemId);
+        ProblemManageDTO problemManageDTO = new ProblemManageDTO();
+        BeanUtils.copyProperties(problemManageDO, problemManageDTO);
+        return problemManageDTO;
     }
 
-    public boolean createProblem(ProblemManageBo problem) {
-        problem.setProblemId(null);
-        if (this.problemManageBoMapper.insertSelective(problem) != 1) {
+    public boolean createProblem(ProblemManageDTO problem) {
+        ProblemManageDO problemManageDO = new ProblemManageDO();
+        BeanUtils.copyProperties(problem, problemManageDO);
+        problemManageDO.setProblemId(null);
+
+        if (this.problemManageDOMapper.insertSelective(problemManageDO) != 1) {
             throw new ApiException(ApiExceptionEnum.UNKNOWN_ERROR);
         }
         // 更新缓存
@@ -58,15 +67,23 @@ public class ProblemManageService {
         return true;
     }
 
-    public PageResult<ProblemManageListBo> queryProblemByPage(int pageNow, int pageSize) {
-        Example example = new Example(ProblemManageListBo.class);
+    public PageResult<ProblemManageListDTO> queryProblemByPage(int pageNow, int pageSize) {
+        Example example = new Example(ProblemManageListDO.class);
         PageHelper.startPage(pageNow, pageSize);
-        Page<ProblemManageListBo> pageInfo = (Page<ProblemManageListBo>) problemManageListBoMapper.selectByExample(example);
-        return new PageResult<>(pageInfo.getPages(), pageInfo);
+        Page<ProblemManageListDO> pageInfo = (Page<ProblemManageListDO>) problemManageListDOMapper.selectByExample(example);
+        List<ProblemManageListDTO> problemManageListDTOlist = pageInfo.stream().map(problemManageListDO -> {
+            ProblemManageListDTO problemManageListDTO = new ProblemManageListDTO();
+            BeanUtils.copyProperties(problemManageListDO, problemManageListDTO);
+            return problemManageListDTO;
+        }).collect(Collectors.toList());
+        return new PageResult<>(pageInfo.getPages(), problemManageListDTOlist);
     }
 
-    public void update(ProblemManageBo problem) {
-        if (this.problemManageBoMapper.updateByPrimaryKeySelective(problem) != 1)
+    public void update(ProblemManageDTO problem) {
+        ProblemManageDO problemManageDO = new ProblemManageDO();
+        BeanUtils.copyProperties(problem, problemManageDO);
+
+        if (this.problemManageDOMapper.updateByPrimaryKeySelective(problemManageDO) != 1)
             throw new ApiException(ApiExceptionEnum.UNKNOWN_ERROR);
         if (problem.getProblemTitle() != null) {
             redisUtils.hset(RedisConstants.REDIS_KEY_FOR_PROBLEM_ID_TO_TITLE,

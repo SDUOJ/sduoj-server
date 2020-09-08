@@ -6,7 +6,7 @@
 package cn.edu.sdu.qd.oj.problem.controller;
 
 import cn.edu.sdu.qd.oj.common.entity.ApiResponseBody;
-import cn.edu.sdu.qd.oj.problem.pojo.ProblemJudgerBo;
+import cn.edu.sdu.qd.oj.problem.dto.ProblemJudgerDTO;
 import cn.edu.sdu.qd.oj.problem.service.ProblemJudgerService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
@@ -32,7 +32,7 @@ public class ProblemJudgerController {
 
     @PostMapping("/query")
     @ApiResponseBody
-    public ProblemJudgerBo queryByJudger(@RequestBody Map json) {
+    public ProblemJudgerDTO queryByJudger(@RequestBody Map json) {
         return this.problemJudgerService.queryById((Integer) json.get("problemId"));
     }
 }

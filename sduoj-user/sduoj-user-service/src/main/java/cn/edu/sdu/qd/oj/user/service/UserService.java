@@ -10,8 +10,9 @@ import cn.edu.sdu.qd.oj.common.enums.ApiExceptionEnum;
 import cn.edu.sdu.qd.oj.common.exception.ApiException;
 import cn.edu.sdu.qd.oj.common.exception.InternalApiException;
 import cn.edu.sdu.qd.oj.common.utils.RedisUtils;
+import cn.edu.sdu.qd.oj.user.entity.UserDO;
+import cn.edu.sdu.qd.oj.user.dto.UserDTO;
 import cn.edu.sdu.qd.oj.user.mapper.UserMapper;
-import cn.edu.sdu.qd.oj.user.pojo.User;
 import cn.edu.sdu.qd.oj.user.utils.CodecUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -38,25 +39,34 @@ public class UserService {
     @Autowired
     private RedisUtils redisUtils;
 
-    public User query(Integer userId) {
-        User user = this.userMapper.selectByPrimaryKey(userId);
-        if (user == null) {
+    public UserDTO query(Integer userId) {
+        UserDO userDO = this.userMapper.selectByPrimaryKey(userId);
+        if (userDO == null) {
             throw new ApiException(ApiExceptionEnum.USER_NOT_FOUND);
         }
-        return user;
+        return UserDTO.builder()
+                .userId(userDO.getUserId())
+                .createTime(userDO.getCreateTime())
+                .email(userDO.getEmail())
+                .gender(userDO.getGender())
+                .role(userDO.getRole())
+                .studentId(userDO.getStudentId())
+                .username(userDO.getUsername())
+                .build();
     }
 
-    public User query(String username, String password) throws InternalApiException {
+    public UserDTO query(String username, String password) throws InternalApiException {
         // 查询
-        User record = new User();
-        record.setUsername(username);
-        User user = this.userMapper.selectOne(record);
+        UserDO record = UserDO.builder()
+                .username(username)
+                .build();
+        UserDO userDO = this.userMapper.selectOne(record);
         // 校验用户名
-        if (user == null) {
+        if (userDO == null) {
             throw new InternalApiException(ApiExceptionEnum.USER_NOT_FOUND);
         }
         // 临时用
-        if (!user.getPassword().equals(CodecUtils.md5Hex(password, "slat_string"))) {
+        if (!userDO.getPassword().equals(CodecUtils.md5Hex(password, "slat_string"))) {
             throw new InternalApiException(ApiExceptionEnum.PASSWORD_NOT_MATCHING);
         }
         // TODO：校验加盐密码，选择加密方式和盐，盐放到配置文件中
@@ -64,20 +74,36 @@ public class UserService {
 //            throw new InternalApiException(ExceptionEnum.PASSWORD_NOT_MATCHING);
 //        }
         // 用户名密码都正确
-        return user;
+        return UserDTO.builder()
+                .userId(userDO.getUserId())
+                .createTime(userDO.getCreateTime())
+                .email(userDO.getEmail())
+                .gender(userDO.getGender())
+                .role(userDO.getRole())
+                .studentId(userDO.getStudentId())
+                .username(userDO.getUsername())
+                .build();
     }
 
-    public void register(User user) {
-        user.setUserId(null);
-        user.setPassword(CodecUtils.md5Hex(user.getPassword(), "slat_string"));
+    public void register(UserDTO userDTO) {
+        UserDO userDO = UserDO.builder()
+                .createTime(userDTO.getCreateTime())
+                .email(userDTO.getEmail())
+                .gender(userDTO.getGender())
+                .role(userDTO.getRole())
+                .studentId(userDTO.getStudentId())
+                .username(userDTO.getUsername())
+                .build();
+        userDO.setPassword(CodecUtils.md5Hex(userDTO.getPassword(), "slat_string"));
+
         // TODO: username 重复时插入失败的异常处理器
-        if(this.userMapper.insertSelective(user) != 1) {
+        if(this.userMapper.insertSelective(userDO) != 1) {
             throw new ApiException(ApiExceptionEnum.UNKNOWN_ERROR);
         }
         // 更新缓存
         redisUtils.hset(RedisConstants.REDIS_KEY_FOR_USER_ID_TO_USERNAME,
-                String.valueOf(user.getUserId()),
-                user.getUsername());
+                String.valueOf(userDO.getUserId()),
+                userDO.getUsername());
     }
 
     public Integer queryUserId(String username) {

@@ -6,17 +6,13 @@
 package cn.edu.sdu.qd.oj.user.controller;
 
 import cn.edu.sdu.qd.oj.common.entity.ApiResponseBody;
-import cn.edu.sdu.qd.oj.common.enums.ApiExceptionEnum;
-import cn.edu.sdu.qd.oj.common.exception.ApiException;
-import cn.edu.sdu.qd.oj.common.exception.InternalApiException;
-import cn.edu.sdu.qd.oj.user.pojo.User;
+import cn.edu.sdu.qd.oj.user.dto.UserDTO;
 import cn.edu.sdu.qd.oj.user.service.UserService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.*;
 
 import javax.validation.Valid;
-import java.util.Map;
 
 /**
  * @ClassName UserController
@@ -34,8 +30,8 @@ public class UserController {
 
     @PostMapping("/register")
     @ApiResponseBody
-    public Void register(@Valid @RequestBody User user) {
-        this.userService.register(user);
+    public Void register(@Valid @RequestBody UserDTO userDTO) {
+        this.userService.register(userDTO);
         return null;
     }
 }

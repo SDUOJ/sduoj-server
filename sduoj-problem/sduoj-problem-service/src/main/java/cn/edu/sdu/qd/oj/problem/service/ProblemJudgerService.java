@@ -5,8 +5,10 @@
 
 package cn.edu.sdu.qd.oj.problem.service;
 
-import cn.edu.sdu.qd.oj.problem.mapper.ProblemJudgerBoMapper;
-import cn.edu.sdu.qd.oj.problem.pojo.ProblemJudgerBo;
+import cn.edu.sdu.qd.oj.problem.entity.ProblemJudgerDO;
+import cn.edu.sdu.qd.oj.problem.mapper.ProblemJudgerDOMapper;
+import cn.edu.sdu.qd.oj.problem.dto.ProblemJudgerDTO;
+import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -21,9 +23,12 @@ import org.springframework.stereotype.Service;
 @Service
 public class ProblemJudgerService {
     @Autowired
-    private ProblemJudgerBoMapper problemJudgerBoMapper;
+    private ProblemJudgerDOMapper problemJudgerDOMapper;
 
-    public ProblemJudgerBo queryById(int problemId) {
-        return this.problemJudgerBoMapper.selectByPrimaryKey(problemId);
+    public ProblemJudgerDTO queryById(int problemId) {
+        ProblemJudgerDO problemJudgerDO = this.problemJudgerDOMapper.selectByPrimaryKey(problemId);
+        ProblemJudgerDTO problemJudgeDTO = new ProblemJudgerDTO();
+        BeanUtils.copyProperties(problemJudgerDO, problemJudgeDTO);
+        return problemJudgeDTO;
     }
 }

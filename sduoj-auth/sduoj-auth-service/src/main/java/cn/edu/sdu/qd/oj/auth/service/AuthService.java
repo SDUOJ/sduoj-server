@@ -7,11 +7,8 @@ package cn.edu.sdu.qd.oj.auth.service;
 
 import cn.edu.sdu.qd.oj.auth.client.UserClient;
 import cn.edu.sdu.qd.oj.auth.config.JwtProperties;
-import cn.edu.sdu.qd.oj.auth.entity.UserInfo;
-import cn.edu.sdu.qd.oj.auth.utils.JwtUtils;
-import cn.edu.sdu.qd.oj.common.exception.ApiException;
 import cn.edu.sdu.qd.oj.common.exception.InternalApiException;
-import cn.edu.sdu.qd.oj.user.pojo.User;
+import cn.edu.sdu.qd.oj.user.dto.UserDTO;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -32,10 +29,10 @@ public class AuthService {
     @Autowired
     private JwtProperties prop;
 
-    public User authentication(String username, String password) {
+    public UserDTO authentication(String username, String password) {
         try {
-            User user = this.userClient.verify(username, password);
-            return user;
+            UserDTO userDTO = this.userClient.verify(username, password);
+            return userDTO;
         } catch (InternalApiException e) {
             log.error(e.toString());
 //            throw new ApiException(e.code, e.message);
@@ -43,7 +40,7 @@ public class AuthService {
         return null;
     }
 
-    public User queryUserById(Integer userId) {
+    public UserDTO queryUserById(Integer userId) {
         try {
             // 调用微服务，执行查询
             return this.userClient.query(userId);

@@ -6,7 +6,7 @@
 package cn.edu.sdu.qd.oj.user.controller;
 
 import cn.edu.sdu.qd.oj.common.exception.InternalApiException;
-import cn.edu.sdu.qd.oj.user.pojo.User;
+import cn.edu.sdu.qd.oj.user.dto.UserDTO;
 import cn.edu.sdu.qd.oj.user.service.UserService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
@@ -36,11 +36,11 @@ public class UserInternalController {
      */
     @PostMapping("/verify")
     @ResponseBody
-    public User verify(
+    public UserDTO verify(
             @RequestParam("username") String username,
             @RequestParam("password") String password) throws InternalApiException {
-        User user = this.userService.query(username, password);
-        return user;
+        UserDTO userDTO = this.userService.query(username, password);
+        return userDTO;
     }
 
     /**
@@ -50,9 +50,9 @@ public class UserInternalController {
      */
     @PostMapping("/query")
     @ResponseBody
-    public User query(@RequestParam("userId") Integer userId) {
-        User user = this.userService.query(userId);
-        return user;
+    public UserDTO query(@RequestParam("userId") Integer userId) {
+        UserDTO userDTO = this.userService.query(userId);
+        return userDTO;
     }
 
     /**
