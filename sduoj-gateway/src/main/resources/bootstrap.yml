@@ -9,4 +9,4 @@ spring:
     nacos:
       config:
         server-addr: db.oj.sdu.edu.cn:8848
-        file-extension: ym  l
+        file-extension: yml

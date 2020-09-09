@@ -32,7 +32,7 @@
         <spring-cloud.version>Greenwich.SR5</spring-cloud.version>
         <mybatis.starter.version>2.1.1</mybatis.starter.version>
         <mapper.starter.version>2.1.5</mapper.starter.version>
-        <mysql.version>5.1.48</mysql.version>
+        <mysql.version>8.0.16</mysql.version>
         <pageHelper.starter.version>1.2.13</pageHelper.starter.version>
         <lombok.version>1.18.4</lombok.version>
         <spring-cloud-alibaba.version>2.1.2.RELEASE</spring-cloud-alibaba.version>
