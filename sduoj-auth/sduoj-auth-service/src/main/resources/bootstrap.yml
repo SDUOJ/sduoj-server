@@ -1,7 +1,12 @@
+server:
+  port: 8090
 spring:
+  application:
+    name: auth-service
+  profiles:
+    active: dev
   cloud:
-    config:
-      name: auth
-      profile: dev
-      label: master
-      uri: http://127.0.0.1:12345
+    nacos:
+      config:
+        server-addr: db.oj.sdu.edu.cn:8848
+        file-extension: yml

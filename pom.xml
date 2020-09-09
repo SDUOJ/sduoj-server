@@ -11,15 +11,12 @@
         <module>sduoj-common</module>
         <module>sduoj-user</module>
         <module>sduoj-auth</module>
-        <module>sduoj-registry</module>
         <module>sduoj-gateway</module>
         <module>sduoj-problem</module>
         <module>sduoj-submit</module>
-        <module>sduoj-config</module>
     </modules>
     <!--父工程用 pom 的打包方式-->
     <packaging>pom</packaging>
-
 
     <parent>
         <groupId>org.springframework.boot</groupId>
@@ -38,6 +35,7 @@
         <mysql.version>5.1.48</mysql.version>
         <pageHelper.starter.version>1.2.13</pageHelper.starter.version>
         <lombok.version>1.18.4</lombok.version>
+        <spring-cloud-alibaba.version>2.1.2.RELEASE</spring-cloud-alibaba.version>
     </properties>
 
     <!-- 为所有子工程都引入 -->
@@ -51,7 +49,7 @@
 
     <dependencyManagement>
         <dependencies>
-            <!-- springCloud -->
+            <!-- Spring-Cloud -->
             <dependency>
                 <groupId>org.springframework.cloud</groupId>
                 <artifactId>spring-cloud-dependencies</artifactId>
@@ -59,7 +57,15 @@
                 <type>pom</type>
                 <scope>import</scope>
             </dependency>
-            <!-- mybatis启动器 -->
+            <!-- Spring-Cloud-Alibaba -->
+            <dependency>
+                <groupId>com.alibaba.cloud</groupId>
+                <artifactId>spring-cloud-alibaba-dependencies</artifactId>
+                <version>${spring-cloud-alibaba.version}</version>
+                <type>pom</type>
+                <scope>import</scope>
+            </dependency>
+            <!-- MyBatis启动器 -->
             <dependency>
                 <groupId>org.mybatis.spring.boot</groupId>
                 <artifactId>mybatis-spring-boot-starter</artifactId>
@@ -85,20 +91,6 @@
             </dependency>
         </dependencies>
     </dependencyManagement>
-
-
-    <repositories>
-        <repository>
-            <id>spring-snapshots</id>
-            <name>Spring Snapshots</name>
-            <url>https://repo.spring.io/snapshot</url>
-        </repository>
-        <repository>
-            <id>spring-milestones</id>
-            <name>Spring Milestones</name>
-            <url>https://repo.spring.io/milestone</url>
-        </repository>
-    </repositories>
 
 <!-- 微服务 Docker Image 打包插件 -->
 <!--    <build>-->
@@ -130,6 +122,5 @@
 <!--            </plugin>-->
 <!--        </plugins>-->
 <!--    </build>-->
-
 
 </project>

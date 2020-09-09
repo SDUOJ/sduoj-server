@@ -1,7 +1,12 @@
+server:
+  port: 8088
 spring:
+  application:
+    name: problem-service
+  profiles:
+    active: dev
   cloud:
-    config:
-      name: problem
-      profile: dev
-      label: master
-      uri: http://127.0.0.1:12345
+    nacos:
+      config:
+        server-addr: db.oj.sdu.edu.cn:8848
+        file-extension: yml
