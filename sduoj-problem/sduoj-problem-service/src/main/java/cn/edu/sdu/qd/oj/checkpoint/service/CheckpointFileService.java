@@ -11,7 +11,7 @@ import cn.edu.sdu.qd.oj.checkpoint.mapper.CheckpointDOMapper;
 import cn.edu.sdu.qd.oj.checkpoint.dto.CheckpointDTO;
 import cn.edu.sdu.qd.oj.common.enums.ApiExceptionEnum;
 import cn.edu.sdu.qd.oj.common.exception.ApiException;
-import cn.edu.sdu.qd.oj.common.utils.SnowflakeIdWorker;
+import cn.edu.sdu.qd.oj.common.util.SnowflakeIdWorker;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.FilenameUtils;
 import org.springframework.beans.factory.annotation.Autowired;

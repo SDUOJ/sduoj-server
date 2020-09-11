@@ -5,11 +5,11 @@
 
 package cn.edu.sdu.qd.oj.user.service;
 
-import cn.edu.sdu.qd.oj.common.config.RedisConstants;
+import cn.edu.sdu.qd.oj.common.util.RedisConstants;
 import cn.edu.sdu.qd.oj.common.enums.ApiExceptionEnum;
 import cn.edu.sdu.qd.oj.common.exception.ApiException;
 import cn.edu.sdu.qd.oj.common.exception.InternalApiException;
-import cn.edu.sdu.qd.oj.common.utils.RedisUtils;
+import cn.edu.sdu.qd.oj.common.util.RedisUtils;
 import cn.edu.sdu.qd.oj.user.entity.UserDO;
 import cn.edu.sdu.qd.oj.user.dto.UserDTO;
 import cn.edu.sdu.qd.oj.user.mapper.UserMapper;

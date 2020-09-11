@@ -9,19 +9,39 @@
     </parent>
     <modelVersion>4.0.0</modelVersion>
 
-    <groupId>cn.edu.sdu.qd.oj.problem</groupId>
     <artifactId>sduoj-problem-interface</artifactId>
     <version>1.0.0-SNAPSHOT</version>
 
     <dependencies>
+        <!-- 三方依赖 -->
         <dependency>
             <groupId>tk.mybatis</groupId>
             <artifactId>mapper-spring-boot-starter</artifactId>
         </dependency>
         <dependency>
+            <groupId>com.fasterxml.jackson.core</groupId>
+            <artifactId>jackson-databind</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.springframework</groupId>
+            <artifactId>spring-web</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>io.netty</groupId>
+            <artifactId>netty-buffer</artifactId>
+        </dependency>
+        <!-- 一方依赖-->
+        <dependency>
             <groupId>cn.edu.sdu.qd.oj.common</groupId>
-            <artifactId>sduoj-common</artifactId>
+            <artifactId>sduoj-common-entity</artifactId>
             <version>1.0.0-SNAPSHOT</version>
+            <scope>compile</scope>
+        </dependency>
+        <dependency>
+            <groupId>cn.edu.sdu.qd.oj.common</groupId>
+            <artifactId>sduoj-common-util</artifactId>
+            <version>1.0.0-SNAPSHOT</version>
+            <scope>compile</scope>
         </dependency>
     </dependencies>
 

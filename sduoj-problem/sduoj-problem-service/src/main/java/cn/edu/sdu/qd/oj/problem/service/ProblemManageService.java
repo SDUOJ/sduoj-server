@@ -5,11 +5,11 @@
 
 package cn.edu.sdu.qd.oj.problem.service;
 
-import cn.edu.sdu.qd.oj.common.config.RedisConstants;
+import cn.edu.sdu.qd.oj.common.util.RedisConstants;
 import cn.edu.sdu.qd.oj.common.entity.PageResult;
 import cn.edu.sdu.qd.oj.common.enums.ApiExceptionEnum;
 import cn.edu.sdu.qd.oj.common.exception.ApiException;
-import cn.edu.sdu.qd.oj.common.utils.RedisUtils;
+import cn.edu.sdu.qd.oj.common.util.RedisUtils;
 import cn.edu.sdu.qd.oj.problem.entity.ProblemManageDO;
 import cn.edu.sdu.qd.oj.problem.entity.ProblemManageListDO;
 import cn.edu.sdu.qd.oj.problem.mapper.ProblemManageDOMapper;

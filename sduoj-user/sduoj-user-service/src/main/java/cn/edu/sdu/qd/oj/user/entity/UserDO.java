@@ -5,7 +5,7 @@
 
 package cn.edu.sdu.qd.oj.user.entity;
 
-import cn.edu.sdu.qd.oj.common.config.DateToTimestampSerializer;
+import cn.edu.sdu.qd.oj.common.util.DateToTimestampSerializer;
 import cn.edu.sdu.qd.oj.common.entity.BaseDO;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;

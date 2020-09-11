@@ -6,8 +6,8 @@
 package cn.edu.sdu.qd.oj.checkpoint.dto;
 
 import cn.edu.sdu.qd.oj.common.entity.BaseDTO;
-import cn.edu.sdu.qd.oj.common.utils.HexStringToLongDeserializer;
-import cn.edu.sdu.qd.oj.common.utils.LongToHexStringSerializer;
+import cn.edu.sdu.qd.oj.common.util.HexStringToLongDeserializer;
+import cn.edu.sdu.qd.oj.common.util.LongToHexStringSerializer;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 import lombok.*;
