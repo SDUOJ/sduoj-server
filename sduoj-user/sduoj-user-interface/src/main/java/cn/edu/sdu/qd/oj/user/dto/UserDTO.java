@@ -32,7 +32,6 @@ import java.util.Date;
 @AllArgsConstructor
 @EqualsAndHashCode(callSuper = true)
 public class UserDTO extends BaseDTO {
-    private static final long serialVersionUID = 1L;
 
     private Integer userId;
 

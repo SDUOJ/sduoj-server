@@ -5,27 +5,18 @@
 
 package cn.edu.sdu.qd.oj.filter;
 
-import cn.edu.sdu.qd.oj.auth.entity.UserInfo;
-import cn.edu.sdu.qd.oj.auth.utils.JwtUtils;
 import cn.edu.sdu.qd.oj.config.FilterProperties;
-import cn.edu.sdu.qd.oj.config.JwtProperties;
-import cn.hutool.core.collection.CollectionUtil;
-import com.fasterxml.jackson.core.JsonParser;
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.core.type.TypeReference;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import org.apache.commons.lang3.SerializationUtils;
-import org.apache.commons.lang3.StringUtils;
+import cn.edu.sdu.qd.oj.common.entity.UserSessionDTO;
+import com.alibaba.fastjson.JSON;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.cloud.gateway.filter.GatewayFilterChain;
 import org.springframework.cloud.gateway.filter.GlobalFilter;
 import org.springframework.core.Ordered;
 import org.springframework.core.io.buffer.DataBuffer;
-import org.springframework.http.HttpCookie;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
-import org.springframework.http.server.reactive.ServerHttpRequest;
 import org.springframework.http.server.reactive.ServerHttpRequestDecorator;
 import org.springframework.http.server.reactive.ServerHttpResponse;
 import org.springframework.stereotype.Component;
@@ -33,16 +24,11 @@ import org.springframework.util.CollectionUtils;
 import org.springframework.util.LinkedCaseInsensitiveMap;
 import org.springframework.util.MultiValueMap;
 import org.springframework.web.server.ServerWebExchange;
-import reactor.core.publisher.Flux;
+import org.springframework.web.server.WebSession;
 import reactor.core.publisher.Mono;
 
-import java.io.IOException;
 import java.lang.reflect.Field;
-import java.nio.charset.StandardCharsets;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Locale;
-import java.util.Map;
+import java.util.*;
 
 /**
  * @ClassName LoginFilter
@@ -52,20 +38,16 @@ import java.util.Map;
  * @Version V1.0
  **/
 
+@Slf4j
 @Component
-@EnableConfigurationProperties({JwtProperties.class, FilterProperties.class})
+@EnableConfigurationProperties({FilterProperties.class})
 public class LoginFilter implements GlobalFilter, Ordered {
-
-    @Autowired
-    private JwtProperties jwtProperties;
 
     @Autowired
     private FilterProperties filterProp;
 
-    private static ObjectMapper objectMapper = new ObjectMapper();
-
     /**
-     * @Description 对 token 鉴权, 解密后的信息存到 header, 而不下传 cookie
+     * @Description TODO
      * @param exchange
      * @param chain
      * @return reactor.core.publisher.Mono<java.lang.Void>
@@ -75,30 +57,26 @@ public class LoginFilter implements GlobalFilter, Ordered {
         String requestUrl = exchange.getRequest().getPath().toString();
         if (!isAllowPath(requestUrl)) {
             // 取 token 并解密
-            HttpCookie cookie = exchange.getRequest().getCookies().getFirst(this.jwtProperties.getCookieName());
-            String token = null;
-            if (cookie != null && !StringUtils.isBlank(token = cookie.getValue())) {
-                UserInfo userInfo = null;
-                try {
-                    userInfo = JwtUtils.getInfoFromToken(token, this.jwtProperties.getPublicKey());
-                } catch (Exception ignore) {
-                }
-                if (userInfo != null) {
-                    UserInfo finalUserInfo = userInfo;
+            Object userinfo = Optional.ofNullable(exchange.getSession().block()).map(WebSession::getAttributes).map(map -> map.get("SDUOJUserInfo")).orElse(null);
+            if (userinfo != null) {
+                UserSessionDTO userSessionDTO = JSON.parseObject((String) userinfo, UserSessionDTO.class);
+                if (userSessionDTO != null) {
                     // 装饰器 修改 getHeaders 方法
                     ServerHttpRequestDecorator decorator = new ServerHttpRequestDecorator(exchange.getRequest()) {
                         @Override
                         public HttpHeaders getHeaders() {
                             MultiValueMap<String, String> multiValueMap = CollectionUtils.toMultiValueMap(new LinkedCaseInsensitiveMap(8, Locale.ENGLISH));
-                            super.getHeaders().entrySet().stream().forEach(entry -> multiValueMap.put(entry.getKey(), entry.getValue()));
-                            multiValueMap.remove("cookie"); // 在此处已解码 token, 故不下传省流量, 如果后续有多值 cookie 此处需要修改
-                            for (Field field : UserInfo.class.getDeclaredFields()) {
+                            super.getHeaders().forEach((key, value) -> multiValueMap.put(key, value));
+//                            multiValueMap.remove("cookie"); // 在此处已解码 token, 故不下传省流量, 如果后续有多值 cookie 此处需要修改
+                            multiValueMap.remove("SDUOJUserInfo");
+                            multiValueMap.add("SDUOJUserInfo", JSON.toJSONString(userSessionDTO));
+                            for (Field field : UserSessionDTO.class.getDeclaredFields()) {
                                 try {
                                     field.setAccessible(true);
                                     multiValueMap.remove("Authorization-" + field.getName());
-                                    multiValueMap.add("Authorization-" + field.getName(), String.valueOf(field.get(finalUserInfo)));
+                                    multiValueMap.add("Authorization-" + field.getName(), String.valueOf(field.get(userSessionDTO)));
                                 } catch (IllegalAccessException e) {
-                                    e.printStackTrace();
+                                    log.error("getHeaders Decorator", e);
                                 }
                             }
                             return new HttpHeaders(multiValueMap);
@@ -108,7 +86,18 @@ public class LoginFilter implements GlobalFilter, Ordered {
                 }
             }
         } else {
-            return chain.filter(exchange);
+            return chain.filter(exchange).then(Mono.fromRunnable(() -> {
+                List<String> userInfos = exchange.getResponse().getHeaders().remove("SDUOJUserInfo");
+                Optional.of(userInfos).filter(list -> !list.isEmpty()).map(list -> list.get(0)).ifPresent(userInfoStr -> {
+                    Optional.ofNullable(exchange.getSession().block()).map(WebSession::getAttributes).ifPresent(map -> {
+                        if ("Logout".equals(userInfoStr)) {
+                            map.remove("SDUOJUserInfo");
+                        } else {
+                            map.put("SDUOJUserInfo", userInfoStr);
+                        }
+                    });
+                });
+            }));
         }
         // 返回鉴权失败的消息
         ServerHttpResponse response = exchange.getResponse();
@@ -117,12 +106,7 @@ public class LoginFilter implements GlobalFilter, Ordered {
         message.put("message", "鉴权失败，无 token !");
         message.put("timestamp", (int) (System.currentTimeMillis() / 1000));
         message.put("data", null);
-        byte[] bits = null;
-        try {
-            bits = objectMapper.writerWithDefaultPrettyPrinter().writeValueAsString(message).getBytes(StandardCharsets.UTF_8);
-        } catch (JsonProcessingException e) {
-            e.printStackTrace();
-        }
+        byte[] bits = JSON.toJSONBytes(message);
         DataBuffer buffer = response.bufferFactory().wrap(bits);
         response.setStatusCode(HttpStatus.UNAUTHORIZED);
         response.getHeaders().add("Content-Type", "application/json;charset=UTF-8");
