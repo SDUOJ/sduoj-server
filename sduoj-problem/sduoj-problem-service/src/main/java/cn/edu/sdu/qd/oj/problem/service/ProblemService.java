@@ -5,23 +5,17 @@ import cn.edu.sdu.qd.oj.common.entity.PageResult;
 import cn.edu.sdu.qd.oj.common.enums.ApiExceptionEnum;
 import cn.edu.sdu.qd.oj.common.exception.ApiException;
 import cn.edu.sdu.qd.oj.common.util.RedisUtils;
+import cn.edu.sdu.qd.oj.problem.dao.ProblemDao;
 import cn.edu.sdu.qd.oj.problem.entity.ProblemDO;
-import cn.edu.sdu.qd.oj.problem.entity.ProblemDOField;
-import cn.edu.sdu.qd.oj.problem.entity.ProblemListDO;
-import cn.edu.sdu.qd.oj.problem.mapper.ProblemListDOMapper;
-import cn.edu.sdu.qd.oj.problem.mapper.ProblemDOMapper;
 import cn.edu.sdu.qd.oj.problem.dto.ProblemDTO;
 
 import cn.edu.sdu.qd.oj.problem.dto.ProblemListDTO;
-import com.github.pagehelper.Page;
-import com.github.pagehelper.PageHelper;
+import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
-import tk.mybatis.mapper.entity.Example;
 
 import javax.annotation.PostConstruct;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
@@ -29,16 +23,13 @@ import java.util.stream.Collectors;
 @Service
 public class ProblemService {
     @Autowired
-    private ProblemDOMapper problemDOMapper;
-
-    @Autowired
-    private ProblemListDOMapper problemListDOMapper;
+    private ProblemDao problemDao;
 
     @Autowired
     private RedisUtils redisUtils;
 
     public ProblemDTO queryById(Integer problemId) {
-        ProblemDO problemDO = this.problemDOMapper.selectByPrimaryKey(problemId);
+        ProblemDO problemDO = problemDao.getById(problemId);
         if (problemDO == null) {
             throw new ApiException(ApiExceptionEnum.PROBLEM_NOT_FOUND);
         }
@@ -51,34 +42,38 @@ public class ProblemService {
     }
 
     public PageResult<ProblemListDTO> queryProblemByPage(int pageNow, int pageSize) {
-        PageHelper.startPage(pageNow, pageSize);
-        Example example = new Example(ProblemListDO.class);
-        example.createCriteria().andEqualTo("isPublic", 1);
-        Page<ProblemListDO> pageInfo = (Page<ProblemListDO>) problemListDOMapper.selectByExample(example);
-        List<ProblemListDTO> problemListDTOList = pageInfo.stream().map(problemListDO -> {
+        Page<ProblemDO> pageResult = problemDao.lambdaQuery().select(
+                ProblemDO::getProblemId,
+                ProblemDO::getIsPublic,
+                ProblemDO::getProblemTitle,
+                ProblemDO::getSubmitNum,
+                ProblemDO::getAcceptNum
+        ).eq(ProblemDO::getIsPublic, 1).page(new Page<>(pageNow, pageSize));
+        List<ProblemListDTO> problemListDTOList = pageResult.getRecords().stream().map(problemListDO -> {
             ProblemListDTO problemListDTO = new ProblemListDTO();
             BeanUtils.copyProperties(problemListDO, problemListDTO);
             return problemListDTO;
         }).collect(Collectors.toList());
-        return new PageResult<>(pageInfo.getPages(), problemListDTOList);
+        return new PageResult<>(pageResult.getPages(), problemListDTOList);
     }
 
     public Map<Integer, String> queryIdToTitleMap() {
-        List<Map> list = problemDOMapper.queryIdToRedisHash();
-        Map<Integer, String> ret = new HashMap<>(list.size());
-        list.stream().forEach(map -> ret.put((Integer)map.get(ProblemDOField.ID), (String)map.get(ProblemDOField.TITLE)));
-        return ret;
+        List<ProblemDO> problemDOList = problemDao.lambdaQuery().select(
+                ProblemDO::getProblemId,
+                ProblemDO::getProblemTitle
+        ).list();
+        return problemDOList.stream().collect(Collectors.toMap(ProblemDO::getUserId, ProblemDO::getUsername, (k1, k2) -> k1));
     }
 
     @PostConstruct
     private void initRedisProblemHash() {
-        List<Map> list = problemDOMapper.queryIdToRedisHash();
-        Map<String, Object> ret1 = new HashMap<>(list.size());
-        Map<String, Object> ret2 = new HashMap<>(list.size());
-        list.stream().forEach(map -> {
-            ret1.put(String.valueOf(map.get(ProblemDOField.ID)), map.get(ProblemDOField.TITLE));
-            ret2.put(String.valueOf(map.get(ProblemDOField.ID)), map.get(ProblemDOField.CHECKPOINT_NUM));
-        });
+        List<ProblemDO> problemDOList = problemDao.lambdaQuery().select(
+                ProblemDO::getProblemId,
+                ProblemDO::getProblemTitle,
+                ProblemDO::getCheckpointNum
+        ).list();
+        Map<String, Object> ret1 = problemDOList.stream().collect(Collectors.toMap(problemDO -> problemDO.getProblemId().toString(), ProblemDO::getProblemTitle, (k1, k2) -> k1));
+        Map<String, Object> ret2 = problemDOList.stream().collect(Collectors.toMap(problemDO -> problemDO.getProblemId().toString(), ProblemDO::getCheckpointNum, (k1, k2) -> k1));
         redisUtils.hmset(RedisConstants.REDIS_KEY_FOR_PROBLEM_ID_TO_TITLE, ret1);
         redisUtils.hmset(RedisConstants.REDIS_KEY_FOR_PROBLEM_ID_TO_CHECKPOINTNUM, ret2);
     }

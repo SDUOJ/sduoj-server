@@ -6,35 +6,32 @@
 package cn.edu.sdu.qd.oj.problem.entity;
 
 import cn.edu.sdu.qd.oj.common.entity.BaseDO;
-import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.baomidou.mybatisplus.annotation.IdType;
+import com.baomidou.mybatisplus.annotation.TableField;
+import com.baomidou.mybatisplus.annotation.TableId;
+import com.baomidou.mybatisplus.annotation.TableName;
 import lombok.*;
-
-import javax.persistence.Column;
-import javax.persistence.Id;
-import javax.persistence.Table;
 
 @Data
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
 @EqualsAndHashCode(callSuper = true)
-@Table(name = ProblemDOField.TABLE_NAME)
+@TableName(ProblemDOField.TABLE_NAME)
 public class ProblemListDO extends BaseDO {
 
-    @Id
-    @Column(name = ProblemDOField.ID)
+    @TableId(value = ProblemDOField.ID, type = IdType.AUTO)
     private Integer problemId;
 
-    @Column(name = ProblemDOField.IS_PUBLIC)
-    @JsonIgnore
+    @TableField(ProblemDOField.IS_PUBLIC)
     private Integer isPublic;
 
-    @Column(name = ProblemDOField.TITLE)
+    @TableField(ProblemDOField.TITLE)
     private String problemTitle;
 
-    @Column(name = ProblemDOField.SUBMIT_NUM)
+    @TableField(ProblemDOField.SUBMIT_NUM)
     private Integer submitNum;
 
-    @Column(name = ProblemDOField.ACCEPT_NUM)
+    @TableField(ProblemDOField.ACCEPT_NUM)
     private Integer acceptNum;
 }

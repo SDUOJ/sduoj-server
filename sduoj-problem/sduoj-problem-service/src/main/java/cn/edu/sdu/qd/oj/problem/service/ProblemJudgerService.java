@@ -5,8 +5,8 @@
 
 package cn.edu.sdu.qd.oj.problem.service;
 
-import cn.edu.sdu.qd.oj.problem.entity.ProblemJudgerDO;
-import cn.edu.sdu.qd.oj.problem.mapper.ProblemJudgerDOMapper;
+import cn.edu.sdu.qd.oj.problem.dao.ProblemDao;
+import cn.edu.sdu.qd.oj.problem.entity.ProblemDO;
 import cn.edu.sdu.qd.oj.problem.dto.ProblemJudgerDTO;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -23,10 +23,17 @@ import org.springframework.stereotype.Service;
 @Service
 public class ProblemJudgerService {
     @Autowired
-    private ProblemJudgerDOMapper problemJudgerDOMapper;
+    private ProblemDao problemDao;
 
     public ProblemJudgerDTO queryById(int problemId) {
-        ProblemJudgerDO problemJudgerDO = this.problemJudgerDOMapper.selectByPrimaryKey(problemId);
+        ProblemDO problemJudgerDO = problemDao.lambdaQuery().select(
+            ProblemDO::getProblemId,
+            ProblemDO::getIsPublic,
+            ProblemDO::getTimeLimit,
+            ProblemDO::getMemoryLimit,
+            ProblemDO::getCheckpointNum,
+            ProblemDO::getCheckpointIds
+        ).eq(ProblemDO::getProblemId, problemId).one();
         ProblemJudgerDTO problemJudgeDTO = new ProblemJudgerDTO();
         BeanUtils.copyProperties(problemJudgerDO, problemJudgeDTO);
         return problemJudgeDTO;

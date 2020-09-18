@@ -10,18 +10,16 @@ import cn.edu.sdu.qd.oj.common.entity.PageResult;
 import cn.edu.sdu.qd.oj.common.enums.ApiExceptionEnum;
 import cn.edu.sdu.qd.oj.common.exception.ApiException;
 import cn.edu.sdu.qd.oj.common.util.RedisUtils;
+import cn.edu.sdu.qd.oj.common.util.UserCacheUtils;
+import cn.edu.sdu.qd.oj.problem.dao.ProblemDao;
+import cn.edu.sdu.qd.oj.problem.entity.ProblemDO;
 import cn.edu.sdu.qd.oj.problem.entity.ProblemManageDO;
-import cn.edu.sdu.qd.oj.problem.entity.ProblemManageListDO;
-import cn.edu.sdu.qd.oj.problem.mapper.ProblemManageDOMapper;
-import cn.edu.sdu.qd.oj.problem.mapper.ProblemManageListDOMapper;
 import cn.edu.sdu.qd.oj.problem.dto.ProblemManageDTO;
 import cn.edu.sdu.qd.oj.problem.dto.ProblemManageListDTO;
-import com.github.pagehelper.Page;
-import com.github.pagehelper.PageHelper;
+import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
-import tk.mybatis.mapper.entity.Example;
 
 import java.util.List;
 import java.util.stream.Collectors;
@@ -37,27 +35,37 @@ import java.util.stream.Collectors;
 @Service
 public class ProblemManageService {
     @Autowired
-    private ProblemManageDOMapper problemManageDOMapper;
-
-    @Autowired
-    private ProblemManageListDOMapper problemManageListDOMapper;
+    private ProblemDao problemDao;
 
     @Autowired
     private RedisUtils redisUtils;
 
+    @Autowired
+    private UserCacheUtils userCacheUtils;
+
     public ProblemManageDTO queryById(Integer problemId) {
-        ProblemManageDO problemManageDO = this.problemManageDOMapper.selectByPrimaryKey(problemId);
+        ProblemDO problemManageDO = problemDao.lambdaQuery().select(
+            ProblemDO::getProblemId,
+            ProblemDO::getIsPublic,
+            ProblemDO::getUserId,
+            ProblemDO::getProblemTitle,
+            ProblemDO::getTimeLimit,
+            ProblemDO::getMemoryLimit,
+            ProblemDO::getMarkdown,
+            ProblemDO::getCheckpointNum,
+            ProblemDO::getCheckpointIds
+        ).eq(ProblemDO::getProblemId, problemId).one();
         ProblemManageDTO problemManageDTO = new ProblemManageDTO();
         BeanUtils.copyProperties(problemManageDO, problemManageDTO);
+        problemManageDTO.setUsername(userCacheUtils.getUsername(problemManageDTO.getUserId()));
         return problemManageDTO;
     }
 
     public boolean createProblem(ProblemManageDTO problem) {
-        ProblemManageDO problemManageDO = new ProblemManageDO();
-        BeanUtils.copyProperties(problem, problemManageDO);
-        problemManageDO.setProblemId(null);
-
-        if (this.problemManageDOMapper.insertSelective(problemManageDO) != 1) {
+        ProblemDO problemDO = new ProblemDO();
+        BeanUtils.copyProperties(problem, problemDO);
+        problemDO.setProblemId(null);
+        if (!problemDao.save(problemDO)) {
             throw new ApiException(ApiExceptionEnum.UNKNOWN_ERROR);
         }
         // 更新缓存
@@ -68,22 +76,29 @@ public class ProblemManageService {
     }
 
     public PageResult<ProblemManageListDTO> queryProblemByPage(int pageNow, int pageSize) {
-        Example example = new Example(ProblemManageListDO.class);
-        PageHelper.startPage(pageNow, pageSize);
-        Page<ProblemManageListDO> pageInfo = (Page<ProblemManageListDO>) problemManageListDOMapper.selectByExample(example);
-        List<ProblemManageListDTO> problemManageListDTOlist = pageInfo.stream().map(problemManageListDO -> {
+        Page<ProblemDO> pageResult = problemDao.lambdaQuery().select(
+                ProblemDO::getProblemId,
+                ProblemDO::getIsPublic,
+                ProblemDO::getUserId,
+                ProblemDO::getProblemTitle,
+                ProblemDO::getSubmitNum,
+                ProblemDO::getAcceptNum,
+                ProblemDO::getTimeLimit,
+                ProblemDO::getMemoryLimit,
+                ProblemDO::getCheckpointNum
+        ).page(new Page<>(pageNow, pageSize));
+        List<ProblemManageListDTO> problemManageListDTOlist = pageResult.getRecords().stream().map(problemDO -> {
             ProblemManageListDTO problemManageListDTO = new ProblemManageListDTO();
-            BeanUtils.copyProperties(problemManageListDO, problemManageListDTO);
+            BeanUtils.copyProperties(problemDO, problemManageListDTO);
             return problemManageListDTO;
         }).collect(Collectors.toList());
-        return new PageResult<>(pageInfo.getPages(), problemManageListDTOlist);
+        return new PageResult<>(pageResult.getPages(), problemManageListDTOlist);
     }
 
     public void update(ProblemManageDTO problem) {
-        ProblemManageDO problemManageDO = new ProblemManageDO();
-        BeanUtils.copyProperties(problem, problemManageDO);
-
-        if (this.problemManageDOMapper.updateByPrimaryKeySelective(problemManageDO) != 1)
+        ProblemDO problemDO = new ProblemDO();
+        BeanUtils.copyProperties(problem, problemDO);
+        if (!problemDao.updateById(problemDO))
             throw new ApiException(ApiExceptionEnum.UNKNOWN_ERROR);
         if (problem.getProblemTitle() != null) {
             redisUtils.hset(RedisConstants.REDIS_KEY_FOR_PROBLEM_ID_TO_TITLE,

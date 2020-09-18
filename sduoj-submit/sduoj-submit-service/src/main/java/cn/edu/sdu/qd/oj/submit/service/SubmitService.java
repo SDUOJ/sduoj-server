@@ -13,14 +13,12 @@ import cn.edu.sdu.qd.oj.common.util.ProblemCacheUtils;
 import cn.edu.sdu.qd.oj.common.util.SnowflakeIdWorker;
 import cn.edu.sdu.qd.oj.common.util.UserCacheUtils;
 import cn.edu.sdu.qd.oj.submit.client.UserClient;
+import cn.edu.sdu.qd.oj.submit.dao.SubmissionDao;
 import cn.edu.sdu.qd.oj.submit.entity.SubmissionDO;
-import cn.edu.sdu.qd.oj.submit.entity.SubmissionListDO;
-import cn.edu.sdu.qd.oj.submit.mapper.SubmissionListDOMapper;
-import cn.edu.sdu.qd.oj.submit.mapper.SubmissionDOMapper;
 import cn.edu.sdu.qd.oj.submit.dto.SubmissionDTO;
 import cn.edu.sdu.qd.oj.submit.dto.SubmissionListDTO;
-import com.github.pagehelper.Page;
-import com.github.pagehelper.PageHelper;
+import com.baomidou.mybatisplus.extension.conditions.query.LambdaQueryChainWrapper;
+import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.amqp.rabbit.core.RabbitTemplate;
@@ -28,7 +26,6 @@ import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import tk.mybatis.mapper.entity.Example;
 
 import java.util.HashMap;
 import java.util.List;
@@ -48,13 +45,10 @@ import java.util.stream.Collectors;
 public class SubmitService {
 
     @Autowired
-    private SubmissionDOMapper submissionDOMapper;
+    private SubmissionDao submissionDao;
 
     @Autowired
     private RabbitTemplate rabbitTemplate;
-
-    @Autowired
-    private SubmissionListDOMapper submissionListDOMapper;
 
     @Autowired
     private UserClient userClient;
@@ -75,7 +69,7 @@ public class SubmitService {
         SubmissionDO submissionDO = new SubmissionDO();
         BeanUtils.copyProperties(submissionDTO, submissionDO);
 
-        if (this.submissionDOMapper.insertSelective(submissionDO) == 1) {
+        if (!submissionDao.save(submissionDO)) {
             try {
                 Map<String, Object> msg = new HashMap<>();
                 msg.put("event", "submissionCreated");
@@ -92,7 +86,7 @@ public class SubmitService {
 
 
     public SubmissionDTO queryById(long submissionId) {
-        SubmissionDO submissionDO = this.submissionDOMapper.selectByPrimaryKey(submissionId);
+        SubmissionDO submissionDO = submissionDao.getById(submissionId);
         // 取 checkpointNum
         if (submissionDO != null) {
             submissionDO.setCheckpointNum(problemCacheUtils.getProblemCheckpointNum(submissionDO.getProblemId()));
@@ -116,17 +110,27 @@ public class SubmitService {
                 log.error("[Submission] ", ignore.getMessage());
             }
         }
-        Example example = new Example(SubmissionListDO.class);
-        example.orderBy("createTime").desc();
+        LambdaQueryChainWrapper<SubmissionDO> queryChainWrapper = submissionDao.lambdaQuery().select(
+            SubmissionDO::getSubmissionId,
+            SubmissionDO::getProblemId,
+            SubmissionDO::getUserId,
+            SubmissionDO::getLanguageId,
+            SubmissionDO::getCreateTime,
+            SubmissionDO::getJudgeTime,
+            SubmissionDO::getJudgeResult,
+            SubmissionDO::getJudgeScore,
+            SubmissionDO::getUsedTime,
+            SubmissionDO::getUsedMemory,
+            SubmissionDO::getCodeLength
+        ).orderByDesc(SubmissionDO::getCreateTime);
         if (userId != null) {
-            example.createCriteria().andEqualTo("userId", userId);
+            queryChainWrapper.eq(SubmissionDO::getUserId, userId);
         }
         if (problemId != null) {
-            example.createCriteria().andEqualTo("problemId", problemId);
+            queryChainWrapper.eq(SubmissionDO::getProblemId, problemId);
         }
-        PageHelper.startPage(pageNow, pageSize);
-        Page<SubmissionListDO> pageInfo = (Page<SubmissionListDO>) submissionListDOMapper.selectByExample(example);
-        List<SubmissionListDTO> submissionListDTOList = pageInfo.stream().map(submissionListDO -> {
+        Page<SubmissionDO> pageResult = queryChainWrapper.page(new Page<>(pageNow, pageSize));
+        List<SubmissionListDTO> submissionListDTOList = pageResult.getRecords().stream().map(submissionListDO -> {
             SubmissionListDTO submissionListDTO = new SubmissionListDTO();
             BeanUtils.copyProperties(submissionListDO, submissionListDTO);
             return submissionListDTO;
@@ -142,7 +146,7 @@ public class SubmitService {
         } else {
             submissionListDTOList.forEach(submissionListDTO -> submissionListDTO.setUsername(userCacheUtils.getUsername(submissionListDTO.getUserId())));
         }
-        return new PageResult<>(pageInfo.getPages(), submissionListDTOList);
+        return new PageResult<>(pageResult.getPages(), submissionListDTOList);
     }
 
 }

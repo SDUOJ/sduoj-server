@@ -6,11 +6,11 @@
 package cn.edu.sdu.qd.oj.submit.entity;
 
 import cn.edu.sdu.qd.oj.common.entity.BaseDO;
+import com.baomidou.mybatisplus.annotation.TableField;
+import com.baomidou.mybatisplus.annotation.TableId;
+import com.baomidou.mybatisplus.annotation.TableName;
 import lombok.*;
 
-import javax.persistence.Column;
-import javax.persistence.Id;
-import javax.persistence.Table;
 import java.util.Date;
 
 @Data
@@ -18,28 +18,27 @@ import java.util.Date;
 @NoArgsConstructor
 @AllArgsConstructor
 @EqualsAndHashCode(callSuper = true)
-@Table(name = SubmissionDOField.TABLE_NAME)
+@TableName(SubmissionDOField.TABLE_NAME)
 public class SubmissionJudgeDO extends BaseDO {
 
-    @Id
-    @Column(name = SubmissionDOField.ID)
+    @TableId(value = SubmissionDOField.ID)
     private Long submissionId;
 
-    @Column(name = SubmissionDOField.PROBLEM_ID)
+    @TableField(SubmissionDOField.PROBLEM_ID)
     private Integer problemId;
 
-    @Column(name = SubmissionDOField.USER_ID)
+    @TableField(SubmissionDOField.USER_ID)
     private Integer userId;
 
-    @Column(name = SubmissionDOField.LANGUAGE_ID)
+    @TableField(SubmissionDOField.LANGUAGE_ID)
     private Integer languageId;
 
-    @Column(name = SubmissionDOField.CREATE_TIME)
+    @TableField(SubmissionDOField.CREATE_TIME)
     private Date createTime;
 
-    @Column(name = SubmissionDOField.CODE)
+    @TableField(SubmissionDOField.CODE)
     private String code;
 
-    @Column(name = SubmissionDOField.CODE_LENGTH)
+    @TableField(SubmissionDOField.CODE_LENGTH)
     private Integer codeLength;
 }

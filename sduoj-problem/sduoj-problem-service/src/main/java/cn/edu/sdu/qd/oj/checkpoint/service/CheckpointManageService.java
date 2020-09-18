@@ -5,10 +5,11 @@
 
 package cn.edu.sdu.qd.oj.checkpoint.service;
 
+import cn.edu.sdu.qd.oj.checkpoint.dao.CheckpointDao;
 import cn.edu.sdu.qd.oj.checkpoint.entity.CheckpointDO;
-import cn.edu.sdu.qd.oj.checkpoint.mapper.CheckpointDOMapper;
 import cn.edu.sdu.qd.oj.checkpoint.dto.CheckpointDTO;
-import cn.edu.sdu.qd.oj.problem.mapper.ProblemManageDOMapper;
+import cn.edu.sdu.qd.oj.problem.dao.ProblemDao;
+import cn.edu.sdu.qd.oj.problem.entity.ProblemDO;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -28,14 +29,14 @@ import java.util.stream.Collectors;
 public class CheckpointManageService {
 
     @Autowired
-    private CheckpointDOMapper checkpointDOMapper;
+    private CheckpointDao checkpointDao;
 
     @Autowired
-    private ProblemManageDOMapper problemManageDOMapper;
+    private ProblemDao problemDao;
 
     public List<CheckpointDTO> getCheckpoints(int problemId) {
-        List<Map> list = problemManageDOMapper.queryCheckpointIds(problemId);
-        byte[] bytes = (byte[]) list.get(0).get("p_checkpoint_ids");
+        ProblemDO problemDO = problemDao.lambdaQuery().select(ProblemDO::getCheckpointIds).eq(ProblemDO::getProblemId, problemId).one();
+        byte[] bytes = problemDO.getCheckpointIds();
         if (bytes.length == 0) {
             return new ArrayList<>();
         }
@@ -46,7 +47,7 @@ public class CheckpointManageService {
             checkpointIds.add(wrap.getLong(i));
             indexMap.put(wrap.getLong(i), i);
         }
-        List<CheckpointDO> checkpointDOList = checkpointDOMapper.selectByIdList(checkpointIds);
+        List<CheckpointDO> checkpointDOList = checkpointDao.listByIds(checkpointIds);
         List<CheckpointDTO> checkpointDTOList = checkpointDOList.stream().map(checkpointDO -> CheckpointDTO.builder()
                 .checkpointId(checkpointDO.getCheckpointId())
                 .inputDescription(checkpointDO.getInputDescription())

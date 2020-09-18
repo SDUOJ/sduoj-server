@@ -6,8 +6,8 @@
 package cn.edu.sdu.qd.oj.checkpoint.service;
 
 import cn.edu.sdu.qd.oj.checkpoint.config.CheckpointFileSystemProperties;
+import cn.edu.sdu.qd.oj.checkpoint.dao.CheckpointDao;
 import cn.edu.sdu.qd.oj.checkpoint.entity.CheckpointDO;
-import cn.edu.sdu.qd.oj.checkpoint.mapper.CheckpointDOMapper;
 import cn.edu.sdu.qd.oj.checkpoint.dto.CheckpointDTO;
 import cn.edu.sdu.qd.oj.common.enums.ApiExceptionEnum;
 import cn.edu.sdu.qd.oj.common.exception.ApiException;
@@ -48,7 +48,7 @@ public class CheckpointFileService {
     private SnowflakeIdWorker snowflakeIdWorker = new SnowflakeIdWorker();
 
     @Autowired
-    private CheckpointDOMapper checkpointDOMapper;
+    private CheckpointDao checkpointDao;
 
     /**
      * @param files
@@ -106,7 +106,7 @@ public class CheckpointFileService {
                     .outputFileName(checkpointDTO.getOutputFileName())
                     .outputSize(checkpointDTO.getOutputSize())
                     .build()).collect(Collectors.toList());
-            checkpointDOMapper.insertList(checkpointDOList);
+            checkpointDao.saveBatch(checkpointDOList);
         } catch (Exception e) {
             for (CheckpointDTO checkpointDTO : checkpointDTOList) {
                 new File(checkpointFileSystemProperties.getBaseDir() + File.separator + Long.toHexString(checkpointDTO.getCheckpointId()) + ".in").delete();
@@ -138,7 +138,7 @@ public class CheckpointFileService {
                 output.length()
         );
         try {
-            checkpointDOMapper.insert(CheckpointDO.builder()
+            checkpointDao.save(CheckpointDO.builder()
                     .checkpointId(checkpointDTO.getCheckpointId())
                     .inputDescription(checkpointDTO.getInputDescription())
                     .inputFileName(checkpointDTO.getInputFileName())

@@ -6,11 +6,11 @@
 package cn.edu.sdu.qd.oj.checkpoint.entity;
 
 import cn.edu.sdu.qd.oj.common.entity.BaseDO;
+import com.baomidou.mybatisplus.annotation.IdType;
+import com.baomidou.mybatisplus.annotation.TableField;
+import com.baomidou.mybatisplus.annotation.TableId;
+import com.baomidou.mybatisplus.annotation.TableName;
 import lombok.*;
-
-import javax.persistence.Column;
-import javax.persistence.Id;
-import javax.persistence.Table;
 
 /**
  * @Author zhangt2333
@@ -23,30 +23,29 @@ import javax.persistence.Table;
 @NoArgsConstructor
 @AllArgsConstructor
 @EqualsAndHashCode(callSuper = true)
-@Table(name = CheckpointDOField.TABLE_NAME)
+@TableName(CheckpointDOField.TABLE_NAME)
 public class CheckpointDO extends BaseDO {
     public static final int MAX_DESCRIPTIONs_LENGTH = 32;
 
-    @Id
-    @Column(name = CheckpointDOField.ID)
+    @TableId(value = CheckpointDOField.ID, type = IdType.NONE)
     private Long checkpointId;
 
-    @Column(name = CheckpointDOField.INPUT_DESC)
+    @TableField(CheckpointDOField.INPUT_DESC)
     private String inputDescription;
 
-    @Column(name = CheckpointDOField.OUTPUT_DESC)
+    @TableField(CheckpointDOField.OUTPUT_DESC)
     private String outputDescription;
 
-    @Column(name = CheckpointDOField.INPUT_SIZE)
+    @TableField(CheckpointDOField.INPUT_SIZE)
     private Integer inputSize;
 
-    @Column(name = CheckpointDOField.OUTPUT_SIZE)
+    @TableField(CheckpointDOField.OUTPUT_SIZE)
     private Integer outputSize;
 
-    @Column(name = CheckpointDOField.INPUT_FILE_NAME)
+    @TableField(CheckpointDOField.INPUT_FILE_NAME)
     private String inputFileName;
 
-    @Column(name = CheckpointDOField.OUTPUT_FILE_NAME)
+    @TableField(CheckpointDOField.OUTPUT_FILE_NAME)
     private String outputFileName;
 
     public CheckpointDO(Long checkpointId, String inputDescription, String outputDescription, Integer inputSize, Integer outputSize) {

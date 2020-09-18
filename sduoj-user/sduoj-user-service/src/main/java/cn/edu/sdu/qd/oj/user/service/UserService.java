@@ -10,17 +10,17 @@ import cn.edu.sdu.qd.oj.common.enums.ApiExceptionEnum;
 import cn.edu.sdu.qd.oj.common.exception.ApiException;
 import cn.edu.sdu.qd.oj.common.exception.InternalApiException;
 import cn.edu.sdu.qd.oj.common.util.RedisUtils;
+import cn.edu.sdu.qd.oj.user.dao.UserDao;
 import cn.edu.sdu.qd.oj.user.entity.UserDO;
 import cn.edu.sdu.qd.oj.user.dto.UserDTO;
-import cn.edu.sdu.qd.oj.user.mapper.UserMapper;
 import cn.edu.sdu.qd.oj.user.utils.CodecUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.PostConstruct;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 /**
  * @ClassName UserService
@@ -34,13 +34,13 @@ import java.util.Map;
 public class UserService {
 
     @Autowired
-    private UserMapper userMapper;
+    private UserDao userDao;
 
     @Autowired
     private RedisUtils redisUtils;
 
     public UserDTO query(Integer userId) {
-        UserDO userDO = this.userMapper.selectByPrimaryKey(userId);
+        UserDO userDO = userDao.getById(userId);
         if (userDO == null) {
             throw new ApiException(ApiExceptionEnum.USER_NOT_FOUND);
         }
@@ -57,10 +57,7 @@ public class UserService {
 
     public UserDTO query(String username, String password) throws InternalApiException {
         // 查询
-        UserDO record = UserDO.builder()
-                .username(username)
-                .build();
-        UserDO userDO = this.userMapper.selectOne(record);
+        UserDO userDO = userDao.lambdaQuery().eq(UserDO::getUsername, username).one();
         // 校验用户名
         if (userDO == null) {
             throw new InternalApiException(ApiExceptionEnum.USER_NOT_FOUND);
@@ -95,9 +92,8 @@ public class UserService {
                 .username(userDTO.getUsername())
                 .build();
         userDO.setPassword(CodecUtils.md5Hex(userDTO.getPassword(), "slat_string"));
-
         // TODO: username 重复时插入失败的异常处理器
-        if(this.userMapper.insertSelective(userDO) != 1) {
+        if(!userDao.save(userDO)) {
             throw new ApiException(ApiExceptionEnum.UNKNOWN_ERROR);
         }
         // 更新缓存
@@ -107,23 +103,19 @@ public class UserService {
     }
 
     public Integer queryUserId(String username) {
-        return userMapper.queryUserId(username);
+        UserDO userDO = userDao.lambdaQuery().eq(UserDO::getUsername, username).select(UserDO::getUserId).one();
+        return userDO.getUserId();
     }
 
-    public Map<Integer, String> queryIdToNameMap() {
-        List<Map> list = userMapper.queryIdToNameMap();
-        Map<Integer, String> ret = new HashMap<>(list.size());
-        // TODO: 魔法值解决
-        list.stream().forEach(map -> ret.put((Integer)map.get("u_id"), (String)map.get("u_username")));
-        return ret;
+    public Map<Integer, String> queryIdToUsernameMap() {
+        List<UserDO> userDOList = userDao.lambdaQuery().select(UserDO::getUserId, UserDO::getUsername).list();
+        return userDOList.stream().collect(Collectors.toMap(UserDO::getUserId, UserDO::getUsername, (k1, k2) -> k1));
     }
 
     @PostConstruct
     public void initRedisUserHash() {
-        List<Map> list = userMapper.queryIdToNameMap();
-        Map<String, Object> ret = new HashMap<>(list.size());
-        // TODO: 魔法值解决
-        list.stream().forEach(map -> ret.put(String.valueOf(map.get("u_id")), map.get("u_username")));
-        redisUtils.hmset(RedisConstants.REDIS_KEY_FOR_USER_ID_TO_USERNAME, ret);
+        List<UserDO> userDOList = userDao.lambdaQuery().select(UserDO::getUserId, UserDO::getUsername).list();
+        Map<String, Object> map = userDOList.stream().collect(Collectors.toMap(userDo -> userDo.getUserId().toString(), UserDO::getUsername, (k1, k2) -> k1));
+        redisUtils.hmset(RedisConstants.REDIS_KEY_FOR_USER_ID_TO_USERNAME, map);
     }
 }

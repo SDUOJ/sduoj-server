@@ -70,7 +70,7 @@ public class UserInternalController {
     @GetMapping("/queryid2name")
     @ResponseBody
     Map<Integer, String> queryAll() {
-        return userService.queryIdToNameMap();
+        return userService.queryIdToUsernameMap();
     }
 
 }

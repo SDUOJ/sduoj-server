@@ -6,7 +6,7 @@
 package cn.edu.sdu.qd.oj.submit.mapper;
 
 import cn.edu.sdu.qd.oj.submit.entity.SubmissionDO;
-import tk.mybatis.mapper.common.Mapper;
+import com.baomidou.mybatisplus.core.mapper.BaseMapper;
 
-public interface SubmissionDOMapper extends Mapper<SubmissionDO> {
+public interface SubmissionMapper extends BaseMapper<SubmissionDO> {
 }

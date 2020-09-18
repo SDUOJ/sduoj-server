@@ -24,15 +24,19 @@ import java.util.List;
 @AllArgsConstructor
 public class PageResult<T> {
     private Long total;
-    private Integer totalPage;
+    private Long totalPage;
     private List<T> rows;
 
-    public PageResult(Integer totalPage, List<T> rows) {
+    public PageResult(Long totalPage, List<T> rows) {
         this.totalPage = totalPage;
         this.rows = rows;
         if (rows != null)
-            this.total = Long.valueOf(rows.size());
+            this.total = (long) rows.size();
         else
             this.total = 0L;
+    }
+
+    public PageResult(Integer totalPage, List<T> rows) {
+        this((long) totalPage, rows);
     }
 }

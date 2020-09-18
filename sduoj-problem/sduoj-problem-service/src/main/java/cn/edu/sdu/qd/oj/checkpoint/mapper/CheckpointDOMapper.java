@@ -6,7 +6,7 @@
 package cn.edu.sdu.qd.oj.checkpoint.mapper;
 
 import cn.edu.sdu.qd.oj.checkpoint.entity.CheckpointDO;
-import cn.edu.sdu.qd.oj.common.mapper.BaseMapper;
+import com.baomidou.mybatisplus.core.mapper.BaseMapper;
 
 /**
  * @Description TODO
@@ -15,5 +15,5 @@ import cn.edu.sdu.qd.oj.common.mapper.BaseMapper;
  * @Version V1.0
  **/
 
-public interface CheckpointDOMapper extends BaseMapper<CheckpointDO, Long> {
+public interface CheckpointDOMapper extends BaseMapper<CheckpointDO> {
 }
