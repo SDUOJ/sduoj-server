@@ -32,9 +32,13 @@
         <spring-cloud.version>Greenwich.SR5</spring-cloud.version>
         <mybatis.starter.version>2.1.1</mybatis.starter.version>
         <mysql.version>8.0.16</mysql.version>
-        <lombok.version>1.18.4</lombok.version>
+        <lombok.version>1.18.12</lombok.version>
         <spring-cloud-alibaba.version>2.1.2.RELEASE</spring-cloud-alibaba.version>
         <mabatis-plus.version>3.4.0</mabatis-plus.version>
+        <mapstruct.version>1.4.0.CR1</mapstruct.version>
+        <maven-compiler-plugin.version>3.8.1</maven-compiler-plugin.version>
+        <fastjson.version>1.2.73</fastjson.version>
+        <commons-lang3.version>3.11</commons-lang3.version>
     </properties>
 
     <!-- 为所有子工程都引入 -->
@@ -82,38 +86,45 @@
                 <artifactId>mybatis-plus-boot-starter</artifactId>
                 <version>${mabatis-plus.version}</version>
             </dependency>
+            <!-- MapStruct -->
+            <dependency>
+                <groupId>org.mapstruct</groupId>
+                <artifactId>mapstruct</artifactId>
+                <version>${mapstruct.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.mapstruct</groupId>
+                <artifactId>mapstruct-processor</artifactId>
+                <version>${mapstruct.version}</version>
+            </dependency>
+            <!-- fastjson -->
+            <dependency>
+                <groupId>com.alibaba</groupId>
+                <artifactId>fastjson</artifactId>
+                <version>${fastjson.version}</version>
+            </dependency>
+            <!-- commons-lang3 -->
+            <dependency>
+                <groupId>org.apache.commons</groupId>
+                <artifactId>commons-lang3</artifactId>
+                <version>${commons-lang3.version}</version>
+            </dependency>
         </dependencies>
     </dependencyManagement>
 
-<!-- 微服务 Docker Image 打包插件 -->
-<!--    <build>-->
-<!--        <finalName>app</finalName>-->
-<!--        <plugins>-->
-<!--            <plugin>-->
-<!--                <groupId>org.springframework.boot</groupId>-->
-<!--                <artifactId>spring-boot-maven-plugin</artifactId>-->
-<!--            </plugin>-->
-<!--            &lt;!&ndash; docker的maven插件, 官网： https://github.com/spotify/docker-maven-plugin &ndash;&gt;-->
-<!--            <plugin>-->
-<!--                <groupId>com.spotify</groupId>-->
-<!--                <artifactId>docker-maven-plugin</artifactId>-->
-<!--                <version>0.4.13</version>-->
-<!--                <configuration>-->
-<!--                    <imageName>192.168.68.132:5000/${project.artifactId}:${project.version}-->
-<!--                    </imageName>-->
-<!--                    <baseImage>jdk1.8</baseImage>-->
-<!--                    <entryPoint>["java", "-jar", "/${project.build.finalName}.jar"]</entryPoint>-->
-<!--                    <resources>-->
-<!--                        <resource>-->
-<!--                            <targetPath>/</targetPath>-->
-<!--                            <directory>${project.build.directory}</directory>-->
-<!--                            <include>${project.build.finalName}.jar</include>-->
-<!--                        </resource>-->
-<!--                    </resources>-->
-<!--                    <dockerHost>http://192.168.68.132:2375</dockerHost>-->
-<!--                </configuration>-->
-<!--            </plugin>-->
-<!--        </plugins>-->
-<!--    </build>-->
+    <build>
+        <plugins>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-compiler-plugin</artifactId>
+                <version>${maven-compiler-plugin.version}</version>
+                <configuration>
+                    <source>${java.version}</source>
+                    <target>${java.version}</target>
+                    <encoding>${project.build.sourceEncoding}</encoding>
+                </configuration>
+            </plugin>
+        </plugins>
+    </build>
 
 </project>

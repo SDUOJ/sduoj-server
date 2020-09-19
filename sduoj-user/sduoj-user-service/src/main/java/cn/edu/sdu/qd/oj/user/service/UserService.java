@@ -10,6 +10,7 @@ import cn.edu.sdu.qd.oj.common.enums.ApiExceptionEnum;
 import cn.edu.sdu.qd.oj.common.exception.ApiException;
 import cn.edu.sdu.qd.oj.common.exception.InternalApiException;
 import cn.edu.sdu.qd.oj.common.util.RedisUtils;
+import cn.edu.sdu.qd.oj.user.converter.UserConverter;
 import cn.edu.sdu.qd.oj.user.dao.UserDao;
 import cn.edu.sdu.qd.oj.user.entity.UserDO;
 import cn.edu.sdu.qd.oj.user.dto.UserDTO;
@@ -39,20 +40,15 @@ public class UserService {
     @Autowired
     private RedisUtils redisUtils;
 
+    @Autowired
+    private UserConverter userConverter;
+
     public UserDTO query(Integer userId) {
         UserDO userDO = userDao.getById(userId);
         if (userDO == null) {
             throw new ApiException(ApiExceptionEnum.USER_NOT_FOUND);
         }
-        return UserDTO.builder()
-                .userId(userDO.getUserId())
-                .createTime(userDO.getCreateTime())
-                .email(userDO.getEmail())
-                .gender(userDO.getGender())
-                .role(userDO.getRole())
-                .studentId(userDO.getStudentId())
-                .username(userDO.getUsername())
-                .build();
+        return userConverter.to(userDO);
     }
 
     public UserDTO query(String username, String password) throws InternalApiException {
@@ -71,27 +67,12 @@ public class UserService {
 //            throw new InternalApiException(ExceptionEnum.PASSWORD_NOT_MATCHING);
 //        }
         // 用户名密码都正确
-        return UserDTO.builder()
-                .userId(userDO.getUserId())
-                .createTime(userDO.getCreateTime())
-                .email(userDO.getEmail())
-                .gender(userDO.getGender())
-                .role(userDO.getRole())
-                .studentId(userDO.getStudentId())
-                .username(userDO.getUsername())
-                .build();
+        return userConverter.to(userDO);
     }
 
     public void register(UserDTO userDTO) {
-        UserDO userDO = UserDO.builder()
-                .createTime(userDTO.getCreateTime())
-                .email(userDTO.getEmail())
-                .gender(userDTO.getGender())
-                .role(userDTO.getRole())
-                .studentId(userDTO.getStudentId())
-                .username(userDTO.getUsername())
-                .build();
-        userDO.setPassword(CodecUtils.md5Hex(userDTO.getPassword(), "slat_string"));
+        UserDO userDO = userConverter.from(userDTO);
+        userDO.setPassword(CodecUtils.md5Hex(userDO.getPassword(), "slat_string"));
         // TODO: username 重复时插入失败的异常处理器
         if(!userDao.save(userDO)) {
             throw new ApiException(ApiExceptionEnum.UNKNOWN_ERROR);

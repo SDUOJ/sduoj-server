@@ -13,6 +13,8 @@ import cn.edu.sdu.qd.oj.common.util.ProblemCacheUtils;
 import cn.edu.sdu.qd.oj.common.util.SnowflakeIdWorker;
 import cn.edu.sdu.qd.oj.common.util.UserCacheUtils;
 import cn.edu.sdu.qd.oj.submit.client.UserClient;
+import cn.edu.sdu.qd.oj.submit.converter.SubmissionConverter;
+import cn.edu.sdu.qd.oj.submit.converter.SubmissionListConverter;
 import cn.edu.sdu.qd.oj.submit.dao.SubmissionDao;
 import cn.edu.sdu.qd.oj.submit.entity.SubmissionDO;
 import cn.edu.sdu.qd.oj.submit.dto.SubmissionDTO;
@@ -22,7 +24,6 @@ import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.amqp.rabbit.core.RabbitTemplate;
-import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -30,7 +31,6 @@ import org.springframework.transaction.annotation.Transactional;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.stream.Collectors;
 
 /**
  * @ClassName SubmitService
@@ -59,6 +59,12 @@ public class SubmitService {
     @Autowired
     private ProblemCacheUtils problemCacheUtils;
 
+    @Autowired
+    private SubmissionConverter submissionConverter;
+
+    @Autowired
+    private SubmissionListConverter submissionListConverter;
+
     // TODO: 临时采用 IP+PID 格式, 生产时加配置文件 Autowired
     private SnowflakeIdWorker snowflakeIdWorker = new SnowflakeIdWorker();
 
@@ -66,9 +72,8 @@ public class SubmitService {
     public boolean createSubmission(SubmissionDTO submissionDTO) {
         long snowflaskId = snowflakeIdWorker.nextId();
         submissionDTO.setSubmissionId(snowflaskId);
-        SubmissionDO submissionDO = new SubmissionDO();
-        BeanUtils.copyProperties(submissionDTO, submissionDO);
 
+        SubmissionDO submissionDO = submissionConverter.from(submissionDTO);
         if (!submissionDao.save(submissionDO)) {
             try {
                 Map<String, Object> msg = new HashMap<>();
@@ -90,9 +95,7 @@ public class SubmitService {
         // 取 checkpointNum
         if (submissionDO != null) {
             submissionDO.setCheckpointNum(problemCacheUtils.getProblemCheckpointNum(submissionDO.getProblemId()));
-            SubmissionDTO submissionDTO = new SubmissionDTO();
-            BeanUtils.copyProperties(submissionDO, submissionDTO);
-            return submissionDTO;
+            return submissionConverter.to(submissionDO);
         }
         return null;
     }
@@ -130,11 +133,7 @@ public class SubmitService {
             queryChainWrapper.eq(SubmissionDO::getProblemId, problemId);
         }
         Page<SubmissionDO> pageResult = queryChainWrapper.page(new Page<>(pageNow, pageSize));
-        List<SubmissionListDTO> submissionListDTOList = pageResult.getRecords().stream().map(submissionListDO -> {
-            SubmissionListDTO submissionListDTO = new SubmissionListDTO();
-            BeanUtils.copyProperties(submissionListDO, submissionListDTO);
-            return submissionListDTO;
-        }).collect(Collectors.toList());
+        List<SubmissionListDTO> submissionListDTOList = submissionListConverter.to(pageResult.getRecords());
         if (problemId != null) {
             String problemTitle = problemCacheUtils.getProblemTitle(problemId);
             submissionListDTOList.forEach(submissionListDTO -> submissionListDTO.setProblemTitle(problemTitle));

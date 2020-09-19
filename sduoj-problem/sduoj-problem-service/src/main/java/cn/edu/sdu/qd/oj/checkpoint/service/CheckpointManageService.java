@@ -5,6 +5,7 @@
 
 package cn.edu.sdu.qd.oj.checkpoint.service;
 
+import cn.edu.sdu.qd.oj.checkpoint.converter.CheckpointConverter;
 import cn.edu.sdu.qd.oj.checkpoint.dao.CheckpointDao;
 import cn.edu.sdu.qd.oj.checkpoint.entity.CheckpointDO;
 import cn.edu.sdu.qd.oj.checkpoint.dto.CheckpointDTO;
@@ -15,7 +16,6 @@ import org.springframework.stereotype.Service;
 
 import java.nio.ByteBuffer;
 import java.util.*;
-import java.util.stream.Collectors;
 
 /**
  * @ClassName checkpointManageService
@@ -34,6 +34,9 @@ public class CheckpointManageService {
     @Autowired
     private ProblemDao problemDao;
 
+    @Autowired
+    private CheckpointConverter checkpointConverter;
+
     public List<CheckpointDTO> getCheckpoints(int problemId) {
         ProblemDO problemDO = problemDao.lambdaQuery().select(ProblemDO::getCheckpointIds).eq(ProblemDO::getProblemId, problemId).one();
         byte[] bytes = problemDO.getCheckpointIds();
@@ -48,15 +51,7 @@ public class CheckpointManageService {
             indexMap.put(wrap.getLong(i), i);
         }
         List<CheckpointDO> checkpointDOList = checkpointDao.listByIds(checkpointIds);
-        List<CheckpointDTO> checkpointDTOList = checkpointDOList.stream().map(checkpointDO -> CheckpointDTO.builder()
-                .checkpointId(checkpointDO.getCheckpointId())
-                .inputDescription(checkpointDO.getInputDescription())
-                .inputFileName(checkpointDO.getInputFileName())
-                .inputSize(checkpointDO.getInputSize())
-                .outputDescription(checkpointDO.getOutputDescription())
-                .outputFileName(checkpointDO.getOutputFileName())
-                .outputSize(checkpointDO.getOutputSize())
-                .build()).collect(Collectors.toList());
+        List<CheckpointDTO> checkpointDTOList = checkpointConverter.to(checkpointDOList);
         checkpointDTOList.sort(Comparator.comparing(o -> indexMap.get(o.getCheckpointId())));
         return checkpointDTOList;
     }

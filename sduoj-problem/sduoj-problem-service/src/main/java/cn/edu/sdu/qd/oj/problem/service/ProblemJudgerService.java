@@ -5,6 +5,7 @@
 
 package cn.edu.sdu.qd.oj.problem.service;
 
+import cn.edu.sdu.qd.oj.problem.converter.ProblemJudgerConverter;
 import cn.edu.sdu.qd.oj.problem.dao.ProblemDao;
 import cn.edu.sdu.qd.oj.problem.entity.ProblemDO;
 import cn.edu.sdu.qd.oj.problem.dto.ProblemJudgerDTO;
@@ -25,6 +26,9 @@ public class ProblemJudgerService {
     @Autowired
     private ProblemDao problemDao;
 
+    @Autowired
+    private ProblemJudgerConverter problemJudgerConverter;
+
     public ProblemJudgerDTO queryById(int problemId) {
         ProblemDO problemJudgerDO = problemDao.lambdaQuery().select(
             ProblemDO::getProblemId,
@@ -34,8 +38,6 @@ public class ProblemJudgerService {
             ProblemDO::getCheckpointNum,
             ProblemDO::getCheckpointIds
         ).eq(ProblemDO::getProblemId, problemId).one();
-        ProblemJudgerDTO problemJudgeDTO = new ProblemJudgerDTO();
-        BeanUtils.copyProperties(problemJudgerDO, problemJudgeDTO);
-        return problemJudgeDTO;
+        return problemJudgerConverter.to(problemJudgerDO);
     }
 }

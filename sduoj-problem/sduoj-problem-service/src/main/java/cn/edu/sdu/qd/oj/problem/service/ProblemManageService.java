@@ -11,6 +11,10 @@ import cn.edu.sdu.qd.oj.common.enums.ApiExceptionEnum;
 import cn.edu.sdu.qd.oj.common.exception.ApiException;
 import cn.edu.sdu.qd.oj.common.util.RedisUtils;
 import cn.edu.sdu.qd.oj.common.util.UserCacheUtils;
+import cn.edu.sdu.qd.oj.problem.converter.ProblemConverter;
+import cn.edu.sdu.qd.oj.problem.converter.ProblemListConverter;
+import cn.edu.sdu.qd.oj.problem.converter.ProblemManageConverter;
+import cn.edu.sdu.qd.oj.problem.converter.ProblemManageListConverter;
 import cn.edu.sdu.qd.oj.problem.dao.ProblemDao;
 import cn.edu.sdu.qd.oj.problem.entity.ProblemDO;
 import cn.edu.sdu.qd.oj.problem.entity.ProblemManageDO;
@@ -43,6 +47,12 @@ public class ProblemManageService {
     @Autowired
     private UserCacheUtils userCacheUtils;
 
+    @Autowired
+    private ProblemManageConverter problemManageConverter;
+
+    @Autowired
+    private ProblemManageListConverter problemManageListConverter;
+
     public ProblemManageDTO queryById(Integer problemId) {
         ProblemDO problemManageDO = problemDao.lambdaQuery().select(
             ProblemDO::getProblemId,
@@ -55,16 +65,13 @@ public class ProblemManageService {
             ProblemDO::getCheckpointNum,
             ProblemDO::getCheckpointIds
         ).eq(ProblemDO::getProblemId, problemId).one();
-        ProblemManageDTO problemManageDTO = new ProblemManageDTO();
-        BeanUtils.copyProperties(problemManageDO, problemManageDTO);
-        problemManageDTO.setUsername(userCacheUtils.getUsername(problemManageDTO.getUserId()));
-        return problemManageDTO;
+        problemManageDO.setUsername(userCacheUtils.getUsername(problemManageDO.getUserId()));
+        return problemManageConverter.to(problemManageDO);
     }
 
     public boolean createProblem(ProblemManageDTO problem) {
-        ProblemDO problemDO = new ProblemDO();
-        BeanUtils.copyProperties(problem, problemDO);
-        problemDO.setProblemId(null);
+        problem.setProblemId(null);
+        ProblemDO problemDO = problemManageConverter.from(problem);
         if (!problemDao.save(problemDO)) {
             throw new ApiException(ApiExceptionEnum.UNKNOWN_ERROR);
         }
@@ -87,26 +94,21 @@ public class ProblemManageService {
                 ProblemDO::getMemoryLimit,
                 ProblemDO::getCheckpointNum
         ).page(new Page<>(pageNow, pageSize));
-        List<ProblemManageListDTO> problemManageListDTOlist = pageResult.getRecords().stream().map(problemDO -> {
-            ProblemManageListDTO problemManageListDTO = new ProblemManageListDTO();
-            BeanUtils.copyProperties(problemDO, problemManageListDTO);
-            return problemManageListDTO;
-        }).collect(Collectors.toList());
+        List<ProblemManageListDTO> problemManageListDTOlist = problemManageListConverter.to(pageResult.getRecords());
         return new PageResult<>(pageResult.getPages(), problemManageListDTOlist);
     }
 
     public void update(ProblemManageDTO problem) {
-        ProblemDO problemDO = new ProblemDO();
-        BeanUtils.copyProperties(problem, problemDO);
+        ProblemDO problemDO = problemManageConverter.from(problem);
         if (!problemDao.updateById(problemDO))
             throw new ApiException(ApiExceptionEnum.UNKNOWN_ERROR);
-        if (problem.getProblemTitle() != null) {
+        if (problemDO.getProblemTitle() != null) {
             redisUtils.hset(RedisConstants.REDIS_KEY_FOR_PROBLEM_ID_TO_TITLE,
                     String.valueOf(problem.getProblemId()),
                     problem.getProblemTitle());
         }
-        if (problem.getCheckpointNum() != null) {
-            redisUtils.hset(RedisConstants.REDIS_KEY_FOR_PROBLEM_ID_TO_CHECKPOINTNUM, String.valueOf(problem.getProblemId()), problem.getCheckpointNum());
+        if (problemDO.getCheckpointNum() != null) {
+            redisUtils.hset(RedisConstants.REDIS_KEY_FOR_PROBLEM_ID_TO_CHECKPOINTNUM, String.valueOf(problemDO.getProblemId()), problemDO.getCheckpointNum());
         }
     }
 }

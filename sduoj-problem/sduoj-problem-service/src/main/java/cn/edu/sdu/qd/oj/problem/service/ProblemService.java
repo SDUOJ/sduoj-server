@@ -5,6 +5,7 @@ import cn.edu.sdu.qd.oj.common.entity.PageResult;
 import cn.edu.sdu.qd.oj.common.enums.ApiExceptionEnum;
 import cn.edu.sdu.qd.oj.common.exception.ApiException;
 import cn.edu.sdu.qd.oj.common.util.RedisUtils;
+import cn.edu.sdu.qd.oj.problem.converter.*;
 import cn.edu.sdu.qd.oj.problem.dao.ProblemDao;
 import cn.edu.sdu.qd.oj.problem.entity.ProblemDO;
 import cn.edu.sdu.qd.oj.problem.dto.ProblemDTO;
@@ -28,6 +29,12 @@ public class ProblemService {
     @Autowired
     private RedisUtils redisUtils;
 
+    @Autowired
+    private ProblemConverter problemConverter;
+
+    @Autowired
+    private ProblemListConverter problemListConverter;
+
     public ProblemDTO queryById(Integer problemId) {
         ProblemDO problemDO = problemDao.getById(problemId);
         if (problemDO == null) {
@@ -36,9 +43,7 @@ public class ProblemService {
         if (problemDO.getIsPublic() == 0) {
             throw new ApiException(ApiExceptionEnum.PROBLEM_NOT_PUBLIC);
         }
-        ProblemDTO problemDTO = new ProblemDTO();
-        BeanUtils.copyProperties(problemDO, problemDTO);
-        return problemDTO;
+        return problemConverter.to(problemDO);
     }
 
     public PageResult<ProblemListDTO> queryProblemByPage(int pageNow, int pageSize) {
@@ -49,11 +54,7 @@ public class ProblemService {
                 ProblemDO::getSubmitNum,
                 ProblemDO::getAcceptNum
         ).eq(ProblemDO::getIsPublic, 1).page(new Page<>(pageNow, pageSize));
-        List<ProblemListDTO> problemListDTOList = pageResult.getRecords().stream().map(problemListDO -> {
-            ProblemListDTO problemListDTO = new ProblemListDTO();
-            BeanUtils.copyProperties(problemListDO, problemListDTO);
-            return problemListDTO;
-        }).collect(Collectors.toList());
+        List<ProblemListDTO> problemListDTOList = problemListConverter.to(pageResult.getRecords());
         return new PageResult<>(pageResult.getPages(), problemListDTOList);
     }
 

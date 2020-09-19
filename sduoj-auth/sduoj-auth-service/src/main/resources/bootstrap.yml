@@ -8,5 +8,5 @@ spring:
   cloud:
     nacos:
       config:
-        server-addr: db.oj.sdu.edu.cn:8848
+        server-addr: nacos.oj.sdu.edu.cn:8848
         file-extension: yml

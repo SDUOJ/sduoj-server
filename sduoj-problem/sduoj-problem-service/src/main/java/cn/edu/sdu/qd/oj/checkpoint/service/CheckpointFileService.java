@@ -6,6 +6,7 @@
 package cn.edu.sdu.qd.oj.checkpoint.service;
 
 import cn.edu.sdu.qd.oj.checkpoint.config.CheckpointFileSystemProperties;
+import cn.edu.sdu.qd.oj.checkpoint.converter.CheckpointConverter;
 import cn.edu.sdu.qd.oj.checkpoint.dao.CheckpointDao;
 import cn.edu.sdu.qd.oj.checkpoint.entity.CheckpointDO;
 import cn.edu.sdu.qd.oj.checkpoint.dto.CheckpointDTO;
@@ -25,7 +26,6 @@ import org.springframework.web.multipart.MultipartFile;
 import java.io.File;
 import java.io.IOException;
 import java.util.*;
-import java.util.stream.Collectors;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipOutputStream;
 
@@ -49,6 +49,9 @@ public class CheckpointFileService {
 
     @Autowired
     private CheckpointDao checkpointDao;
+
+    @Autowired
+    private CheckpointConverter checkpointConverter;
 
     /**
      * @param files
@@ -97,15 +100,7 @@ public class CheckpointFileService {
                     FileUtils.writeByteArrayToFile(outputFile, outputBytes);
                 }
             }
-            List<CheckpointDO> checkpointDOList = checkpointDTOList.stream().map(checkpointDTO -> CheckpointDO.builder()
-                    .checkpointId(checkpointDTO.getCheckpointId())
-                    .inputDescription(checkpointDTO.getInputDescription())
-                    .inputFileName(checkpointDTO.getInputFileName())
-                    .inputSize(checkpointDTO.getInputSize())
-                    .outputDescription(checkpointDTO.getOutputDescription())
-                    .outputFileName(checkpointDTO.getOutputFileName())
-                    .outputSize(checkpointDTO.getOutputSize())
-                    .build()).collect(Collectors.toList());
+            List<CheckpointDO> checkpointDOList = checkpointConverter.from(checkpointDTOList);
             checkpointDao.saveBatch(checkpointDOList);
         } catch (Exception e) {
             for (CheckpointDTO checkpointDTO : checkpointDTOList) {
@@ -138,15 +133,8 @@ public class CheckpointFileService {
                 output.length()
         );
         try {
-            checkpointDao.save(CheckpointDO.builder()
-                    .checkpointId(checkpointDTO.getCheckpointId())
-                    .inputDescription(checkpointDTO.getInputDescription())
-                    .inputFileName(checkpointDTO.getInputFileName())
-                    .inputSize(checkpointDTO.getInputSize())
-                    .outputDescription(checkpointDTO.getOutputDescription())
-                    .outputFileName(checkpointDTO.getOutputFileName())
-                    .outputSize(checkpointDTO.getOutputSize())
-                    .build());
+            CheckpointDO checkpointDO = checkpointConverter.from(checkpointDTO);
+            checkpointDao.save(checkpointDO);
             FileUtils.writeStringToFile(inputFile, input);
             FileUtils.writeStringToFile(outputFile, output); 
         } catch (IOException e) {

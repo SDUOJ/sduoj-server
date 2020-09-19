@@ -13,42 +13,12 @@
     <version>1.0.0-SNAPSHOT</version>
 
     <dependencies>
-        <!-- 三方依赖 -->
-        <dependency>
-            <groupId>com.alibaba.cloud</groupId>
-            <artifactId>spring-cloud-starter-alibaba-nacos-config</artifactId>
-            <exclusions>
-                <exclusion>
-                    <groupId>com.alibaba</groupId>
-                    <artifactId>fastjson</artifactId>
-                </exclusion>
-            </exclusions>
-        </dependency>
-        <dependency>
-            <groupId>com.alibaba.cloud</groupId>
-            <artifactId>spring-cloud-starter-alibaba-nacos-discovery</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>org.springframework.boot</groupId>
-            <artifactId>spring-boot-starter-web</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>org.springframework.boot</groupId>
-            <artifactId>spring-boot-starter-actuator</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>org.springframework.boot</groupId>
-            <artifactId>spring-boot-starter-test</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>mysql</groupId>
-            <artifactId>mysql-connector-java</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>com.baomidou</groupId>
-            <artifactId>mybatis-plus-boot-starter</artifactId>
-        </dependency>
         <!-- 一方依赖 -->
+        <dependency>
+            <groupId>cn.edu.sdu.qd.oj.common</groupId>
+            <artifactId>sduoj-common-web</artifactId>
+            <version>1.0.0-SNAPSHOT</version>
+        </dependency>
         <dependency>
             <groupId>cn.edu.sdu.qd.oj.user</groupId>
             <artifactId>sduoj-user-interface</artifactId>
@@ -56,28 +26,18 @@
         </dependency>
         <dependency>
             <groupId>cn.edu.sdu.qd.oj.common</groupId>
-            <artifactId>sduoj-common-entity</artifactId>
-            <version>1.0.0-SNAPSHOT</version>
-        </dependency>
-        <dependency>
-            <groupId>cn.edu.sdu.qd.oj.common</groupId>
             <artifactId>sduoj-common-util</artifactId>
             <version>1.0.0-SNAPSHOT</version>
         </dependency>
-        <dependency>
-            <groupId>cn.edu.sdu.qd.oj.common</groupId>
-            <artifactId>sduoj-common-web</artifactId>
-            <version>1.0.0-SNAPSHOT</version>
-        </dependency>
-        <dependency>
-            <groupId>org.springframework.cloud</groupId>
-            <artifactId>spring-cloud-commons</artifactId>
-        </dependency>
+
         <dependency>
             <groupId>cn.edu.sdu.qd.oj.problem</groupId>
             <artifactId>sduoj-problem-interface</artifactId>
             <version>1.0.0-SNAPSHOT</version>
         </dependency>
+
+        <!-- 三方依赖 -->
+
     </dependencies>
 
     <build>
