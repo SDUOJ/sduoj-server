@@ -6,11 +6,7 @@
 package cn.edu.sdu.qd.oj.problem.dto;
 
 import cn.edu.sdu.qd.oj.common.entity.BaseDTO;
-import lombok.Data;
-
-import javax.persistence.Column;
-import javax.persistence.Id;
-import javax.persistence.Table;
+import lombok.*;
 
 /**
  * @Description TODO
@@ -20,22 +16,19 @@ import javax.persistence.Table;
  **/
 
 @Data
-@Table(name = "oj_problems")
+@Builder
+@NoArgsConstructor
+@AllArgsConstructor
+@EqualsAndHashCode(callSuper = true)
 public class ProblemListDTO extends BaseDTO {
 
-    @Id
-    @Column(name = "p_id")
     private Integer problemId;
 
-    @Column(name = "p_is_public")
     private Integer isPublic;
 
-    @Column(name = "p_title")
     private String problemTitle;
 
-    @Column(name = "p_submit_num")
     private Integer submitNum;
 
-    @Column(name = "p_accept_num")
     private Integer acceptNum;
 }

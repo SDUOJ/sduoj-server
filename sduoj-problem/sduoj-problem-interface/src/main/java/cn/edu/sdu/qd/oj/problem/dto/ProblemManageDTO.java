@@ -12,7 +12,6 @@ import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 import lombok.*;
 
-import javax.persistence.*;
 
 
 @Data
@@ -42,6 +41,5 @@ public class ProblemManageDTO extends BaseDTO {
     @JsonDeserialize(using = CheckpointIdsToBytesDeserializer.class)
     private byte[] checkpointIds;
 
-    @Transient
     private String username;
 }
