@@ -5,12 +5,11 @@
 
 package cn.edu.sdu.qd.oj.problem.controller;
 
+import cn.edu.sdu.qd.oj.common.exception.InternalApiException;
+import cn.edu.sdu.qd.oj.problem.api.ProblemApi;
 import cn.edu.sdu.qd.oj.problem.service.ProblemService;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Controller;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.ResponseBody;
+import org.springframework.web.bind.annotation.RestController;
 
 import java.util.Map;
 
@@ -22,16 +21,14 @@ import java.util.Map;
  * @Version V1.0
  **/
 
-@Controller
-@RequestMapping("/internal/problem")
-public class ProblemInternalController {
+@RestController
+public class ProblemInternalController implements ProblemApi {
 
     @Autowired
     private ProblemService problemService;
 
-    @GetMapping("/queryid2title")
-    @ResponseBody
-    Map<Integer, String> queryAll() {
+    @Override
+    public Map<Integer, String> queryIdToTitleMap() throws InternalApiException {
         return problemService.queryIdToTitleMap();
     }
 }

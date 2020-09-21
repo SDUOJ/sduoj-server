@@ -63,7 +63,7 @@ public class ProblemService {
                 ProblemDO::getProblemId,
                 ProblemDO::getProblemTitle
         ).list();
-        return problemDOList.stream().collect(Collectors.toMap(ProblemDO::getUserId, ProblemDO::getUsername, (k1, k2) -> k1));
+        return problemDOList.stream().collect(Collectors.toMap(ProblemDO::getProblemId, ProblemDO::getProblemTitle, (k1, k2) -> k1));
     }
 
     @PostConstruct

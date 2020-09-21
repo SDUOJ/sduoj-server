@@ -43,7 +43,7 @@ public class UserService {
     @Autowired
     private UserConverter userConverter;
 
-    public UserDTO query(Integer userId) {
+    public UserDTO verify(Integer userId) {
         UserDO userDO = userDao.getById(userId);
         if (userDO == null) {
             throw new ApiException(ApiExceptionEnum.USER_NOT_FOUND);
@@ -51,7 +51,7 @@ public class UserService {
         return userConverter.to(userDO);
     }
 
-    public UserDTO query(String username, String password) throws InternalApiException {
+    public UserDTO verify(String username, String password) throws InternalApiException {
         // 查询
         UserDO userDO = userDao.lambdaQuery().eq(UserDO::getUsername, username).one();
         // 校验用户名

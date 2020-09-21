@@ -60,7 +60,7 @@ public class UserController {
 
         if (StringUtils.isNotBlank(username) && StringUtils.isNotBlank(password)) {
             // 登录校验
-            UserDTO userDTO = this.userService.query(username, password);
+            UserDTO userDTO = this.userService.verify(username, password);
             if (userDTO == null) {
                 throw new ApiException(ApiExceptionEnum.PASSWORD_NOT_MATCHING);
             }

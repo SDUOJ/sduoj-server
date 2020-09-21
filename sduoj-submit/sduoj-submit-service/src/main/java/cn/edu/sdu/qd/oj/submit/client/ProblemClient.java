@@ -16,6 +16,6 @@ import org.springframework.cloud.openfeign.FeignClient;
  * @Version V1.0
  **/
 
-@FeignClient(value = "problem-service")
+@FeignClient(ProblemApi.SERVICE_NAME)
 public interface ProblemClient extends ProblemApi {
 }

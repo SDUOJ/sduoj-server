@@ -16,6 +16,6 @@ import org.springframework.cloud.openfeign.FeignClient;
  * @Version V1.0
  **/
 
-@FeignClient(value = "user-service")
+@FeignClient(UserApi.SERVICE_NAME)
 public interface UserClient extends UserApi {
 }

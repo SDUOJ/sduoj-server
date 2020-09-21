@@ -6,10 +6,10 @@
 package cn.edu.sdu.qd.oj.user.controller;
 
 import cn.edu.sdu.qd.oj.common.exception.InternalApiException;
+import cn.edu.sdu.qd.oj.user.api.UserApi;
 import cn.edu.sdu.qd.oj.user.dto.UserDTO;
 import cn.edu.sdu.qd.oj.user.service.UserService;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.Map;
@@ -22,54 +22,29 @@ import java.util.Map;
  * @Version V1.0
  **/
 
-@Controller
-@RequestMapping("/internal/user")
-public class UserInternalController {
+@RestController
+public class UserInternalController implements UserApi {
+
     @Autowired
     private UserService userService;
 
-    /**
-     * 根据用户名和密码查询用户, 内部接口
-     * @param username
-     * @param password
-     * @return user
-     */
-    @PostMapping("/verify")
-    @ResponseBody
-    public UserDTO verify(
-            @RequestParam("username") String username,
-            @RequestParam("password") String password) throws InternalApiException {
-        UserDTO userDTO = this.userService.query(username, password);
-        return userDTO;
+    @Override
+    public UserDTO verify(String username, String password) throws InternalApiException {
+        return this.userService.verify(username, password);
     }
 
-    /**
-     * 根据用户id查询用户, 内部接口
-     * @param userId
-     * @return user
-     */
-    @PostMapping("/query")
-    @ResponseBody
-    public UserDTO query(@RequestParam("userId") Integer userId) {
-        UserDTO userDTO = this.userService.query(userId);
-        return userDTO;
+    @Override
+    public UserDTO query(Integer userId) throws InternalApiException {
+        return this.userService.verify(userId);
     }
 
-    /**
-     * 根据用户名查询用户id, 内部接口
-     * @param username
-     * @return userId
-     */
-    @PostMapping("/queryuserid")
-    @ResponseBody
-    public Integer queryUserId(@RequestParam("username") String username) {
+    @Override
+    public Integer queryUserId(String username) throws InternalApiException {
         return this.userService.queryUserId(username);
     }
 
-
-    @GetMapping("/queryid2name")
-    @ResponseBody
-    Map<Integer, String> queryAll() {
+    @Override
+    public Map<Integer, String> queryIdToNameMap() throws InternalApiException {
         return userService.queryIdToUsernameMap();
     }
 
