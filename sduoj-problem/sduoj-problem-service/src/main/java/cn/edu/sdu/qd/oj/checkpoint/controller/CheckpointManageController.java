@@ -83,7 +83,7 @@ public class CheckpointManageController {
      * @return cn.edu.sdu.qd.oj.checkpoint.pojo.Checkpoint[]
      * @Description 批量上传成对的测试点文件，如果不配对或者写入到文件系统中出现错误，则全部回滚
      **/
-    @PostMapping(value = "/upload", headers = "content-type=multipart/form-data")
+    @PostMapping(value = "/uploadFiles", headers = "content-type=multipart/form-data")
     @ApiResponseBody
     public CheckpointDTO[] upload(@RequestParam("files") MultipartFile[] files) {
         return checkpointFileService.uploadCheckpointFiles(files);

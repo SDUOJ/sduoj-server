@@ -22,6 +22,6 @@ public class UserDOField {
     public static final String GENDER = "u_gender";
     public static final String STUDENT_ID = "u_student_id";
     public static final String CREATE_TIME = "u_create_time";
-    public static final String ROLE = "u_role";
+    public static final String ROLE = "u_roles";
 
 }

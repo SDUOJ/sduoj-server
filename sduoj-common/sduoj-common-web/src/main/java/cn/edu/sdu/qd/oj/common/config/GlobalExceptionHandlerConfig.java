@@ -34,7 +34,7 @@ public class GlobalExceptionHandlerConfig {
 
     @ExceptionHandler(org.springframework.web.bind.MissingServletRequestParameterException.class)
     public ResponseEntity<ResponseResult> handleException(MissingServletRequestParameterException e) {
-        log.info(e.toString());
+        log.error("", e);
         return ResponseEntity.status(HttpStatus.FORBIDDEN.value())
                 .body(ResponseResult.fail(HttpStatus.FORBIDDEN));
 
@@ -42,28 +42,28 @@ public class GlobalExceptionHandlerConfig {
 
     @ExceptionHandler(Exception.class)
     public ResponseEntity<ResponseResult> handleException(Exception e) {
-        log.info(e.toString());
+        log.error("", e);
         return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR.value())
                 .body(ResponseResult.fail(HttpStatus.INTERNAL_SERVER_ERROR));
     }
 
     @ExceptionHandler(InternalApiException.class)
     public ResponseEntity<ResponseResult> handleException(InternalApiException e) {
-        log.info(e.toString());
+        log.error("", e);
         return ResponseEntity.status(e.code)
                 .body(ResponseResult.fail(e.code, e.message));
     }
 
     @ExceptionHandler(ApiException.class)
     public ResponseEntity<ResponseResult> handleException(ApiException e) {
-        log.info(e.toString());
+        log.error("", e);
         return ResponseEntity.status(e.code)
                 .body(ResponseResult.fail(e.code, e.message));
     }
 
     @ExceptionHandler(MethodArgumentNotValidException.class)
     public ResponseEntity<ResponseResult> exception(MethodArgumentNotValidException e) {
-        log.info(e.toString());
+        log.error("", e);
         String message = e.getBindingResult().getAllErrors().stream().map(ObjectError::getDefaultMessage).collect(Collectors.joining(";"));
         return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(ResponseResult.fail(HttpStatus.BAD_REQUEST.value(), message));
     }
@@ -71,7 +71,7 @@ public class GlobalExceptionHandlerConfig {
 
     @ExceptionHandler(HttpMessageNotReadableException.class)
     public ResponseEntity<ResponseResult> handleException(HttpMessageNotReadableException e) {
-        log.info(e.toString());
+        log.error("", e);
         return ResponseEntity.status(HttpStatus.BAD_REQUEST.value())
                 .body(ResponseResult.fail(HttpStatus.BAD_REQUEST));
     }

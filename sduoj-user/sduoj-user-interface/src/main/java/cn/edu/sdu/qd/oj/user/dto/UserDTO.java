@@ -17,6 +17,7 @@ import javax.validation.constraints.Email;
 import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.Pattern;
 import java.util.Date;
+import java.util.List;
 
 /**
  * @ClassName User
@@ -57,5 +58,5 @@ public class UserDTO extends BaseDTO {
     private Date createTime;
 
     @JsonProperty(access = JsonProperty.Access.READ_ONLY)
-    private Integer role;
+    private List<String> roles;
 }

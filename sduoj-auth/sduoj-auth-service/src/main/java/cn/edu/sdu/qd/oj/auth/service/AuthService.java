@@ -5,13 +5,17 @@
 
 package cn.edu.sdu.qd.oj.auth.service;
 
-import cn.edu.sdu.qd.oj.auth.client.UserClient;
-import cn.edu.sdu.qd.oj.auth.config.JwtProperties;
-import cn.edu.sdu.qd.oj.common.exception.InternalApiException;
-import cn.edu.sdu.qd.oj.user.dto.UserDTO;
+import cn.edu.sdu.qd.oj.auth.converter.PermissionConverter;
+import cn.edu.sdu.qd.oj.auth.dao.PermissionDao;
+import cn.edu.sdu.qd.oj.auth.dto.PermissionDTO;
+import cn.edu.sdu.qd.oj.auth.entity.PermissionDO;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+
+import java.util.List;
+import java.util.Set;
+import java.util.stream.Collectors;
 
 /**
  * @ClassName AuthService
@@ -24,29 +28,23 @@ import org.springframework.stereotype.Service;
 @Slf4j
 public class AuthService {
     @Autowired
-    private UserClient userClient;
+    private PermissionDao permissionDao;
 
     @Autowired
-    private JwtProperties prop;
+    private PermissionConverter permissionConverter;
 
-    public UserDTO authentication(String username, String password) {
-        try {
-            UserDTO userDTO = this.userClient.verify(username, password);
-            return userDTO;
-        } catch (InternalApiException e) {
-            log.error(e.toString());
-//            throw new ApiException(e.code, e.message);
-        }
-        return null;
+    public void syncNewPermissionUrl(List<PermissionDTO> permissionDTOList) {
+        List<PermissionDO> permissionDOList = permissionConverter.from(permissionDTOList);
+        List<String> urlList = permissionDOList.stream().map(PermissionDO::getUrl).collect(Collectors.toList());
+        List<PermissionDO> dbUrlList = permissionDao.lambdaQuery().select(PermissionDO::getUrl).in(PermissionDO::getUrl, urlList).list();
+        Set<String> dbUrlSet = dbUrlList.stream().map(PermissionDO::getUrl).collect(Collectors.toSet());
+        permissionDOList = permissionDOList.stream().filter(permissionDO -> !dbUrlSet.contains(permissionDO.getUrl())).collect(Collectors.toList());
+        permissionDOList.forEach(permissionDO -> permissionDO.setRoles(null));
+        permissionDao.saveBatch(permissionDOList);
     }
 
-    public UserDTO queryUserById(Integer userId) {
-        try {
-            // 调用微服务，执行查询
-            return this.userClient.query(userId);
-        } catch (Exception ignore) {
-            // TODO: 异常处理
-        }
-        return null;
+    public List<PermissionDTO> listAll() {
+        List<PermissionDO> permissionDOList = permissionDao.list();
+        return permissionConverter.to(permissionDOList);
     }
 }

@@ -21,6 +21,7 @@ import org.springframework.stereotype.Service;
 import javax.annotation.PostConstruct;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 /**
@@ -43,7 +44,7 @@ public class UserService {
     @Autowired
     private UserConverter userConverter;
 
-    public UserDTO verify(Integer userId) {
+    public UserDTO verify(Long userId) {
         UserDO userDO = userDao.getById(userId);
         if (userDO == null) {
             throw new ApiException(ApiExceptionEnum.USER_NOT_FOUND);
@@ -91,6 +92,11 @@ public class UserService {
     public Map<Integer, String> queryIdToUsernameMap() {
         List<UserDO> userDOList = userDao.lambdaQuery().select(UserDO::getUserId, UserDO::getUsername).list();
         return userDOList.stream().collect(Collectors.toMap(UserDO::getUserId, UserDO::getUsername, (k1, k2) -> k1));
+    }
+
+    public List<String> queryRolesById(Long userId) {
+        UserDO userDO = userDao.lambdaQuery().select(UserDO::getRoles).eq(UserDO::getUserId, userId).one();
+        return Optional.ofNullable(userDO).map(userConverter::to).map(UserDTO::getRoles).orElse(null);
     }
 
     @PostConstruct

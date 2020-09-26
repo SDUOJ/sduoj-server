@@ -18,20 +18,10 @@
             <groupId>cn.edu.sdu.qd.oj.common</groupId>
             <artifactId>sduoj-common-web</artifactId>
             <version>1.0.0-SNAPSHOT</version>
-            <exclusions>
-                <exclusion>
-                    <artifactId>mybatis-plus-boot-starter</artifactId>
-                    <groupId>com.baomidou</groupId>
-                </exclusion>
-                <exclusion>
-                    <artifactId>mysql-connector-java</artifactId>
-                    <groupId>mysql</groupId>
-                </exclusion>
-            </exclusions>
         </dependency>
         <dependency>
             <groupId>cn.edu.sdu.qd.oj.auth</groupId>
-            <artifactId>sduoj-auth-common</artifactId>
+            <artifactId>sduoj-auth-interface</artifactId>
             <version>1.0.0-SNAPSHOT</version>
         </dependency>
         <dependency>
@@ -40,15 +30,7 @@
             <version>1.0.0-SNAPSHOT</version>
             <scope>compile</scope>
         </dependency>
-        <dependency>
-            <groupId>cn.edu.sdu.qd.oj.user</groupId>
-            <artifactId>sduoj-user-interface</artifactId>
-            <version>1.0.0-SNAPSHOT</version>
-            <scope>compile</scope>
-        </dependency>
-
         <!-- 三方依赖 -->
-
     </dependencies>
 
     <build>

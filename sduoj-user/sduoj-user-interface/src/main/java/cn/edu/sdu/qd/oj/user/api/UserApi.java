@@ -12,6 +12,7 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 
+import java.util.List;
 import java.util.Map;
 
 /**
@@ -40,7 +41,7 @@ public interface UserApi {
      * @param userId
      */
     @GetMapping("/queryById")
-    UserDTO query(@RequestParam("userId") Integer userId) throws InternalApiException;
+    UserDTO query(@RequestParam("userId") Long userId) throws InternalApiException;
 
     /**
      * 根据用户名查询用户id
@@ -54,4 +55,10 @@ public interface UserApi {
      */
     @GetMapping("/queryIdToUsernameMap")
     Map<Integer, String> queryIdToNameMap() throws InternalApiException;
+
+    /**
+    * @Description 查询具体用户权限
+    **/
+    @GetMapping("/queryRolesById")
+    List<String> queryRolesById(@RequestParam("userId") Long userId);
 }

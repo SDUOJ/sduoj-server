@@ -12,6 +12,7 @@ import cn.edu.sdu.qd.oj.user.service.UserService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.List;
 import java.util.Map;
 
 /**
@@ -34,7 +35,7 @@ public class UserInternalController implements UserApi {
     }
 
     @Override
-    public UserDTO query(Integer userId) throws InternalApiException {
+    public UserDTO query(Long userId) throws InternalApiException {
         return this.userService.verify(userId);
     }
 
@@ -46,6 +47,11 @@ public class UserInternalController implements UserApi {
     @Override
     public Map<Integer, String> queryIdToNameMap() throws InternalApiException {
         return userService.queryIdToUsernameMap();
+    }
+
+    @Override
+    public List<String> queryRolesById(Long userId) {
+        return userService.queryRolesById(userId);
     }
 
 }

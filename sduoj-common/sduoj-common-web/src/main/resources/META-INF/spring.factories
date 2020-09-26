@@ -1,0 +1,1 @@
+org.springframework.boot.SpringApplicationRunListener=cn.edu.sdu.qd.oj.common.config.PermissionInitListener
