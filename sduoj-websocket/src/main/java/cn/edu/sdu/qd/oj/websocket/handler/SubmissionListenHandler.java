@@ -3,18 +3,20 @@
  * Copyright (c) 2020-2020 zhangt2333@gmail.com
  **/
 
-package cn.edu.sdu.qd.oj.submit.listener;
+package cn.edu.sdu.qd.oj.websocket.handler;
 
-import cn.edu.sdu.qd.oj.submit.config.WebSocketServer;
-import com.fasterxml.jackson.databind.ObjectMapper;
+import cn.edu.sdu.qd.oj.common.util.RedisUtils;
+import cn.edu.sdu.qd.oj.websocket.constant.SubmissionBizContant;
+import com.alibaba.fastjson.JSONObject;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.amqp.rabbit.annotation.Exchange;
 import org.springframework.amqp.rabbit.annotation.Queue;
 import org.springframework.amqp.rabbit.annotation.QueueBinding;
 import org.springframework.amqp.rabbit.annotation.RabbitListener;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 import java.util.List;
-import java.util.Map;
 
 /**
  * @ClassName SubmissionListener
@@ -24,10 +26,12 @@ import java.util.Map;
  * @Version V1.0
  **/
 
+@Slf4j
 @Component
-public class SubmissionListener {
+public class SubmissionListenHandler {
 
-    private static ObjectMapper objectMapper = new ObjectMapper();
+    @Autowired
+    private RedisUtils redisUtils;
 
     @RabbitListener(bindings = @QueueBinding(
             value = @Queue(value = "sduoj.submission.queue", durable = "true"),
@@ -35,11 +39,12 @@ public class SubmissionListener {
             ignoreDeclarationExceptions = "true"),
             key = {"submission.checkpoint.push"})
     )
-    public void pushSubmissionResult(List list) throws Exception {
-        long submissionId = Long.valueOf((String) list.get(0), 16);
+    public void pushSubmissionResult(List list) {
+        log.info("rabbitMQ: {}", list);
+        String submissionId = (String) list.get(0);
         list.remove(0);
-        WebSocketServer.sendInfo(objectMapper.writeValueAsString(list), submissionId);
+        redisUtils.lSet(SubmissionBizContant.getRedisSubmissionKey(submissionId), JSONObject.toJSONString(list),
+                SubmissionBizContant.REDIS_SUBMISSION_RESULT_EXPIRE);
+        redisUtils.publish(SubmissionBizContant.getRedisChannelKey(submissionId), JSONObject.toJSONString(list));
     }
-
-
 }

@@ -392,6 +392,15 @@ public final class RedisUtils {
     }
 
     /**
+     * 获取list缓存的所有内容
+     * @param key 键
+     * @return
+     */
+    public List<Object> lGetAll(String key) {
+        return lGet(key, 0, -1);
+    }
+
+    /**
      * 获取list缓存的长度
      * @param key 键
      * @return
@@ -424,7 +433,6 @@ public final class RedisUtils {
      * 将list放入缓存
      * @param key 键
      * @param value 值
-     * @param time 时间(秒)
      * @return
      */
     public boolean lSet(String key, Object value) {
@@ -460,7 +468,6 @@ public final class RedisUtils {
      * 将list放入缓存
      * @param key 键
      * @param value 值
-     * @param time 时间(秒)
      * @return
      */
     public boolean lSet(String key, List<Object> value) {
@@ -524,6 +531,15 @@ public final class RedisUtils {
         } catch (Exception e) {
             e.printStackTrace();
             return 0;
+        }
+    }
+
+    // ===============================Sub/Pub=================================
+    public void publish(String channel, Object message) {
+        try {
+            redisTemplate.convertAndSend(channel, message);
+        } catch (Exception e) {
+            e.printStackTrace();
         }
     }
 }

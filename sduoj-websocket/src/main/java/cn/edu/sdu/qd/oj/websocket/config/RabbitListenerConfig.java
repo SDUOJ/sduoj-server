@@ -1,9 +1,4 @@
-/**
- * The GNU General Public License
- * Copyright (c) 2020-2020 zhangt2333@gmail.com
- **/
-
-package cn.edu.sdu.qd.oj.submit.config;
+package cn.edu.sdu.qd.oj.websocket.config;
 
 import org.springframework.amqp.rabbit.annotation.RabbitListenerConfigurer;
 import org.springframework.amqp.rabbit.listener.RabbitListenerEndpointRegistrar;
@@ -12,14 +7,6 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.messaging.converter.MappingJackson2MessageConverter;
 import org.springframework.messaging.handler.annotation.support.DefaultMessageHandlerMethodFactory;
 import org.springframework.messaging.handler.annotation.support.MessageHandlerMethodFactory;
-
-/**
- * @ClassName RabbitListenerConfig
- * @Description TODO
- * @Author zhangt2333
- * @Date 2020/4/15 13:50
- * @Version V1.0
- **/
 
 @Configuration
 public class RabbitListenerConfig implements RabbitListenerConfigurer {

@@ -6,7 +6,6 @@
 package cn.edu.sdu.qd.oj.submit.controller;
 
 import cn.edu.sdu.qd.oj.common.entity.ApiResponseBody;
-import cn.edu.sdu.qd.oj.submit.config.WebSocketServer;
 import cn.edu.sdu.qd.oj.submit.dto.SubmissionDTO;
 import cn.edu.sdu.qd.oj.submit.dto.SubmissionJudgeDTO;
 import cn.edu.sdu.qd.oj.submit.service.SubmitJudgerService;
@@ -64,7 +63,6 @@ public class SubmitJudgerController {
         SubmissionDTO submissionDTO = new SubmissionDTO(submissionId, judgerId, judgeResult, judgeScore, usedTime, usedMemory, judgeLog);
         submissionDTO.setCheckpointResults(byteBuf.array());
         this.submitJudgerService.updateSubmission(submissionDTO);
-        WebSocketServer.finishJudge(submissionId, json);
         return null;
     }
 
