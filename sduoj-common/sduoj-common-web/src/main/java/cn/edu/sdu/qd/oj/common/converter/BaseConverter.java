@@ -1,6 +1,5 @@
 package cn.edu.sdu.qd.oj.common.converter;
 
-import com.google.common.collect.Collections2;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import org.apache.commons.lang3.StringUtils;

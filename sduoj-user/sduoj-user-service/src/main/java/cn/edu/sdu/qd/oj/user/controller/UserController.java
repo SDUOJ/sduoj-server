@@ -9,22 +9,21 @@ import cn.edu.sdu.qd.oj.common.entity.ApiResponseBody;
 import cn.edu.sdu.qd.oj.common.entity.ResponseResult;
 import cn.edu.sdu.qd.oj.common.enums.ApiExceptionEnum;
 import cn.edu.sdu.qd.oj.common.exception.ApiException;
-import cn.edu.sdu.qd.oj.common.exception.InternalApiException;
 import cn.edu.sdu.qd.oj.user.dto.UserDTO;
 import cn.edu.sdu.qd.oj.common.entity.UserSessionDTO;
 import cn.edu.sdu.qd.oj.user.service.UserService;
 import com.alibaba.fastjson.JSON;
-import com.alibaba.fastjson.JSONObject;
+import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.HttpHeaders;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.RequestEntity;
-import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.*;
 
+import javax.mail.MessagingException;
+import javax.servlet.http.HttpServletResponse;
 import javax.validation.Valid;
+import javax.validation.constraints.NotNull;
+import java.util.Map;
 
 /**
  * @ClassName UserController
@@ -36,52 +35,90 @@ import javax.validation.Valid;
 
 @Controller
 @RequestMapping("/user")
+@Slf4j
 public class UserController {
     @Autowired
     private UserService userService;
 
     @PostMapping("/register")
     @ApiResponseBody
-    public Void register(@Valid @RequestBody UserDTO userDTO) {
+    public Void register(@Valid @RequestBody UserDTO userDTO) throws Exception {
         this.userService.register(userDTO);
         return null;
     }
 
-    @PostMapping("login")
+    @GetMapping("/verifyEmail")
     @ApiResponseBody
-    public ResponseEntity<ResponseResult<UserSessionDTO>> login(RequestEntity<String> entity) throws InternalApiException {
+    public Void emailVerify(@RequestParam("token") String token) {
+        this.userService.emailVerify(token);
+        return null;
+    }
+
+    @PostMapping("/sendVerificationEmail")
+    @ApiResponseBody
+    public String verificationEmailSend(@RequestBody Map<String, String> json) throws MessagingException {
+        String username = json.get("username");
+        return this.userService.sendVerificationEmail(username);
+    }
+
+    @PostMapping("/forgetPassword")
+    @ApiResponseBody
+    public String forgetPassword(@RequestBody Map<String, String> json) throws Exception {
+        String username = null, email = null;
+        try {
+            username = json.get("username");
+            email = json.get("email");
+        }catch (Exception ignore) {
+        }
+        return this.userService.forgetPassword(username, email);
+    }
+
+    @PostMapping("/resetPassword")
+    @ApiResponseBody
+    public Void resetPassword(@RequestBody Map<String, String> json) {
+        String token = json.get("token");
+        String password = json.get("password");
+        if (token == null || password == null) {
+            throw new ApiException(ApiExceptionEnum.PARAMETER_ERROR);
+        }
+
+        this.userService.resetPassword(token, password);
+        return null;
+    }
+
+    @GetMapping("/getProfile")
+    @ApiResponseBody
+    public UserDTO getProfile(@RequestHeader("Authorization-userId") Long userId) {
+        return this.userService.queryByUserId(userId);
+    }
+
+    @PostMapping("/login")
+    @ResponseBody
+    public ResponseResult<UserSessionDTO> login(HttpServletResponse response,
+                                                @RequestBody @NotNull Map<String, String> json,
+                                                @RequestHeader("X-FORWARDED-FOR") String ipv4,
+                                                @RequestHeader("user-agent") String userAgent) throws ApiException {
         String username = null, password = null;
         try {
-            JSONObject json = JSON.parseObject(entity.getBody());
-            username = json.getString("username");
-            password = json.getString("password");
+            username = json.get("username");
+            password = json.get("password");
         } catch (Exception ignore) {
         }
 
         if (StringUtils.isNotBlank(username) && StringUtils.isNotBlank(password)) {
             // 登录校验
-            UserDTO userDTO = this.userService.verify(username, password);
-            if (userDTO == null) {
-                throw new ApiException(ApiExceptionEnum.PASSWORD_NOT_MATCHING);
-            }
-            UserSessionDTO userSessionDTO = UserSessionDTO.builder()
-                    .userId(userDTO.getUserId())
-                    .username(userDTO.getUsername())
-                    .build();
-            // Set-Header
-            HttpHeaders headers = new HttpHeaders();
+            UserSessionDTO userSessionDTO = this.userService.login(username, password, ipv4, userAgent);
             // TODO: 魔法值解决
-            headers.set("SDUOJUserInfo", JSON.toJSONString(userSessionDTO));
-            return new ResponseEntity<>(ResponseResult.ok(userSessionDTO), headers, HttpStatus.OK);
+            response.setHeader("SDUOJUserInfo", JSON.toJSONString(userSessionDTO));
+            return ResponseResult.ok(userSessionDTO);
         }
-        return new ResponseEntity<>(ResponseResult.error(null), HttpStatus.BAD_REQUEST);
+        return ResponseResult.error();
     }
 
-    @GetMapping("logout")
-    @ApiResponseBody
-    public ResponseEntity<ResponseResult<Void>> logout() {
-        HttpHeaders headers = new HttpHeaders();
-        headers.set("SDUOJUserInfo", "Logout");
-        return new ResponseEntity<>(ResponseResult.ok(), headers, HttpStatus.OK);
+    @GetMapping("/logout")
+    @ResponseBody
+    public ResponseResult<Void> logout(HttpServletResponse response) {
+        response.setHeader("SDUOJUserInfo", "Logout");
+        return ResponseResult.ok(null);
     }
 }

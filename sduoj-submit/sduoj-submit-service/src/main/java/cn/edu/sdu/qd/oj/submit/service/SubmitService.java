@@ -101,7 +101,7 @@ public class SubmitService {
     }
 
     public PageResult<SubmissionListDTO> querySubmissionByPage(String username, Integer problemId, int pageNow, int pageSize) {
-        Integer userId = null;
+        Long userId = null;
         if (StringUtils.isNotBlank(username)) {
             try {
                 userId = userClient.queryUserId(username);

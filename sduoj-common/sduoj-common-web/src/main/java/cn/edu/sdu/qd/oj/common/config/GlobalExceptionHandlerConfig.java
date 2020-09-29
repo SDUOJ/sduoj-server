@@ -49,21 +49,21 @@ public class GlobalExceptionHandlerConfig {
 
     @ExceptionHandler(InternalApiException.class)
     public ResponseEntity<ResponseResult> handleException(InternalApiException e) {
-        log.error("", e);
+        log.warn("", e);
         return ResponseEntity.status(e.code)
                 .body(ResponseResult.fail(e.code, e.message));
     }
 
     @ExceptionHandler(ApiException.class)
     public ResponseEntity<ResponseResult> handleException(ApiException e) {
-        log.error("", e);
+        log.warn("{} {} {}", e.getCode(), e.getMessage(), e.getStackTrace()[0]);
         return ResponseEntity.status(e.code)
                 .body(ResponseResult.fail(e.code, e.message));
     }
 
     @ExceptionHandler(MethodArgumentNotValidException.class)
     public ResponseEntity<ResponseResult> exception(MethodArgumentNotValidException e) {
-        log.error("", e);
+        log.warn("{} {}", e.getMessage(), e.getStackTrace()[0]);
         String message = e.getBindingResult().getAllErrors().stream().map(ObjectError::getDefaultMessage).collect(Collectors.joining(";"));
         return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(ResponseResult.fail(HttpStatus.BAD_REQUEST.value(), message));
     }

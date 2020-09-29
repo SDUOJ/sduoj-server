@@ -30,7 +30,9 @@ public class UserInternalController implements UserApi {
     private UserService userService;
 
     @Override
-    public UserDTO verify(String username, String password) throws InternalApiException {
+    public UserDTO verify(Map<String, String> map) throws InternalApiException {
+        String username = map.get("username");
+        String password = map.get("password");
         return this.userService.verify(username, password);
     }
 
@@ -40,12 +42,12 @@ public class UserInternalController implements UserApi {
     }
 
     @Override
-    public Integer queryUserId(String username) throws InternalApiException {
+    public Long queryUserId(String username) throws InternalApiException {
         return this.userService.queryUserId(username);
     }
 
     @Override
-    public Map<Integer, String> queryIdToNameMap() throws InternalApiException {
+    public Map<Long, String> queryIdToNameMap() throws InternalApiException {
         return userService.queryIdToUsernameMap();
     }
 

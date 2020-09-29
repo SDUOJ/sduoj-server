@@ -7,10 +7,7 @@ package cn.edu.sdu.qd.oj.user.api;
 
 import cn.edu.sdu.qd.oj.common.exception.InternalApiException;
 import cn.edu.sdu.qd.oj.user.dto.UserDTO;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 import java.util.Map;
@@ -29,12 +26,10 @@ public interface UserApi {
 
     /**
      * 根据用户名和密码查询用户
-     * @param username
-     * @param password
+     * @param map {"username": "", "password": ""}
      */
-    @PostMapping("/verify")
-    UserDTO verify(@RequestParam("username") String username,
-                   @RequestParam("password") String password) throws InternalApiException;
+    @PostMapping(value = "/verify", consumes = "application/json")
+    UserDTO verify(@RequestBody Map<String, String> map) throws InternalApiException;
 
     /**
      * 根据用户id查询用户
@@ -48,13 +43,13 @@ public interface UserApi {
      * @param username
      */
     @GetMapping("/queryIdByUsername")
-    Integer queryUserId(@RequestParam("username") String username) throws InternalApiException;
+    Long queryUserId(@RequestParam("username") String username) throws InternalApiException;
 
     /**
      * 查询 userId->username 的全量 map
      */
     @GetMapping("/queryIdToUsernameMap")
-    Map<Integer, String> queryIdToNameMap() throws InternalApiException;
+    Map<Long, String> queryIdToNameMap() throws InternalApiException;
 
     /**
     * @Description 查询具体用户权限
