@@ -3,7 +3,7 @@
  * Copyright (c) 2020-2020 zhangt2333@gmail.com
  **/
 
-package cn.edu.sdu.qd.oj.problem.utils;
+package cn.edu.sdu.qd.oj.problem.util;
 
 import com.fasterxml.jackson.core.JsonGenerator;
 import com.fasterxml.jackson.databind.JsonSerializer;

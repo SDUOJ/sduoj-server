@@ -79,7 +79,8 @@ public class LoginFilter implements GlobalFilter, Ordered {
                     Map<String, List<String>> urlToRolesMap = permissionClient.listAll().stream().collect(Collectors.toMap(PermissionDTO::getUrl, PermissionDTO::getRoles, (k1, k2) -> k1));
                     List<String> urlRoles = urlToRolesMap.get(requestUrl.replace("/api", ""));
                     // TODO: 魔法值解决
-                    if (!urlRoles.contains("all") && Collections.disjoint(roles, urlRoles)) {
+                    if (!urlRoles.contains("all")
+                        && (roles != null && urlRoles != null && Collections.disjoint(roles, urlRoles))) {
                         log.warn("have not permission {} {}", userSessionDTO, requestUrl);
                         return returnNoPermission(exchange, String.format("This User has no permission on '%s'", requestUrl));
                     }

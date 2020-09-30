@@ -3,7 +3,7 @@
  * Copyright (c) 2020-2020 zhangt2333@gmail.com
  **/
 
-package cn.edu.sdu.qd.oj.problem.utils;
+package cn.edu.sdu.qd.oj.problem.util;
 
 import cn.edu.sdu.qd.oj.common.enums.ApiExceptionEnum;
 import cn.edu.sdu.qd.oj.common.exception.ApiException;
