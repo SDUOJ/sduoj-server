@@ -26,7 +26,6 @@ public class HexStringToLongDeserializer extends JsonDeserializer<Long> {
 
     @Override
     public Long deserialize(JsonParser jsonParser, DeserializationContext deserializationContext) throws IOException, JsonProcessingException {
-        jsonParser.nextToken();
         return Long.valueOf(jsonParser.getText(), 16);
     }
 }

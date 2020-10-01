@@ -10,10 +10,12 @@ import cn.edu.sdu.qd.oj.common.exception.ApiException;
 import cn.edu.sdu.qd.oj.submit.converter.SubmissionConverter;
 import cn.edu.sdu.qd.oj.submit.converter.SubmissionJudgeConverter;
 import cn.edu.sdu.qd.oj.submit.dao.SubmissionDao;
+import cn.edu.sdu.qd.oj.submit.dto.SubmissionUpdateReqDTO;
 import cn.edu.sdu.qd.oj.submit.entity.SubmissionDO;
 import cn.edu.sdu.qd.oj.submit.dto.SubmissionDTO;
 import cn.edu.sdu.qd.oj.submit.dto.SubmissionJudgeDTO;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -42,8 +44,8 @@ public class SubmitJudgerService {
                 SubmissionDO::getSubmissionId,
                 SubmissionDO::getProblemId,
                 SubmissionDO::getUserId,
-                SubmissionDO::getLanguageId,
-                SubmissionDO::getCreateTime,
+                SubmissionDO::getLanguage,
+                SubmissionDO::getGmtCreate,
                 SubmissionDO::getCode,
                 SubmissionDO::getCodeLength
         ).eq(SubmissionDO::getSubmissionId, submissionId).one();
@@ -53,9 +55,11 @@ public class SubmitJudgerService {
         return submissionJudgeConverter.to(submissionJudgeDO);
     }
 
-    public void updateSubmission(SubmissionDTO submissionDTO) {
-        SubmissionDO submissionDO = submissionConverter.from(submissionDTO);
-        if(!submissionDao.updateById(submissionDO))
+    public void updateSubmission(SubmissionUpdateReqDTO reqDTO) {
+        SubmissionDO submissionDO = new SubmissionDO();
+        BeanUtils.copyProperties(reqDTO, submissionDO);
+        if (!submissionDao.updateById(submissionDO)) {
             throw new ApiException(ApiExceptionEnum.UNKNOWN_ERROR);
+        }
     }
 }

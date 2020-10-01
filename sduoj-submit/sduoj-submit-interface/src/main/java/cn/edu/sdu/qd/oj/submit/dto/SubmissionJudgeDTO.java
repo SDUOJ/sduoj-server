@@ -33,12 +33,11 @@ public class SubmissionJudgeDTO extends BaseDTO {
 
     private Long problemId;
 
-    private Integer userId;
+    private Long userId;
 
-    private Integer languageId;
+    private String language;
 
-    @JsonSerialize(using = DateToTimestampSerializer.class)
-    private Date createTime;
+    private Date gmtCreate;
 
     private String code;
 

@@ -25,17 +25,17 @@ public class BytesToCheckpointResultsSerializer extends JsonSerializer<byte[]> {
     @Override
     public void serialize(byte[] bytes, JsonGenerator jsonGenerator, SerializerProvider serializerProvider) throws IOException {
         int size = bytes.length;
-        if (size % 9 != 0) {
+        if (size % 12 != 0) {
             jsonGenerator.writeString("The binary of checkpoint results is error!");
             return;
         }
         ByteBuffer wrap = ByteBuffer.wrap(bytes);
         jsonGenerator.writeStartArray();
-        for (int i = 0; i < size; i += 9) {
+        for (int i = 0; i < size; i += 12) {
             jsonGenerator.writeStartArray();
-            jsonGenerator.writeNumber(wrap.get(i));
-            jsonGenerator.writeNumber(wrap.getInt(i + 1));
-            jsonGenerator.writeNumber(wrap.getInt(i + 5));
+            jsonGenerator.writeNumber(wrap.getInt(i));
+            jsonGenerator.writeNumber(wrap.getInt(i + 4));
+            jsonGenerator.writeNumber(wrap.getInt(i + 8));
             jsonGenerator.writeEndArray();
         }
         jsonGenerator.writeEndArray();

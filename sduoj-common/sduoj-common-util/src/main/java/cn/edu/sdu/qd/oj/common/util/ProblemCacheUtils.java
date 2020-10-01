@@ -45,4 +45,9 @@ public class ProblemCacheUtils {
         }
         return Long.parseLong(String.valueOf(o));
     }
+
+    public String getProblemCode(long problemId) {
+        Object o = redisUtils.hget(RedisConstants.REDIS_KEY_FOR_PROBLEM_ID_TO_PROBLEM_CODE, String.valueOf(problemId));
+        return o == null ? null : (String) o;
+    }
 }

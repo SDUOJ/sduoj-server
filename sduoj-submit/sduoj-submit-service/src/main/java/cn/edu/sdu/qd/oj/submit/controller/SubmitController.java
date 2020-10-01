@@ -7,17 +7,15 @@ package cn.edu.sdu.qd.oj.submit.controller;
 
 import cn.edu.sdu.qd.oj.common.entity.ApiResponseBody;
 import cn.edu.sdu.qd.oj.common.entity.PageResult;
-import cn.edu.sdu.qd.oj.common.entity.ResponseResult;
 import cn.edu.sdu.qd.oj.common.enums.ApiExceptionEnum;
 import cn.edu.sdu.qd.oj.common.exception.ApiException;
-import cn.edu.sdu.qd.oj.submit.dto.SubmissionDTO;
-import cn.edu.sdu.qd.oj.submit.dto.SubmissionListDTO;
+import cn.edu.sdu.qd.oj.submit.dto.*;
 import cn.edu.sdu.qd.oj.submit.service.SubmitService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.*;
 
-import java.util.Map;
+import javax.validation.Valid;
 
 /**
  * @ClassName SubmitController
@@ -34,46 +32,32 @@ public class SubmitController {
     @Autowired
     private SubmitService submitService;
 
-
     @PostMapping("/create")
-    @ResponseBody
-    public ResponseResult<String> createSubmission(@RequestBody Map json,
-                                 @RequestHeader("X-FORWARDED-FOR") String ipv4,
-                                 @RequestHeader("authorization-userId") Integer userId) {
-        long problemId = (long) json.get("problemId");
-        int languageId = (int) json.get("languageId");
-        String code = (String) json.get("code");
-        SubmissionDTO submissionDTO = new SubmissionDTO(problemId, userId, languageId, ipv4, code);
-        if (this.submitService.createSubmission(submissionDTO)) {
-            return ResponseResult.ok(Long.toHexString(submissionDTO.getSubmissionId()));
-        }
-        throw new ApiException(ApiExceptionEnum.UNKNOWN_ERROR);
+    @ApiResponseBody
+    public String createSubmission(@RequestBody @Valid SubmissionCreateReqDTO reqDTO,
+                                   @RequestHeader("X-FORWARDED-FOR") String ipv4,
+                                   @RequestHeader("authorization-userId") Long userId) {
+        reqDTO.setIpv4(ipv4);
+        reqDTO.setUserId(userId);
+        return Long.toHexString(this.submitService.createSubmission(reqDTO));
     }
 
-    @PostMapping("/query")
+    @GetMapping("/query")
     @ApiResponseBody
-    public SubmissionDTO query(@RequestBody Map json,
-                               @RequestHeader("authorization-userId") Integer userId,
-                               @RequestHeader Map map) {
-        long submissionId = Long.valueOf((String) json.get("submissionId"), 16);
+    public SubmissionDTO query(@RequestParam("submissionId") String submissionIdHex,
+                               @RequestHeader("authorization-userId") Long userId) {
+        long submissionId = Long.valueOf(submissionIdHex, 16);
         SubmissionDTO submissionDTO = this.submitService.queryById(submissionId);
+        // TODO: 超级管理员可以看所有代码
         if (submissionDTO != null && !submissionDTO.getUserId().equals(userId)) {
             throw new ApiException(ApiExceptionEnum.USER_NOT_MATCHING);
         }
         return submissionDTO;
     }
 
-    @PostMapping("/list")
+    @GetMapping("/list")
     @ApiResponseBody
-    public PageResult<SubmissionListDTO> queryList(@RequestBody Map json) {
-        String username = (String) json.get("username");
-        Long problemId = (Long) json.get("problemId");
-        int pageNow = (int) json.get("pageNow");
-        int pageSize = (int) json.get("pageSize");
-        PageResult<SubmissionListDTO> result = this.submitService.querySubmissionByPage(username, problemId, pageNow, pageSize);
-        if (result == null || result.getRows().size() == 0) {
-            throw new ApiException(ApiExceptionEnum.SUBMISSION_NOT_FOUND);
-        }
-        return result;
+    public PageResult<SubmissionListDTO> queryList(@Valid SubmissionListReqDTO reqDTO) throws Exception {
+        return this.submitService.querySubmissionByPage(reqDTO);
     }
 }

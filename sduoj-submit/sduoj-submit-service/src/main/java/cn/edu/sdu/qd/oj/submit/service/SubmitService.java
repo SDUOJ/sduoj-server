@@ -16,9 +16,8 @@ import cn.edu.sdu.qd.oj.submit.client.UserClient;
 import cn.edu.sdu.qd.oj.submit.converter.SubmissionConverter;
 import cn.edu.sdu.qd.oj.submit.converter.SubmissionListConverter;
 import cn.edu.sdu.qd.oj.submit.dao.SubmissionDao;
+import cn.edu.sdu.qd.oj.submit.dto.*;
 import cn.edu.sdu.qd.oj.submit.entity.SubmissionDO;
-import cn.edu.sdu.qd.oj.submit.dto.SubmissionDTO;
-import cn.edu.sdu.qd.oj.submit.dto.SubmissionListDTO;
 import com.baomidou.mybatisplus.extension.conditions.query.LambdaQueryChainWrapper;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import lombok.extern.slf4j.Slf4j;
@@ -31,6 +30,7 @@ import org.springframework.transaction.annotation.Transactional;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 
 /**
  * @ClassName SubmitService
@@ -69,82 +69,100 @@ public class SubmitService {
     private SnowflakeIdWorker snowflakeIdWorker = new SnowflakeIdWorker();
 
     @Transactional
-    public boolean createSubmission(SubmissionDTO submissionDTO) {
-        long snowflaskId = snowflakeIdWorker.nextId();
-        submissionDTO.setSubmissionId(snowflaskId);
+    public Long createSubmission(SubmissionCreateReqDTO submissionUpdateReqDTO) {
+        // TODO: 校验提交语言支持、校验题目对用户权限
 
-        SubmissionDO submissionDO = submissionConverter.from(submissionDTO);
+
+        long problemId = problemCacheUtils.getProblemId(submissionUpdateReqDTO.getProblemCode());
+        long snowflaskId = snowflakeIdWorker.nextId();
+        SubmissionDO submissionDO = SubmissionDO.builder()
+                .submissionId(snowflaskId)
+                .code(submissionUpdateReqDTO.getCode())
+                .ipv4(submissionUpdateReqDTO.getIpv4())
+                .codeLength(submissionUpdateReqDTO.getCode().length())
+                .language(submissionUpdateReqDTO.getLanguage())
+                .problemId(problemId)
+                .userId(submissionUpdateReqDTO.getUserId())
+                .build();
         if (!submissionDao.save(submissionDO)) {
-            try {
-                Map<String, Object> msg = new HashMap<>();
-                msg.put("event", "submissionCreated");
-                msg.put("submissionId", Long.toHexString(submissionDO.getSubmissionId()));
-                this.rabbitTemplate.convertAndSend("", "judge_queue", msg);
-            } catch (Exception e) {
-                log.error("[submit] 提交创建失败", e);
-                throw new ApiException(ApiExceptionEnum.UNKNOWN_ERROR);
-            }
-            return true;
+            throw new ApiException(ApiExceptionEnum.UNKNOWN_ERROR);
         }
-        return false;
+        try {
+            // TODO: 魔法值解决
+            Map<String, Object> msg = new HashMap<>();
+            msg.put("event", "submissionCreated");
+            msg.put("submissionId", Long.toHexString(submissionDO.getSubmissionId()));
+            this.rabbitTemplate.convertAndSend("", "judge_queue", msg);
+        } catch (Exception e) {
+            log.error("[submit] submissionCreate MQ send error", e);
+            throw new ApiException(ApiExceptionEnum.UNKNOWN_ERROR);
+        }
+        return submissionDO.getSubmissionId();
     }
 
 
     public SubmissionDTO queryById(long submissionId) {
         SubmissionDO submissionDO = submissionDao.getById(submissionId);
-        // 取 checkpointNum
-        if (submissionDO != null) {
-            submissionDO.setCheckpointNum(problemCacheUtils.getProblemCheckpointNum(submissionDO.getProblemId()));
-            return submissionConverter.to(submissionDO);
+        if (submissionDO == null) {
+            throw new ApiException(ApiExceptionEnum.SUBMISSION_NOT_FOUND);
         }
-        return null;
+        SubmissionDTO submissionDTO = submissionConverter.to(submissionDO);
+        submissionDTO.setCheckpointNum(problemCacheUtils.getProblemCheckpointNum(submissionDTO.getProblemId()));
+        return submissionDTO;
     }
 
-    public PageResult<SubmissionListDTO> querySubmissionByPage(String username, Long problemId, int pageNow, int pageSize) {
-        Long userId = null;
-        if (StringUtils.isNotBlank(username)) {
-            try {
-                userId = userClient.queryUserId(username);
-                if (userId == null) {
-                    return null;
-                }
-            } catch (InternalApiException ignore) {
-                // TODO: 异常处理
-                log.error("[Submission] ", ignore.getMessage());
-            }
+    public PageResult<SubmissionListDTO> querySubmissionByPage(SubmissionListReqDTO reqDTO) throws InternalApiException {
+        if (StringUtils.isNotBlank(reqDTO.getUsername())) {
+            reqDTO.setUserId(userClient.queryUserId(reqDTO.getUsername()));
         }
-        LambdaQueryChainWrapper<SubmissionDO> queryChainWrapper = submissionDao.lambdaQuery().select(
+        if (StringUtils.isNotBlank(reqDTO.getProblemCode())) {
+            reqDTO.setProblemId(problemCacheUtils.getProblemId(reqDTO.getProblemCode()));
+        }
+
+        LambdaQueryChainWrapper<SubmissionDO> query = submissionDao.lambdaQuery().select(
             SubmissionDO::getSubmissionId,
             SubmissionDO::getProblemId,
             SubmissionDO::getUserId,
-            SubmissionDO::getLanguageId,
-            SubmissionDO::getCreateTime,
-            SubmissionDO::getJudgeTime,
+            SubmissionDO::getLanguage,
+            SubmissionDO::getGmtCreate,
+            SubmissionDO::getGmtModified,
             SubmissionDO::getJudgeResult,
             SubmissionDO::getJudgeScore,
             SubmissionDO::getUsedTime,
             SubmissionDO::getUsedMemory,
             SubmissionDO::getCodeLength
-        ).orderByDesc(SubmissionDO::getCreateTime);
-        if (userId != null) {
-            queryChainWrapper.eq(SubmissionDO::getUserId, userId);
-        }
-        if (problemId != null) {
-            queryChainWrapper.eq(SubmissionDO::getProblemId, problemId);
-        }
-        Page<SubmissionDO> pageResult = queryChainWrapper.page(new Page<>(pageNow, pageSize));
+        ).orderByDesc(SubmissionDO::getGmtCreate);
+
+        Optional.of(reqDTO).map(SubmissionListReqDTO::getUserId).ifPresent(userId -> {
+            query.eq(SubmissionDO::getUserId, userId);
+        });
+        Optional.of(reqDTO).map(SubmissionListReqDTO::getProblemId).ifPresent(problemId -> {
+            query.eq(SubmissionDO::getProblemId, problemId);
+        });
+
+        Page<SubmissionDO> pageResult = query.page(new Page<>(reqDTO.getPageNow(), reqDTO.getPageSize()));
         List<SubmissionListDTO> submissionListDTOList = submissionListConverter.to(pageResult.getRecords());
-        if (problemId != null) {
-            String problemTitle = problemCacheUtils.getProblemTitle(problemId);
+
+        // 置 problemCode
+        if (StringUtils.isNotBlank(reqDTO.getProblemCode())) {
+            submissionListDTOList.forEach(submissionListDTO -> submissionListDTO.setProblemCode(reqDTO.getProblemCode()));
+        } else {
+            submissionListDTOList.forEach(submissionListDTO -> submissionListDTO.setProblemCode(problemCacheUtils.getProblemCode(submissionListDTO.getProblemId())));
+        }
+        // 置 username
+        if (StringUtils.isNotBlank(reqDTO.getUsername())) {
+            submissionListDTOList.forEach(submissionListDTO -> submissionListDTO.setUsername(reqDTO.getUsername()));
+        } else {
+            submissionListDTOList.forEach(submissionListDTO -> submissionListDTO.setUsername(userCacheUtils.getUsername(submissionListDTO.getUserId())));
+        }
+        // 置题目标题
+        if (reqDTO.getProblemId() != null) {
+            String problemTitle = problemCacheUtils.getProblemTitle(reqDTO.getProblemId());
             submissionListDTOList.forEach(submissionListDTO -> submissionListDTO.setProblemTitle(problemTitle));
         } else {
             submissionListDTOList.forEach(submissionListDTO -> submissionListDTO.setProblemTitle(problemCacheUtils.getProblemTitle(submissionListDTO.getProblemId())));
         }
-        if (userId != null) {
-            submissionListDTOList.forEach(submissionListDTO -> submissionListDTO.setUsername(username));
-        } else {
-            submissionListDTOList.forEach(submissionListDTO -> submissionListDTO.setUsername(userCacheUtils.getUsername(submissionListDTO.getUserId())));
-        }
+
         return new PageResult<>(pageResult.getPages(), submissionListDTOList);
     }
 

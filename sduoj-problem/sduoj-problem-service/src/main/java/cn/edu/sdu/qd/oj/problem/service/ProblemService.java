@@ -163,5 +163,7 @@ public class ProblemService {
         redisUtils.hmset(RedisConstants.REDIS_KEY_FOR_PROBLEM_ID_TO_CHECKPOINTNUM, problemIdToCheckpointNum);
         Map<String, Object> problemCodeToProblemId = problemDOList.stream().collect(Collectors.toMap(ProblemDO::getProblemCode, ProblemDO::getProblemId, (k1, k2) -> k1));
         redisUtils.hmset(RedisConstants.REDIS_KEY_FOR_PROBLEM_CODE_TO_PROBLEM_ID, problemCodeToProblemId);
+        Map<String, Object> problemIdToProblemCode = problemDOList.stream().collect(Collectors.toMap(problemDO -> problemDO.getProblemId().toString(), ProblemDO::getProblemCode, (k1, k2) -> k1));
+        redisUtils.hmset(RedisConstants.REDIS_KEY_FOR_PROBLEM_ID_TO_PROBLEM_CODE, problemIdToProblemCode);
     }
 }

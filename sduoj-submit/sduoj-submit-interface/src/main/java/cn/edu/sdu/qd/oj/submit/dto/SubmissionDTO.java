@@ -32,21 +32,17 @@ public class SubmissionDTO extends BaseDTO {
     @JsonDeserialize(using = HexStringToLongDeserializer.class)
     private Long submissionId;
 
+    private Date gmtCreate;
+
+    private Date gmtModified;
+
+    private Integer valid;
+
     private Long problemId;
 
-    private Integer userId;
+    private Long userId;
 
-    private Integer languageId;
-
-    @JsonSerialize(using = DateToTimestampSerializer.class)
-    private Date createTime;
-
-    @JsonSerialize(using = DateToTimestampSerializer.class)
-    private Date judgeTime;
-
-    private String ipv4;
-
-    private Integer judgerId;
+    private String language;
 
     private Integer judgeResult;
 
@@ -56,34 +52,16 @@ public class SubmissionDTO extends BaseDTO {
 
     private Integer usedMemory;
 
-    private String judgeLog;
+    private Integer codeLength;
+
+    private String resultMessage;
 
     private String code;
-
-    private Integer codeLength;
 
     @JsonSerialize(using = BytesToCheckpointResultsSerializer.class)
     private byte[] checkpointResults;
 
+    // -----------------------
+
     private Integer checkpointNum;
-
-
-    public SubmissionDTO(Long problemId, Integer userId, Integer languageId, String ipv4, String code) {
-        this.problemId = problemId;
-        this.userId = userId;
-        this.languageId = languageId;
-        this.ipv4 = ipv4;
-        this.code = code;
-        this.codeLength = code.length();
-    }
-
-    public SubmissionDTO(Long submissionId, Integer judgerId, Integer judgeResult, Integer judgeScore, Integer usedTime, Integer usedMemory, String judgeLog) {
-        this.submissionId = submissionId;
-        this.judgerId = judgerId;
-        this.judgeResult = judgeResult;
-        this.judgeScore = judgeScore;
-        this.usedTime = usedTime;
-        this.usedMemory = usedMemory;
-        this.judgeLog = judgeLog;
-    }
 }

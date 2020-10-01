@@ -6,6 +6,7 @@
 package cn.edu.sdu.qd.oj.submit.entity;
 
 import cn.edu.sdu.qd.oj.common.entity.BaseDO;
+import com.baomidou.mybatisplus.annotation.FieldFill;
 import com.baomidou.mybatisplus.annotation.TableField;
 import com.baomidou.mybatisplus.annotation.TableId;
 import com.baomidou.mybatisplus.annotation.TableName;
@@ -21,23 +22,35 @@ import java.util.Date;
 @TableName(SubmissionDOField.TABLE_NAME)
 public class SubmissionDO extends BaseDO {
 
-    @TableId(value = SubmissionDOField.ID)
+    @TableId(value = SubmissionDOField.FEATURES)
     private Long submissionId;
+
+    @TableField(value = SubmissionDOField.GMT_CREATE, fill = FieldFill.INSERT)
+    private Date gmtCreate;
+
+    @TableField(value = SubmissionDOField.GMT_MODIFIED, fill = FieldFill.INSERT_UPDATE)
+    private Date gmtModified;
+
+    @TableField(SubmissionDOField.FEATURES)
+    private String features;
+
+    @TableField(SubmissionDOField.VERSION)
+    private Integer version;
+
+    @TableField(SubmissionDOField.VALID)
+    private Integer valid;
 
     @TableField(SubmissionDOField.PROBLEM_ID)
     private Long problemId;
 
     @TableField(SubmissionDOField.USER_ID)
-    private Integer userId;
+    private Long userId;
 
-    @TableField(SubmissionDOField.LANGUAGE_ID)
-    private Integer languageId;
+    @TableField(SubmissionDOField.CONTEST_ID)
+    private Long contestId;
 
-    @TableField(SubmissionDOField.CREATE_TIME)
-    private Date createTime;
-
-    @TableField(SubmissionDOField.JUDGE_TIME)
-    private Date judgeTime;
+    @TableField(SubmissionDOField.LANGUAGE)
+    private String language;
 
     @TableField(SubmissionDOField.IPV4)
     private String ipv4;
@@ -57,38 +70,15 @@ public class SubmissionDO extends BaseDO {
     @TableField(SubmissionDOField.USED_MEMORY)
     private Integer usedMemory;
 
-    @TableField(SubmissionDOField.JUDGE_LOG)
-    private String judgeLog;
+    @TableField(SubmissionDOField.CODE_LENGTH)
+    private Integer codeLength;
+
+    @TableField(SubmissionDOField.RESULT_MESSAGE)
+    private String resultMessage;
 
     @TableField(SubmissionDOField.CODE)
     private String code;
 
-    @TableField(SubmissionDOField.CODE_LENGTH)
-    private Integer codeLength;
-
     @TableField(SubmissionDOField.CHECKPOINT_RESULTS)
     private byte[] checkpointResults;
-
-    @TableField(exist = false)
-    private Integer checkpointNum;
-
-
-    public SubmissionDO(Long problemId, Integer userId, Integer languageId, String ipv4, String code) {
-        this.problemId = problemId;
-        this.userId = userId;
-        this.languageId = languageId;
-        this.ipv4 = ipv4;
-        this.code = code;
-        this.codeLength = code.length();
-    }
-
-    public SubmissionDO(Long submissionId, Integer judgerId, Integer judgeResult, Integer judgeScore, Integer usedTime, Integer usedMemory, String judgeLog) {
-        this.submissionId = submissionId;
-        this.judgerId = judgerId;
-        this.judgeResult = judgeResult;
-        this.judgeScore = judgeScore;
-        this.usedTime = usedTime;
-        this.usedMemory = usedMemory;
-        this.judgeLog = judgeLog;
-    }
 }

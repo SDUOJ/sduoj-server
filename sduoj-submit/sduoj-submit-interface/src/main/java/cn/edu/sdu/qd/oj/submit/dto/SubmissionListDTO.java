@@ -32,17 +32,15 @@ public class SubmissionListDTO extends BaseDTO {
     @JsonDeserialize(using = HexStringToLongDeserializer.class)
     private Long submissionId;
 
+    private Date gmtCreate;
+
+    private Date gmtModified;
+
     private Long problemId;
 
-    private Integer userId;
+    private Long userId;
 
-    private Integer languageId;
-
-    @JsonSerialize(using = DateToTimestampSerializer.class)
-    private Date createTime;
-
-    @JsonSerialize(using = DateToTimestampSerializer.class)
-    private Date judgeTime;
+    private String language;
 
     private Integer judgeResult;
 
@@ -53,6 +51,10 @@ public class SubmissionListDTO extends BaseDTO {
     private Integer usedMemory;
 
     private Integer codeLength;
+
+    // -----------------------------------
+
+    private String problemCode;
 
     private String problemTitle;
 
