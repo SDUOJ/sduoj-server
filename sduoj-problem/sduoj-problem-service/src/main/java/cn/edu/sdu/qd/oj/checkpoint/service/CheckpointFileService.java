@@ -84,15 +84,15 @@ public class CheckpointFileService {
                     byte[] outputBytes = output.getBytes();
                     long snowflaskId = snowflakeIdWorker.nextId();
                     String snowflaskIdString = Long.toHexString(snowflaskId);
-                    CheckpointDTO checkpointDTO = new CheckpointDTO(
-                            snowflaskId,
-                            new String(inputBytes, 0, Math.min(CheckpointDTO.MAX_DESCRIPTION_LENGTH, inputBytes.length)),
-                            new String(outputBytes, 0, Math.min(CheckpointDTO.MAX_DESCRIPTION_LENGTH, outputBytes.length)),
-                            inputBytes.length,
-                            outputBytes.length,
-                            input.getOriginalFilename(),
-                            output.getOriginalFilename()
-                    );
+                    CheckpointDTO checkpointDTO = CheckpointDTO.builder()
+                            .checkpointId(snowflaskId)
+                            .inputDescription(new String(inputBytes, 0, Math.min(CheckpointDTO.MAX_DESCRIPTION_LENGTH, inputBytes.length)))
+                            .outputDescription(new String(outputBytes, 0, Math.min(CheckpointDTO.MAX_DESCRIPTION_LENGTH, outputBytes.length)))
+                            .inputSize(inputBytes.length)
+                            .outputSize(outputBytes.length)
+                            .inputFileName(input.getOriginalFilename())
+                            .outputFileName(output.getOriginalFilename())
+                            .build();
                     checkpointDTOList.add(checkpointDTO);
                     File inputFile = new File(checkpointFileSystemProperties.getBaseDir() + File.separator + snowflaskIdString + ".in");
                     File outputFile = new File(checkpointFileSystemProperties.getBaseDir() + File.separator + snowflaskIdString + ".out");
@@ -177,9 +177,8 @@ public class CheckpointFileService {
     /**
     * @Description 读取文件系统中的 checkpoint 内容
     * @param checkpointId
-    * @return java.lang.String[] [0]:inputContent [1]:outputContent
     **/
-    public String[] queryCheckpointFileContent(String checkpointId) throws IOException {
+    public CheckpointDTO queryCheckpointFileContent(String checkpointId) throws IOException {
         File inputFile = new File(checkpointFileSystemProperties.getBaseDir() + File.separator + checkpointId + ".in");
         File outputFile = new File(checkpointFileSystemProperties.getBaseDir() + File.separator + checkpointId + ".out");
         if (!inputFile.exists() || !outputFile.exists()) {
@@ -188,7 +187,14 @@ public class CheckpointFileService {
         if (inputFile.length() > 1024*1024 || inputFile.length() > 1024*1024) {
             throw new ApiException(ApiExceptionEnum.FILE_TOO_LARGE);
         }
-        return new String[]{FileUtils.readFileToString(inputFile), FileUtils.readFileToString(outputFile)};
+        String input = FileUtils.readFileToString(inputFile);
+        String output = FileUtils.readFileToString(outputFile);
+
+        return CheckpointDTO.builder()
+                .checkpointId(Long.valueOf(checkpointId, 16))
+                .input(input)
+                .output(output)
+                .build();
     }
 
 }

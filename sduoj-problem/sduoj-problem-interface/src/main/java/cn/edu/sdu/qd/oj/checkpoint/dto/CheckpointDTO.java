@@ -12,6 +12,8 @@ import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 import lombok.*;
 
+import java.util.Date;
+
 
 /**
  * @Description TODO
@@ -27,11 +29,15 @@ import lombok.*;
 @EqualsAndHashCode(callSuper = true)
 public class CheckpointDTO extends BaseDTO {
 
-    public static final int MAX_DESCRIPTION_LENGTH = 32;
+    public static final int MAX_DESCRIPTION_LENGTH = 64;
 
     @JsonSerialize(using = LongToHexStringSerializer.class)
     @JsonDeserialize(using = HexStringToLongDeserializer.class)
     private Long checkpointId;
+
+    private Date gmtCreate;
+
+    private Date gmtModified;
 
     private String inputDescription;
 
@@ -44,6 +50,10 @@ public class CheckpointDTO extends BaseDTO {
     private String inputFileName;
 
     private String outputFileName;
+
+    private String input;
+
+    private String output;
 
     public CheckpointDTO(Long checkpointId, String inputDescription, String outputDescription, Integer inputSize, Integer outputSize) {
         this.checkpointId = checkpointId;

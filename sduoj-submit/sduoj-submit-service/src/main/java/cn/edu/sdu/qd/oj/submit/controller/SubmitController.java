@@ -40,7 +40,7 @@ public class SubmitController {
     public ResponseResult<String> createSubmission(@RequestBody Map json,
                                  @RequestHeader("X-FORWARDED-FOR") String ipv4,
                                  @RequestHeader("authorization-userId") Integer userId) {
-        int problemId = (int) json.get("problemId");
+        long problemId = (long) json.get("problemId");
         int languageId = (int) json.get("languageId");
         String code = (String) json.get("code");
         SubmissionDTO submissionDTO = new SubmissionDTO(problemId, userId, languageId, ipv4, code);
@@ -67,7 +67,7 @@ public class SubmitController {
     @ApiResponseBody
     public PageResult<SubmissionListDTO> queryList(@RequestBody Map json) {
         String username = (String) json.get("username");
-        Integer problemId = (Integer) json.get("problemId");
+        Long problemId = (Long) json.get("problemId");
         int pageNow = (int) json.get("pageNow");
         int pageSize = (int) json.get("pageSize");
         PageResult<SubmissionListDTO> result = this.submitService.querySubmissionByPage(username, problemId, pageNow, pageSize);

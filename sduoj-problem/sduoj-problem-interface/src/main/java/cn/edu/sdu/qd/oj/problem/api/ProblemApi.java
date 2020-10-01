@@ -24,5 +24,5 @@ public interface ProblemApi {
     String SERVICE_NAME = "problem-service";
 
     @GetMapping("/queryIdToTitleMap")
-    Map<Integer, String> queryIdToTitleMap() throws InternalApiException;
+    Map<Long, String> queryIdToTitleMap() throws InternalApiException;
 }

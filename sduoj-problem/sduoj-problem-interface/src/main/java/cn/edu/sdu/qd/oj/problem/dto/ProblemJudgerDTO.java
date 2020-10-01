@@ -6,7 +6,7 @@
 package cn.edu.sdu.qd.oj.problem.dto;
 
 import cn.edu.sdu.qd.oj.common.entity.BaseDTO;
-import cn.edu.sdu.qd.oj.problem.utils.BytesToCheckpointIdsSerializer;
+import cn.edu.sdu.qd.oj.problem.util.BytesToCheckpointIdsSerializer;
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 import lombok.*;
 
@@ -17,7 +17,7 @@ import lombok.*;
 @EqualsAndHashCode(callSuper = true)
 public class ProblemJudgerDTO extends BaseDTO {
 
-    private Integer problemId;
+    private Long problemId;
 
     private Integer isPublic;
 

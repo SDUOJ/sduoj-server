@@ -49,29 +49,22 @@ public class CheckpointManageController {
      * @return cn.edu.sdu.qd.oj.checkpoint.pojo.Checkpoint
      * @Description 查看某个测试点详情
      **/
-    @PostMapping("/query")
-    @ResponseBody // TODO: 返回值处理器重构，增强适配性
-    public ResponseResult<Map> query(@RequestBody Map json) throws IOException {
-        String[] contents = this.checkpointFileService.queryCheckpointFileContent((String) json.get("checkpointId"));
-        Map<String, Object> ret = new HashMap<>(3);
-        ret.put("checkpointId", json.get("checkpointId"));
-        ret.put("input", contents[0]);
-        ret.put("output", contents[1]);
-        return ResponseResult.ok(ret);
+    @GetMapping("/query")
+    @ApiResponseBody
+    public CheckpointDTO query(@RequestParam("checkpointId") String checkpointId) throws IOException {
+        return this.checkpointFileService.queryCheckpointFileContent(checkpointId);
     }
 
 
     /**
-     * @param input
-     * @param output
      * @return cn.edu.sdu.qd.oj.checkpoint.pojo.Checkpoint
      * @Description 上传单对文本文件作为测试点文件
      **/
     @PostMapping(value = "/upload", headers = "content-type=application/json")
     @ApiResponseBody
-    public CheckpointDTO upload(@RequestBody Map json) {
-        String input = (String) json.get("input");
-        String output = (String) json.get("output");
+    public CheckpointDTO upload(@RequestBody Map<String, String> json) {
+        String input = json.get("input");
+        String output = json.get("output");
         if (StringUtils.isBlank(input) || StringUtils.isBlank(output)) {
             throw new ApiException(ApiExceptionEnum.CONTENT_IS_BLANK);
         }
@@ -95,7 +88,8 @@ public class CheckpointManageController {
      * @return void
      **/
     @PostMapping(value = "/download")
-    public void zipDownload(@RequestBody List<String> checkpointIds, HttpServletResponse response) throws IOException {
+    public void zipDownload(@RequestBody List<String> checkpointIds,
+                            HttpServletResponse response) throws IOException {
         log.warn("zipDownload: {}", checkpointIds);
         String zipFileName = "checkpoints.zip"; // TODO: 下载文件名定义问题
         response.addHeader(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=\"" + zipFileName + "\"");
@@ -104,15 +98,9 @@ public class CheckpointManageController {
         checkpointFileService.downloadCheckpointFiles(checkpointIds, new ZipOutputStream(response.getOutputStream()));
     }
 
-    /**
-    * @Description 传入 checkpintId 的列表，批量查询
-    * @param checkpointIds
-    * @return java.util.List<cn.edu.sdu.qd.oj.checkpoint.pojo.Checkpoint>
-    **/
-    @PostMapping(value = "/list")
+    @GetMapping(value = "/list")
     @ApiResponseBody
-    public List<CheckpointDTO> getCheckpoints(@RequestBody Map json) {
-        int problemId = (Integer) json.get("problemId");
-        return checkpointManageService.getCheckpoints(problemId);
+    public List<CheckpointDTO> getCheckpoints(@RequestParam("problemCode") String problemCode) {
+        return checkpointManageService.getCheckpoints(problemCode);
     }
 }

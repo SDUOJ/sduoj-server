@@ -25,13 +25,24 @@ public class ProblemCacheUtils {
     @Autowired
     private RedisUtils redisUtils;
 
-    public String getProblemTitle(int problemId) {
+    public String getProblemTitle(long problemId) {
         Object o = redisUtils.hget(RedisConstants.REDIS_KEY_FOR_PROBLEM_ID_TO_TITLE, String.valueOf(problemId));
         return o == null ? null : (String) o;
     }
 
-    public int getProblemCheckpointNum(int problemId) {
+    public int getProblemCheckpointNum(long problemId) {
         Object o = redisUtils.hget(RedisConstants.REDIS_KEY_FOR_PROBLEM_ID_TO_CHECKPOINTNUM, String.valueOf(problemId));
         return o == null ? 0 : (Integer) o;
+    }
+
+    public long getProblemId(String problemCode) {
+        if (problemCode == null) {
+            throw new RuntimeException("param error");
+        }
+        Object o = redisUtils.hget(RedisConstants.REDIS_KEY_FOR_PROBLEM_CODE_TO_PROBLEM_ID, problemCode);
+        if (o == null) {
+            throw new RuntimeException("cache error, no data");
+        }
+        return Long.parseLong(String.valueOf(o));
     }
 }

@@ -1,8 +1,11 @@
 package cn.edu.sdu.qd.oj.checkpoint.entity;
 
 public class CheckpointDOField {
-    public static final String TABLE_NAME = "oj_checkpoints";
+    public static final String TABLE_NAME = "oj_checkpoint";
     public static final String ID = "c_id";
+    public static final String GMT_CREATE = "c_gmt_create";
+    public static final String GMT_MODIFIED = "c_gmt_modified";
+    public static final String features = "c_features";
     public static final String INPUT_DESC = "c_input_desc";
     public static final String OUTPUT_DESC = "c_output_desc";
     public static final String INPUT_SIZE = "c_input_size";

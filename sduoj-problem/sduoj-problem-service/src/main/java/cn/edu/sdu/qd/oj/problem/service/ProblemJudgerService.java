@@ -7,6 +7,7 @@ package cn.edu.sdu.qd.oj.problem.service;
 
 import cn.edu.sdu.qd.oj.problem.converter.ProblemJudgerConverter;
 import cn.edu.sdu.qd.oj.problem.dao.ProblemDao;
+import cn.edu.sdu.qd.oj.problem.dto.ProblemDTO;
 import cn.edu.sdu.qd.oj.problem.entity.ProblemDO;
 import cn.edu.sdu.qd.oj.problem.dto.ProblemJudgerDTO;
 import org.springframework.beans.BeanUtils;
@@ -29,15 +30,15 @@ public class ProblemJudgerService {
     @Autowired
     private ProblemJudgerConverter problemJudgerConverter;
 
-    public ProblemJudgerDTO queryById(int problemId) {
+    public ProblemJudgerDTO queryByCode(String problemCode) {
         ProblemDO problemJudgerDO = problemDao.lambdaQuery().select(
             ProblemDO::getProblemId,
             ProblemDO::getIsPublic,
             ProblemDO::getTimeLimit,
             ProblemDO::getMemoryLimit,
             ProblemDO::getCheckpointNum,
-            ProblemDO::getCheckpointIds
-        ).eq(ProblemDO::getProblemId, problemId).one();
+            ProblemDO::getCheckpoints
+        ).eq(ProblemDO::getProblemCode, problemCode).one();
         return problemJudgerConverter.to(problemJudgerDO);
     }
 }

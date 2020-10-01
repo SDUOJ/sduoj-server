@@ -21,7 +21,7 @@ import lombok.*;
 public class ProblemJudgerDO extends BaseDO {
 
     @TableId(value = ProblemDOField.ID, type = IdType.AUTO)
-    private Integer problemId;
+    private Long problemId;
 
     @TableField(ProblemDOField.IS_PUBLIC)
     private Integer isPublic;
@@ -35,6 +35,6 @@ public class ProblemJudgerDO extends BaseDO {
     @TableField(ProblemDOField.CHECKPOINT_NUM)
     private Integer checkpointNum;
 
-    @TableField(ProblemDOField.CHECKPOINT_IDS)
+    @TableField(ProblemDOField.CHECKPOINTS)
     private byte[] checkpointIds;
 }

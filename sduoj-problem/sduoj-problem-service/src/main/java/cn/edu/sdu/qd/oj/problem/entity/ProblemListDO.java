@@ -21,7 +21,7 @@ import lombok.*;
 public class ProblemListDO extends BaseDO {
 
     @TableId(value = ProblemDOField.ID, type = IdType.AUTO)
-    private Integer problemId;
+    private Long problemId;
 
     @TableField(ProblemDOField.IS_PUBLIC)
     private Integer isPublic;

@@ -31,7 +31,7 @@ public class SubmissionJudgeDTO extends BaseDTO {
     @JsonDeserialize(using = HexStringToLongDeserializer.class)
     private Long submissionId;
 
-    private Integer problemId;
+    private Long problemId;
 
     private Integer userId;
 

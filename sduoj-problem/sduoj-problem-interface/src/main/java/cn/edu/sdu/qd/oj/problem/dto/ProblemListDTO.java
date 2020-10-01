@@ -8,6 +8,10 @@ package cn.edu.sdu.qd.oj.problem.dto;
 import cn.edu.sdu.qd.oj.common.entity.BaseDTO;
 import lombok.*;
 
+import java.util.Date;
+import java.util.List;
+import java.util.Map;
+
 /**
  * @Description TODO
  * @Author zhangt2333
@@ -22,13 +26,25 @@ import lombok.*;
 @EqualsAndHashCode(callSuper = true)
 public class ProblemListDTO extends BaseDTO {
 
-    private Integer problemId;
+    private Long problemId;
 
-    private Integer isPublic;
+    private Map<String, String> features;
+
+    private String problemCode;
 
     private String problemTitle;
+
+    private String source;
+
+    private String removeOj;
+
+    private String removeUrl;
 
     private Integer submitNum;
 
     private Integer acceptNum;
+
+    // ---------------------
+
+    private List<ProblemTagDTO> problemTagDTOList;
 }

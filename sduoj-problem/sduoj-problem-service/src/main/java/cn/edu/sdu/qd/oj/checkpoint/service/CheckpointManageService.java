@@ -37,10 +37,13 @@ public class CheckpointManageService {
     @Autowired
     private CheckpointConverter checkpointConverter;
 
-    public List<CheckpointDTO> getCheckpoints(int problemId) {
-        ProblemDO problemDO = problemDao.lambdaQuery().select(ProblemDO::getCheckpointIds).eq(ProblemDO::getProblemId, problemId).one();
-        byte[] bytes = problemDO.getCheckpointIds();
-        if (bytes.length == 0) {
+    public List<CheckpointDTO> getCheckpoints(String problemCode) {
+        ProblemDO problemDO = problemDao.lambdaQuery().select(
+                ProblemDO::getProblemId,
+                ProblemDO::getCheckpoints
+        ).eq(ProblemDO::getProblemCode, problemCode).one();
+        byte[] bytes = Optional.ofNullable(problemDO).map(ProblemDO::getCheckpoints).orElse(null);
+        if (bytes == null || bytes.length == 0) {
             return new ArrayList<>();
         }
         List<Long> checkpointIds = new ArrayList<>(bytes.length / 8);

@@ -21,7 +21,7 @@ import lombok.*;
 public class ProblemManageDO extends BaseDO {
 
     @TableId(value = ProblemDOField.ID, type = IdType.AUTO)
-    private Integer problemId;
+    private Long problemId;
 
     @TableField(ProblemDOField.IS_PUBLIC)
     private Integer isPublic;
@@ -38,13 +38,10 @@ public class ProblemManageDO extends BaseDO {
     @TableField(ProblemDOField.MEMORY_LIMIT)
     private Integer memoryLimit;
 
-    @TableField(ProblemDOField.MARKDOWN)
-    private String markdown;
-
     @TableField(ProblemDOField.CHECKPOINT_NUM)
     private Integer checkpointNum;
 
-    @TableField(ProblemDOField.CHECKPOINT_IDS)
+    @TableField(ProblemDOField.CHECKPOINTS)
     private byte[] checkpointIds;
 
     @TableField(exist = false)

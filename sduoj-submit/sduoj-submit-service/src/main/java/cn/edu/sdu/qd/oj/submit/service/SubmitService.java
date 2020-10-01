@@ -100,7 +100,7 @@ public class SubmitService {
         return null;
     }
 
-    public PageResult<SubmissionListDTO> querySubmissionByPage(String username, Integer problemId, int pageNow, int pageSize) {
+    public PageResult<SubmissionListDTO> querySubmissionByPage(String username, Long problemId, int pageNow, int pageSize) {
         Long userId = null;
         if (StringUtils.isNotBlank(username)) {
             try {

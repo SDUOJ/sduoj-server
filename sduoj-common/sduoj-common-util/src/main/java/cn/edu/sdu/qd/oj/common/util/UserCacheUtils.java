@@ -25,7 +25,7 @@ public class UserCacheUtils {
     @Autowired
     private RedisUtils redisUtils;
 
-    public String getUsername(int userId) {
+    public String getUsername(long userId) {
         Object o = redisUtils.hget(RedisConstants.REDIS_KEY_FOR_USER_ID_TO_USERNAME, String.valueOf(userId));
         // TODO: 设计本地 Guava 缓存
         return o == null ? null : (String) o;

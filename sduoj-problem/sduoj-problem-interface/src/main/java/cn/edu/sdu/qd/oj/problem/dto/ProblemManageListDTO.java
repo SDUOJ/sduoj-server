@@ -6,7 +6,16 @@
 package cn.edu.sdu.qd.oj.problem.dto;
 
 import cn.edu.sdu.qd.oj.common.entity.BaseDTO;
+import cn.edu.sdu.qd.oj.problem.util.BytesToCheckpointIdsSerializer;
+import cn.edu.sdu.qd.oj.problem.util.CheckpointIdsToBytesDeserializer;
+import com.fasterxml.jackson.annotation.JsonProperty;
+import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
+import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 import lombok.*;
+
+import java.util.Date;
+import java.util.List;
+import java.util.Map;
 
 @Data
 @Builder
@@ -15,21 +24,41 @@ import lombok.*;
 @EqualsAndHashCode(callSuper = true)
 public class ProblemManageListDTO extends BaseDTO {
 
-    private Integer problemId;
+    private Long problemId;
+
+    @JsonProperty(access = JsonProperty.Access.READ_ONLY)
+    private Date gmtCreate;
+
+    @JsonProperty(access = JsonProperty.Access.READ_ONLY)
+    private Date gmtModified;
+
+    @JsonProperty(access = JsonProperty.Access.READ_ONLY)
+    private Map<String, String> features;
+
+    private String problemCode;
 
     private Integer isPublic;
 
-    private Integer userId;
+    private Long userId;
 
     private String problemTitle;
 
+    private String source;
+
+    private String removeOj;
+
+    private String removeUrl;
+
+    @JsonProperty(access = JsonProperty.Access.READ_ONLY)
     private Integer submitNum;
 
+    @JsonProperty(access = JsonProperty.Access.READ_ONLY)
     private Integer acceptNum;
 
-    private Integer timeLimit;
-
-    private Integer memoryLimit;
-
+    @JsonProperty(access = JsonProperty.Access.READ_ONLY)
     private Integer checkpointNum;
+
+    // ------------------------------------------
+
+    private String username;
 }

@@ -25,7 +25,7 @@ public class SubmissionDO extends BaseDO {
     private Long submissionId;
 
     @TableField(SubmissionDOField.PROBLEM_ID)
-    private Integer problemId;
+    private Long problemId;
 
     @TableField(SubmissionDOField.USER_ID)
     private Integer userId;
@@ -73,7 +73,7 @@ public class SubmissionDO extends BaseDO {
     private Integer checkpointNum;
 
 
-    public SubmissionDO(Integer problemId, Integer userId, Integer languageId, String ipv4, String code) {
+    public SubmissionDO(Long problemId, Integer userId, Integer languageId, String ipv4, String code) {
         this.problemId = problemId;
         this.userId = userId;
         this.languageId = languageId;

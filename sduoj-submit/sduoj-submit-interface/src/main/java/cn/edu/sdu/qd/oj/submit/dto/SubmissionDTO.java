@@ -32,7 +32,7 @@ public class SubmissionDTO extends BaseDTO {
     @JsonDeserialize(using = HexStringToLongDeserializer.class)
     private Long submissionId;
 
-    private Integer problemId;
+    private Long problemId;
 
     private Integer userId;
 
@@ -68,7 +68,7 @@ public class SubmissionDTO extends BaseDTO {
     private Integer checkpointNum;
 
 
-    public SubmissionDTO(Integer problemId, Integer userId, Integer languageId, String ipv4, String code) {
+    public SubmissionDTO(Long problemId, Integer userId, Integer languageId, String ipv4, String code) {
         this.problemId = problemId;
         this.userId = userId;
         this.languageId = languageId;

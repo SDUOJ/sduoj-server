@@ -21,7 +21,7 @@ import lombok.*;
 public class ProblemManageListDO extends BaseDO {
 
     @TableId(value = ProblemDOField.ID, type = IdType.AUTO)
-    private Integer problemId;
+    private Long problemId;
 
     @TableField(ProblemDOField.IS_PUBLIC)
     private Integer isPublic;
@@ -35,7 +35,7 @@ public class ProblemManageListDO extends BaseDO {
     @TableField(ProblemDOField.SUBMIT_NUM)
     private Integer submitNum;
 
-    @TableField(ProblemDOField.ACCEPT_NUM)
+    @TableField(ProblemDOField.LANGUAGES)
     private Integer acceptNum;
 
     @TableField(ProblemDOField.TIME_LIMIT)

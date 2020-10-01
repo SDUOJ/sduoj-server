@@ -36,15 +36,16 @@ public class CheckpointJudgerController {
 
     /**
      * @Description 传入 checkpoint id 数组，以 zip 包形式下载数据
-     * @param checkpointIds
+     * @param checkpointIdList
      * @return void
      **/
     @PostMapping(value = "/download")
-    public void zipDownload(@RequestBody List<String> checkpointIds, HttpServletResponse response) throws IOException {
+    public void zipDownload(@RequestBody List<String> checkpointIdList,
+                            HttpServletResponse response) throws IOException {
         String zipFileName = "checkpoints.zip"; // TODO: 下载文件名定义问题
         response.addHeader(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=\"" + zipFileName + "\"");
         response.setHeader(HttpHeaders.CONTENT_TYPE, "application/zip");
         response.setStatus(HttpServletResponse.SC_OK);
-        checkpointFileService.downloadCheckpointFiles(checkpointIds, new ZipOutputStream(response.getOutputStream()));
+        checkpointFileService.downloadCheckpointFiles(checkpointIdList, new ZipOutputStream(response.getOutputStream()));
     }
 }

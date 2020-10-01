@@ -9,16 +9,12 @@ import cn.edu.sdu.qd.oj.common.entity.ApiResponseBody;
 import cn.edu.sdu.qd.oj.common.entity.PageResult;
 import cn.edu.sdu.qd.oj.common.enums.ApiExceptionEnum;
 import cn.edu.sdu.qd.oj.common.exception.ApiException;
-import cn.edu.sdu.qd.oj.problem.dto.ProblemManageDTO;
-import cn.edu.sdu.qd.oj.problem.dto.ProblemManageListDTO;
+import cn.edu.sdu.qd.oj.problem.dto.*;
 import cn.edu.sdu.qd.oj.problem.service.ProblemManageService;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestHeader;
-import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.*;
 
 import java.util.Map;
 
@@ -38,44 +34,51 @@ public class ProblemManageController {
     @Autowired
     private ProblemManageService problemManageService;
 
-
-    @PostMapping("/query")
+    @GetMapping("/query")
     @ApiResponseBody
-    public ProblemManageDTO queryManageBoById(@RequestBody Map json) {
-        return this.problemManageService.queryById((Integer) json.get("problemId"));
+    public ProblemManageDTO queryByCode(@RequestParam("problemCode") String problemCode) {
+        return this.problemManageService.queryByCode(problemCode);
     }
 
     @PostMapping("/create")
     @ApiResponseBody
-    public Integer createProblemManageBo(@RequestBody ProblemManageDTO problem,
-                                         @RequestHeader("authorization-userId") Integer userId) {
-        problem.setUserId(userId);
-        this.problemManageService.createProblem(problem);
-        return problem.getProblemId();
+    public String createProblemManageBo(@RequestBody ProblemManageDTO problemManageDTO,
+                                        @RequestHeader("authorization-userId") Long userId) {
+        problemManageDTO.setUserId(userId);
+        return this.problemManageService.createProblem(problemManageDTO);
     }
 
-
-    @PostMapping("/list")
+    @GetMapping("/list")
     @ApiResponseBody
-    public PageResult<ProblemManageListDTO> queryList(@RequestBody Map json
-    ) {
-        int pageNow = (int) json.get("pageNow");
-        int pageSize = (int) json.get("pageSize");
+    public PageResult<ProblemManageListDTO> queryList(@RequestParam("pageNow") int pageNow,
+                                                      @RequestParam("pageSize") int pageSize) {
         PageResult<ProblemManageListDTO> result = this.problemManageService.queryProblemByPage(pageNow, pageSize);
+        if (result == null || result.getRows().size() == 0) {
+            throw new ApiException(ApiExceptionEnum.PROBLEM_NOT_FOUND);
+        }
         return result;
     }
 
     @PostMapping("/update")
     @ApiResponseBody
     public Void updateProblem(@RequestBody ProblemManageDTO problem) {
-        log.warn("updateProblem: {}", problem);
-        if (problem.getProblemId() == null)
+        log.info("updateProblem: {}", problem);
+        if (problem.getProblemCode() == null) {
             throw new ApiException(ApiExceptionEnum.PARAMETER_ERROR);
-        if (problem.getCheckpointIds() != null)
-            problem.setCheckpointNum(problem.getCheckpointIds().length / 8);
+        }
+        if (problem.getCheckpoints() != null) {
+            problem.setCheckpointNum(problem.getCheckpoints().length / 8);
+        }
         problemManageService.update(problem);
         return null;
     }
 
+    @PostMapping("/createDescription")
+    @ApiResponseBody
+    public Long createDescription(@RequestBody ProblemDescriptionDTO problemDescriptionDTO,
+                                  @RequestHeader("authorization-userId") Long userId) {
+        problemDescriptionDTO.setUserId(userId);
+        return problemManageService.createDescription(problemDescriptionDTO);
+    }
 
 }

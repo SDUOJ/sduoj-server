@@ -6,11 +6,10 @@
 package cn.edu.sdu.qd.oj.checkpoint.entity;
 
 import cn.edu.sdu.qd.oj.common.entity.BaseDO;
-import com.baomidou.mybatisplus.annotation.IdType;
-import com.baomidou.mybatisplus.annotation.TableField;
-import com.baomidou.mybatisplus.annotation.TableId;
-import com.baomidou.mybatisplus.annotation.TableName;
+import com.baomidou.mybatisplus.annotation.*;
 import lombok.*;
+
+import java.util.Date;
 
 /**
  * @Author zhangt2333
@@ -29,6 +28,12 @@ public class CheckpointDO extends BaseDO {
 
     @TableId(value = CheckpointDOField.ID, type = IdType.NONE)
     private Long checkpointId;
+
+    @TableField(value = CheckpointDOField.GMT_CREATE, fill = FieldFill.INSERT)
+    private Date gmtCreate;
+
+    @TableField(value = CheckpointDOField.GMT_MODIFIED, fill = FieldFill.INSERT_UPDATE)
+    private Date gmtModified;
 
     @TableField(CheckpointDOField.INPUT_DESC)
     private String inputDescription;

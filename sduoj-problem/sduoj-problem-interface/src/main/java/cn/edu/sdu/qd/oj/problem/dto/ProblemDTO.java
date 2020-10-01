@@ -4,6 +4,10 @@ import cn.edu.sdu.qd.oj.common.entity.BaseDTO;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.*;
 
+import java.util.Date;
+import java.util.List;
+import java.util.Map;
+
 @Data
 @Builder
 @NoArgsConstructor
@@ -11,24 +15,35 @@ import lombok.*;
 @EqualsAndHashCode(callSuper = true)
 public class ProblemDTO extends BaseDTO {
 
-    private Integer problemId;
+    private Long problemId;
 
-    @JsonProperty(access = JsonProperty.Access.WRITE_ONLY)
-    private Integer isPublic;
+    private Map<String, String> features;
 
-    private Integer userId;
+    private String problemCode;
 
     private String problemTitle;
+
+    private String source;
+
+    private String removeOj;
+
+    private String removeUrl;
 
     private Integer submitNum;
 
     private Integer acceptNum;
 
-    private Integer timeLimit;
+    private List<String> languages;
 
     private Integer memoryLimit;
 
-    private String markdown;
+    private Integer timeLimit;
 
-    private Integer checkpointNum;
+    private Long defaultDescriptionId;
+
+    // ------------------------------------------
+
+    private ProblemDescriptionDTO problemDescriptionDTO;
+
+    private List<ProblemDescriptionListDTO> problemDescriptionListDTOList;
 }

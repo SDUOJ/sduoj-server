@@ -26,7 +26,7 @@ public class SubmissionListDO extends BaseDO {
     private Long submissionId;
 
     @TableField(SubmissionDOField.PROBLEM_ID)
-    private Integer problemId;
+    private Long problemId;
 
     @TableField(SubmissionDOField.USER_ID)
     private Integer userId;

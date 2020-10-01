@@ -28,7 +28,7 @@ public class ProblemInternalController implements ProblemApi {
     private ProblemService problemService;
 
     @Override
-    public Map<Integer, String> queryIdToTitleMap() throws InternalApiException {
+    public Map<Long, String> queryIdToTitleMap() throws InternalApiException {
         return problemService.queryIdToTitleMap();
     }
 }
