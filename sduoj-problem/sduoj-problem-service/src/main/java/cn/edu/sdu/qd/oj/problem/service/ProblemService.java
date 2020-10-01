@@ -21,8 +21,11 @@ import cn.edu.sdu.qd.oj.problem.entity.ProblemDescriptionDO;
 import cn.edu.sdu.qd.oj.problem.entity.ProblemTagDO;
 import com.baomidou.mybatisplus.extension.conditions.query.LambdaQueryChainWrapper;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
+import com.google.common.collect.Collections2;
+import org.apache.commons.lang.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.util.CollectionUtils;
 
 import javax.annotation.PostConstruct;
 import java.util.*;
@@ -84,6 +87,13 @@ public class ProblemService {
             });
         } catch (Exception ignore) {
         }
+
+        // 置 tagDTO
+        List<Long> tags = getTagIdListFromFeatureMap(problemDTO.getFeatures());
+        if (!CollectionUtils.isEmpty(tags)) {
+            List<ProblemTagDO> problemTagDOList = problemTagDao.lambdaQuery().in(ProblemTagDO::getId, tags).list();
+            problemDTO.setProblemTagDTOList(problemTagConverter.to(problemTagDOList));
+        }
         return problemDTO;
     }
 
@@ -138,6 +148,27 @@ public class ProblemService {
                         .orElse(null)
         ));
         return new PageResult<>(pageResult.getPages(), problemListDTOList);
+    }
+
+    private List<ProblemTagDO> getTagDTOListFromFeatures(String features) {
+        if (StringUtils.isBlank(features)) {
+            return null;
+        }
+        Map<String, String> featureMap = Arrays.stream(features.split(";")).collect(Collectors.toMap(s -> s.substring(0, s.indexOf(":")), s -> s.substring(s.indexOf(":") + 1), (k1, k2) -> k1));
+        List<Long> tags = getTagIdListFromFeatureMap(featureMap);
+        List<ProblemTagDO> problemTagDOList = problemTagDao.lambdaQuery().in(ProblemTagDO::getId, tags).list();
+        return problemTagDOList;
+    }
+
+    private List<Long> getTagIdListFromFeatureMap(Map<String, String> featureMap) {
+        List<Long> tags = Optional.ofNullable(featureMap)
+                .map(map -> map.get("tags"))
+                .map(tagsStr -> tagsStr.split(","))
+                .map(tagArray -> Arrays.stream(tagArray)
+                        .map(Long::parseLong)
+                        .collect(Collectors.toList()))
+                .orElse(null);
+        return tags;
     }
 
     public Map<Long, String> queryIdToTitleMap() {

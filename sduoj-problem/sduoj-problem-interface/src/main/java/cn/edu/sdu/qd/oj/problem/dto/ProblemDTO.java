@@ -46,4 +46,6 @@ public class ProblemDTO extends BaseDTO {
     private ProblemDescriptionDTO problemDescriptionDTO;
 
     private List<ProblemDescriptionListDTO> problemDescriptionListDTOList;
+
+    private List<ProblemTagDTO> problemTagDTOList;
 }
