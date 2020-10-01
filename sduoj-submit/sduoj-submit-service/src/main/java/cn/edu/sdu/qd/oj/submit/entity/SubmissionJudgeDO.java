@@ -23,7 +23,7 @@ import java.util.Date;
 public class SubmissionJudgeDO extends BaseDO {
 
 
-    @TableId(value = SubmissionDOField.FEATURES)
+    @TableId(value = SubmissionDOField.ID)
     private Long submissionId;
 
     @TableField(SubmissionDOField.PROBLEM_ID)

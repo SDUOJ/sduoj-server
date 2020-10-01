@@ -36,6 +36,10 @@ public class SubmissionListDTO extends BaseDTO {
 
     private Date gmtModified;
 
+    private Integer isPublic;
+
+    private Integer valid;
+
     private Long problemId;
 
     private Long userId;

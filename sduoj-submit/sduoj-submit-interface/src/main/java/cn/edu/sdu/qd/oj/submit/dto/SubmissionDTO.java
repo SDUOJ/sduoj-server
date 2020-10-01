@@ -36,6 +36,8 @@ public class SubmissionDTO extends BaseDTO {
 
     private Date gmtModified;
 
+    private Integer isPublic;
+
     private Integer valid;
 
     private Long problemId;
@@ -54,7 +56,7 @@ public class SubmissionDTO extends BaseDTO {
 
     private Integer codeLength;
 
-    private String resultMessage;
+    private String judgeLog;
 
     private String code;
 
@@ -64,4 +66,6 @@ public class SubmissionDTO extends BaseDTO {
     // -----------------------
 
     private Integer checkpointNum;
+
+    private String username;
 }

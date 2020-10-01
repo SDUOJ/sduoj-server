@@ -22,7 +22,7 @@ import java.util.Date;
 @TableName(SubmissionDOField.TABLE_NAME)
 public class SubmissionListDO extends BaseDO {
 
-    @TableId(value = SubmissionDOField.FEATURES)
+    @TableId(value = SubmissionDOField.ID)
     private Long submissionId;
 
     @TableField(value = SubmissionDOField.GMT_CREATE, fill = FieldFill.INSERT)
@@ -30,6 +30,9 @@ public class SubmissionListDO extends BaseDO {
 
     @TableField(value = SubmissionDOField.GMT_MODIFIED, fill = FieldFill.INSERT_UPDATE)
     private Date gmtModified;
+
+    @TableField(SubmissionDOField.IS_PUBLIC)
+    private Integer isPublic;
 
     @TableField(SubmissionDOField.VALID)
     private Integer valid;

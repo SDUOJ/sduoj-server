@@ -108,6 +108,7 @@ public class SubmitService {
         }
         SubmissionDTO submissionDTO = submissionConverter.to(submissionDO);
         submissionDTO.setCheckpointNum(problemCacheUtils.getProblemCheckpointNum(submissionDTO.getProblemId()));
+        submissionDTO.setUsername(userCacheUtils.getUsername(submissionDTO.getUserId()));
         return submissionDTO;
     }
 
@@ -126,6 +127,8 @@ public class SubmitService {
             SubmissionDO::getLanguage,
             SubmissionDO::getGmtCreate,
             SubmissionDO::getGmtModified,
+            SubmissionDO::getIsPublic,
+            SubmissionDO::getValid,
             SubmissionDO::getJudgeResult,
             SubmissionDO::getJudgeScore,
             SubmissionDO::getUsedTime,

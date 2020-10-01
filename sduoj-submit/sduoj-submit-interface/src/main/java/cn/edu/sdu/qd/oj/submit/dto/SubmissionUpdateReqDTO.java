@@ -33,7 +33,7 @@ public class SubmissionUpdateReqDTO extends BaseDTO {
     @NotNull
     private Integer usedMemory;
 
-    private String resultMessage;
+    private String judgeLog;
 
     @NotNull
     @JsonDeserialize(using = CheckpointResultsToByteDeserializer.class)
