@@ -25,9 +25,9 @@ public class ProblemDTO extends BaseDTO {
 
     private String source;
 
-    private String removeOj;
+    private String remoteOj;
 
-    private String removeUrl;
+    private String remoteUrl;
 
     private Integer submitNum;
 

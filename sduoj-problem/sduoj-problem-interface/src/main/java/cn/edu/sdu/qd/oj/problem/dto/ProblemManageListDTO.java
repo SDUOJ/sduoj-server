@@ -45,9 +45,9 @@ public class ProblemManageListDTO extends BaseDTO {
 
     private String source;
 
-    private String removeOj;
+    private String remoteOj;
 
-    private String removeUrl;
+    private String remoteUrl;
 
     @JsonProperty(access = JsonProperty.Access.READ_ONLY)
     private Integer submitNum;

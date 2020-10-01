@@ -1,6 +1,5 @@
 package cn.edu.sdu.qd.oj.problem.service;
 
-import cn.edu.sdu.qd.oj.common.util.ProblemCacheUtils;
 import cn.edu.sdu.qd.oj.common.util.RedisConstants;
 import cn.edu.sdu.qd.oj.common.entity.PageResult;
 import cn.edu.sdu.qd.oj.common.enums.ApiExceptionEnum;
@@ -96,8 +95,8 @@ public class ProblemService {
                 ProblemDO::getProblemCode,
                 ProblemDO::getProblemTitle,
                 ProblemDO::getSource,
-                ProblemDO::getRemoveOj,
-                ProblemDO::getRemoveUrl,
+                ProblemDO::getRemoteOj,
+                ProblemDO::getRemoteUrl,
                 ProblemDO::getSubmitNum,
                 ProblemDO::getAcceptNum
         ).eq(ProblemDO::getIsPublic, 1);
@@ -111,7 +110,7 @@ public class ProblemService {
             }
         });
         Optional.ofNullable(problemListReqDTO.getRemoteOj()).ifPresent(remoteOj -> {
-            query.eq(ProblemDO::getRemoveOj, remoteOj);
+            query.eq(ProblemDO::getRemoteOj, remoteOj);
         });
         Page<ProblemDO> pageResult = query.page(new Page<>(problemListReqDTO.getPageNow(), problemListReqDTO.getPageSize()));
         List<ProblemListDTO> problemListDTOList = problemListConverter.to(pageResult.getRecords());

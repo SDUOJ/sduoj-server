@@ -49,10 +49,10 @@ public class ProblemDO extends BaseDO {
     private String source;
 
     @TableField(ProblemDOField.REMOTE_OJ)
-    private String removeOj;
+    private String remoteOj;
 
     @TableField(ProblemDOField.REMOTE_URL)
-    private String removeUrl;
+    private String remoteUrl;
 
     @TableField(ProblemDOField.SUBMIT_NUM)
     private Integer submitNum;
