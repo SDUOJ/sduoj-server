@@ -19,4 +19,20 @@ public class RedisConstants {
     public static final String REDIS_KEY_FOR_PROBLEM_ID_TO_CHECKPOINTNUM = "hash_problemIdToCheckpointNum";
     public static final String REDIS_KEY_FOR_USER_ID_TO_USERNAME = "hash_userIdToUsername";
     public static final String REDIS_KEY_FOR_PROBLEM_CODE_TO_PROBLEM_ID = "hash_problemCodeToProblemId";
+
+
+    public static final int CAPTCHA_EXPIRE = 60 * 5;
+
+    public static String getCaptchaKey(String uuid) {
+        return "captch:" + uuid;
+    }
+
+    public static String getForgetPasswordKey(String uuid) {
+        return "forgetPassword:" + uuid;
+    }
+
+    public static String getEmailVerificationKey(String uuid) {
+        return "emailVerification:" + uuid;
+    }
+
 }

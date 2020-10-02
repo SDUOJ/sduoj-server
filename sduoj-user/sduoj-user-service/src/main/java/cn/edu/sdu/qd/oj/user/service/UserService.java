@@ -15,13 +15,17 @@ import cn.edu.sdu.qd.oj.user.converter.UserConverter;
 import cn.edu.sdu.qd.oj.user.converter.UserSessionConverter;
 import cn.edu.sdu.qd.oj.user.dao.UserDao;
 import cn.edu.sdu.qd.oj.user.dao.UserSessionDao;
+import cn.edu.sdu.qd.oj.user.dto.UserUpdateReqDTO;
 import cn.edu.sdu.qd.oj.user.entity.UserDO;
 import cn.edu.sdu.qd.oj.user.dto.UserDTO;
 import cn.edu.sdu.qd.oj.user.entity.UserSessionDO;
 import cn.edu.sdu.qd.oj.user.utils.CodecUtils;
 import cn.edu.sdu.qd.oj.user.utils.EmailUtil;
+import org.apache.commons.lang3.StringUtils;
+import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
+import org.springframework.dao.DuplicateKeyException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -128,7 +132,13 @@ public class UserService {
         userDO.setSalt(CodecUtils.generateSalt());
         userDO.setPassword(CodecUtils.md5Hex(userDO.getPassword(), userDO.getSalt()));
         // TODO: username 重复时插入失败的异常处理器
-        if (!userDao.save(userDO)) {
+        try {
+            if (!userDao.save(userDO)) {
+                throw new ApiException(ApiExceptionEnum.UNKNOWN_ERROR);
+            }
+        } catch (DuplicateKeyException e) {
+            throw new ApiException(ApiExceptionEnum.USER_EXIST);
+        } catch (Exception e) {
             throw new ApiException(ApiExceptionEnum.UNKNOWN_ERROR);
         }
 
@@ -162,8 +172,7 @@ public class UserService {
     }
 
     public void emailVerify(String token) {
-        // TODO: 魔法值解决
-        String username = Optional.ofNullable(redisUtils.get("emailVerification:" + token)).map(o -> (String) o).orElse(null);
+        String username = Optional.ofNullable(redisUtils.get(RedisConstants.getEmailVerificationKey(token))).map(o -> (String) o).orElse(null);
         if (username == null) {
             throw new ApiException(ApiExceptionEnum.TOKEN_EXPIRE);
         }
@@ -182,9 +191,9 @@ public class UserService {
     }
 
     public void sendVerificationEmail(String username, String email) throws MessagingException {
-        // 发送验证邮件 TODO: 魔法值解决
+        // 发送验证邮件
         String uuid = UUID.randomUUID().toString();
-        redisUtils.set("emailVerification:" + uuid, username, userServiceProperties.getVerificationExpire());
+        redisUtils.set(RedisConstants.getEmailVerificationKey(uuid), username, userServiceProperties.getVerificationExpire());
         emailUtil.sendVerificationEmail(username, email, uuid);
     }
 
@@ -209,16 +218,15 @@ public class UserService {
             throw new ApiException(ApiExceptionEnum.USER_NOT_FOUND);
         }
         email = userDO.getEmail();
-        // 发送验证邮件 TODO: 魔法值解决
+        // 发送验证邮件
         String uuid = UUID.randomUUID().toString();
-        redisUtils.set("forgetPassword:" + uuid, userDO.getUsername(), userServiceProperties.getVerificationExpire());
+        redisUtils.set(RedisConstants.getForgetPasswordKey(uuid), userDO.getUsername(), userServiceProperties.getVerificationExpire());
         emailUtil.sendForgetPasswordEmail(userDO.getUsername(), userDO.getEmail(), uuid);
         return email;
     }
 
     public void resetPassword(String token, String password) {
-        // TODO: 魔法值解决
-        String username = Optional.ofNullable(redisUtils.get("forgetPassword:" + token)).map(o -> (String) o).orElse(null);
+        String username = Optional.ofNullable(redisUtils.get(RedisConstants.getForgetPasswordKey(token))).map(o -> (String) o).orElse(null);
         if (username == null) {
             throw new ApiException(ApiExceptionEnum.TOKEN_EXPIRE);
         }
@@ -228,6 +236,60 @@ public class UserService {
 
         if (!userDao.lambdaUpdate().eq(UserDO::getUsername, username).set(UserDO::getSalt, salt).set(UserDO::getPassword, saltPassword).update()) {
             throw new ApiException(ApiExceptionEnum.UNKNOWN_ERROR);
+        }
+    }
+
+    public boolean isExistUsername(String username) {
+        return userDao.lambdaQuery().eq(UserDO::getUsername, username).count() > 0;
+    }
+
+    public boolean isExistEmail(String email) {
+        return userDao.lambdaQuery().eq(UserDO::getEmail, email).count() > 0;
+    }
+
+    @Transactional
+    public void updateProfile(UserUpdateReqDTO reqDTO) throws MessagingException {
+        // 校验密码逻辑
+        UserDO userDO = userDao.lambdaQuery().select(
+                UserDO::getPassword,
+                UserDO::getUsername,
+                UserDO::getSalt
+        ).eq(UserDO::getUserId, reqDTO.getUserId()).one();
+        if (userDO == null) {
+            throw new ApiException(ApiExceptionEnum.USER_NOT_FOUND);
+        }
+        if (!CodecUtils.md5Hex(reqDTO.getPassword(), userDO.getSalt()).equals(userDO.getPassword())) {
+            throw new ApiException(ApiExceptionEnum.PASSWORD_NOT_MATCHING);
+        }
+
+        // 构造更新参数
+        reqDTO.setPassword(null);
+        UserDO updateDTO = new UserDO();
+        BeanUtils.copyProperties(reqDTO, updateDTO);
+
+        // 更改密码逻辑
+        if (StringUtils.isNotBlank(reqDTO.getNewPassword())) {
+            updateDTO.setPassword(reqDTO.getNewPassword());
+            updateDTO.setSalt(CodecUtils.generateSalt());
+            updateDTO.setPassword(CodecUtils.md5Hex(updateDTO.getPassword(), updateDTO.getSalt()));
+        }
+
+        // 更改邮箱逻辑
+        if (StringUtils.isNotBlank(reqDTO.getNewEmail())) {
+            if (isExistEmail(reqDTO.getNewEmail())) {
+                throw new ApiException(ApiExceptionEnum.EMAIL_EXIST);
+            }
+            updateDTO.setEmail(reqDTO.getNewEmail());
+            updateDTO.setEmailVerified(0);
+        }
+
+        userDao.updateById(updateDTO);
+
+        // 邮箱验证邮件
+        if (StringUtils.isNotBlank(reqDTO.getNewEmail())) {
+            String uuid = UUID.randomUUID().toString();
+            redisUtils.set(RedisConstants.getEmailVerificationKey(uuid), userDO.getUsername(), userServiceProperties.getVerificationExpire());
+            emailUtil.sendResetEmailMail(userDO.getUsername(), reqDTO.getNewEmail(), uuid);
         }
     }
 }

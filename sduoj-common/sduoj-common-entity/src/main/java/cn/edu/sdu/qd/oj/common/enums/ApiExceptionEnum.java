@@ -22,6 +22,7 @@ public enum ApiExceptionEnum {
     GATEWAY_ERROR(500, "网关错误"),
     USER_NOT_FOUND(400, "该用户不存在"),
     PASSWORD_NOT_MATCHING(400, "该用户账号或密码错误"), // 不能直接提示密码错误哦
+    NEWPASSWORD_LENGTH_ERROR(400, "新密码长度不在4~32位间"),
     PROBLEM_NOT_FOUND(400, "题目未找到"),
     PROBLEM_NOT_PUBLIC(403, "题目非公开"),
     SUBMISSION_NOT_FOUND(400, "提交未找到"),
@@ -33,6 +34,14 @@ public enum ApiExceptionEnum {
     FILE_TOO_LARGE(400, "文件过大，无法预览，请选择下载"),
 
     TOKEN_EXPIRE(400, "验证令牌过期或不存在"),
+
+    CAPTCHA_NOT_FOUND(400, "验证码不存在"),
+    CAPTCHA_NOT_MATCHING(400, "验证码不匹配"),
+
+    USER_EXIST(400, "用户已存在"),
+    EMAIL_EXIST(400, "邮箱已存在"),
+
+
     ;
 
     public int code;

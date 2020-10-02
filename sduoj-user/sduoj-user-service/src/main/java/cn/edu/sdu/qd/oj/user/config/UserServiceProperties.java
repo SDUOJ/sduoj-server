@@ -15,4 +15,5 @@ public class UserServiceProperties {
     private String fromEmail;
     private String verificationEmailSubject;
     private String forgetPasswordEmailSubject;
+    private String resetEmailSubject;
 }
