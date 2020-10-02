@@ -113,6 +113,7 @@ public class SubmitService {
     }
 
     public PageResult<SubmissionListDTO> querySubmissionByPage(SubmissionListReqDTO reqDTO) throws InternalApiException {
+        // 填充字段
         if (StringUtils.isNotBlank(reqDTO.getUsername())) {
             reqDTO.setUserId(userClient.queryUserId(reqDTO.getUsername()));
         }
@@ -120,6 +121,7 @@ public class SubmitService {
             reqDTO.setProblemId(problemCacheUtils.getProblemId(reqDTO.getProblemCode()));
         }
 
+        // 构建查询列
         LambdaQueryChainWrapper<SubmissionDO> query = submissionDao.lambdaQuery().select(
             SubmissionDO::getSubmissionId,
             SubmissionDO::getProblemId,
@@ -134,8 +136,36 @@ public class SubmitService {
             SubmissionDO::getUsedTime,
             SubmissionDO::getUsedMemory,
             SubmissionDO::getCodeLength
-        ).orderByDesc(SubmissionDO::getGmtCreate);
+        );
 
+        // 排序字段
+        Optional.ofNullable(reqDTO.getOrderBy()).ifPresent(orderBy -> {
+            switch (reqDTO.getOrderBy()) {
+                case "usedTime":
+                    query.orderBy(true, reqDTO.getAscending(), SubmissionDO::getUsedTime);
+                    break;
+                case "usedMemory":
+                    query.orderBy(true, reqDTO.getAscending(), SubmissionDO::getUsedMemory);
+                    break;
+                case "gmtCreate":
+                    query.orderBy(true, reqDTO.getAscending(), SubmissionDO::getGmtCreate);
+                    break;
+            }
+            if ("gmtCreate".equals(orderBy)) {
+                query.orderBy(true, reqDTO.getAscending(), SubmissionDO::getGmtCreate);
+            } else {
+                // 默认按时间排序
+                query.orderByDesc(SubmissionDO::getGmtCreate);
+            }
+        });
+
+        // 等值字段
+        Optional.of(reqDTO).map(SubmissionListReqDTO::getLanguage).filter(StringUtils::isNotBlank).ifPresent(language -> {
+            query.eq(SubmissionDO::getLanguage, language);
+        });
+        Optional.of(reqDTO).map(SubmissionListReqDTO::getJudgeResult).ifPresent(judgeResult -> {
+            query.eq(SubmissionDO::getJudgeResult, judgeResult);
+        });
         Optional.of(reqDTO).map(SubmissionListReqDTO::getUserId).ifPresent(userId -> {
             query.eq(SubmissionDO::getUserId, userId);
         });
@@ -143,6 +173,7 @@ public class SubmitService {
             query.eq(SubmissionDO::getProblemId, problemId);
         });
 
+        // 查询数据
         Page<SubmissionDO> pageResult = query.page(new Page<>(reqDTO.getPageNow(), reqDTO.getPageSize()));
         List<SubmissionListDTO> submissionListDTOList = submissionListConverter.to(pageResult.getRecords());
 

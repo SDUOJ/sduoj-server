@@ -11,6 +11,7 @@ import cn.edu.sdu.qd.oj.common.enums.ApiExceptionEnum;
 import cn.edu.sdu.qd.oj.common.exception.ApiException;
 import cn.edu.sdu.qd.oj.submit.dto.*;
 import cn.edu.sdu.qd.oj.submit.service.SubmitService;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.*;
@@ -27,6 +28,7 @@ import javax.validation.Valid;
 
 @Controller
 @RequestMapping("/submit")
+@Slf4j
 public class SubmitController {
 
     @Autowired
@@ -50,7 +52,7 @@ public class SubmitController {
         SubmissionDTO submissionDTO = this.submitService.queryById(submissionId);
         // TODO: 超级管理员可以看所有代码
         if (submissionDTO != null && !submissionDTO.getUserId().equals(userId)) {
-            throw new ApiException(ApiExceptionEnum.USER_NOT_MATCHING);
+            submissionDTO.setCode(null);
         }
         return submissionDTO;
     }
@@ -58,6 +60,7 @@ public class SubmitController {
     @GetMapping("/list")
     @ApiResponseBody
     public PageResult<SubmissionListDTO> queryList(@Valid SubmissionListReqDTO reqDTO) throws Exception {
+        log.info("submissionList: req:{}", reqDTO);
         return this.submitService.querySubmissionByPage(reqDTO);
     }
 }
