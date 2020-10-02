@@ -166,9 +166,14 @@ public class UserService {
 
     @PostConstruct
     public void initRedisUserHash() {
-        List<UserDO> userDOList = userDao.lambdaQuery().select(UserDO::getUserId, UserDO::getUsername).list();
-        Map<String, Object> map = userDOList.stream().collect(Collectors.toMap(userDo -> userDo.getUserId().toString(), UserDO::getUsername, (k1, k2) -> k1));
-        redisUtils.hmset(RedisConstants.REDIS_KEY_FOR_USER_ID_TO_USERNAME, map);
+        List<UserDO> userDOList = userDao.lambdaQuery().select(
+                UserDO::getUserId, 
+                UserDO::getUsername
+        ).list();
+        Map<String, Object> map1 = userDOList.stream().collect(Collectors.toMap(userDo -> userDo.getUserId().toString(), UserDO::getUsername, (k1, k2) -> k1));
+        redisUtils.hmset(RedisConstants.REDIS_KEY_FOR_USER_ID_TO_USERNAME, map1);
+        Map<String, Object> map2 = userDOList.stream().collect(Collectors.toMap(UserDO::getUsername, UserDO::getUserId, (k1, k2) -> k1));
+        redisUtils.hmset(RedisConstants.REDIS_KEY_FOR_USERNAME_TO_ID, map2);
     }
 
     public void emailVerify(String token) {

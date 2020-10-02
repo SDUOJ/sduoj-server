@@ -30,4 +30,15 @@ public class UserCacheUtils {
         // TODO: 设计本地 Guava 缓存
         return o == null ? null : (String) o;
     }
+
+    public long getUserId(String username) {
+        if (username == null) {
+            throw new RuntimeException("param error");
+        }
+        Object o = redisUtils.hget(RedisConstants.REDIS_KEY_FOR_PROBLEM_CODE_TO_PROBLEM_ID, username);
+        if (o == null) {
+            throw new RuntimeException("cache error, no data");
+        }
+        return Long.parseLong(String.valueOf(o));
+    }
 }
