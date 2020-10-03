@@ -151,7 +151,7 @@ public class UserService {
 
     public Long queryUserId(String username) {
         UserDO userDO = userDao.lambdaQuery().eq(UserDO::getUsername, username).select(UserDO::getUserId).one();
-        return Optional.of(userDO).map(UserDO::getUserId).orElse(null);
+        return Optional.ofNullable(userDO).map(UserDO::getUserId).orElse(null);
     }
 
     public Map<Long, String> queryIdToUsernameMap() {
