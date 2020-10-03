@@ -109,16 +109,25 @@ public class SubmitService {
         SubmissionDTO submissionDTO = submissionConverter.to(submissionDO);
         submissionDTO.setCheckpointNum(problemCacheUtils.getProblemCheckpointNum(submissionDTO.getProblemId()));
         submissionDTO.setUsername(userCacheUtils.getUsername(submissionDTO.getUserId()));
+        submissionDTO.setProblemCode(problemCacheUtils.getProblemCode(submissionDTO.getProblemId()));
         return submissionDTO;
     }
 
     public PageResult<SubmissionListDTO> querySubmissionByPage(SubmissionListReqDTO reqDTO) throws InternalApiException {
         // 填充字段
         if (StringUtils.isNotBlank(reqDTO.getUsername())) {
-            reqDTO.setUserId(userClient.queryUserId(reqDTO.getUsername()));
+            Long userId = userClient.queryUserId(reqDTO.getUsername());
+            if (userId == null) {
+                return new PageResult<>();
+            }
+            reqDTO.setUserId(userId);
         }
         if (StringUtils.isNotBlank(reqDTO.getProblemCode())) {
-            reqDTO.setProblemId(problemCacheUtils.getProblemId(reqDTO.getProblemCode()));
+            try {
+                reqDTO.setProblemId(problemCacheUtils.getProblemId(reqDTO.getProblemCode()));
+            } catch (Exception e) {
+                return new PageResult<>();
+            }
         }
 
         // 构建查询列
@@ -184,7 +193,7 @@ public class SubmitService {
             submissionListDTOList.forEach(submissionListDTO -> submissionListDTO.setProblemCode(problemCacheUtils.getProblemCode(submissionListDTO.getProblemId())));
         }
         // 置 username
-        if (StringUtils.isNotBlank(reqDTO.getUsername())) {
+        if (reqDTO.getUserId() != null) {
             submissionListDTOList.forEach(submissionListDTO -> submissionListDTO.setUsername(reqDTO.getUsername()));
         } else {
             submissionListDTOList.forEach(submissionListDTO -> submissionListDTO.setUsername(userCacheUtils.getUsername(submissionListDTO.getUserId())));

@@ -68,4 +68,6 @@ public class SubmissionDTO extends BaseDTO {
     private Integer checkpointNum;
 
     private String username;
+
+    private String problemCode;
 }
