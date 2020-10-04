@@ -38,6 +38,7 @@ public class UserDO extends BaseDO {
     private String features;
 
     @TableField(UserDOField.DELETED)
+    @TableLogic(value = "0", delval = "1")
     private Integer deleted;
 
     @TableField(UserDOField.VERSION)

@@ -27,6 +27,7 @@ public class ProblemTagDO extends BaseDO {
     private String features;
 
     @TableField(ProblemTagDOField.IS_DELETED)
+    @TableLogic(value = "0", delval = "1")
     private Integer deleted;
 
     @TableField(ProblemTagDOField.PARENT_ID)

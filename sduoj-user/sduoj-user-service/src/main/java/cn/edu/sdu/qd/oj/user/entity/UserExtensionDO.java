@@ -27,6 +27,7 @@ public class UserExtensionDO extends BaseDO {
     private Integer version;
 
     @TableField(UserExtensionDOField.DELETED)
+    @TableLogic(value = "0", delval = "1")
     private Integer deleted;
 
     @TableField(UserExtensionDOField.USER_ID)

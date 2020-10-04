@@ -28,6 +28,7 @@ public class ProblemDO extends BaseDO {
     private String features;
 
     @TableField(ProblemDOField.DELETED)
+    @TableLogic(value = "0", delval = "1")
     private Integer deleted;
 
     @TableField(ProblemDOField.VERSION)

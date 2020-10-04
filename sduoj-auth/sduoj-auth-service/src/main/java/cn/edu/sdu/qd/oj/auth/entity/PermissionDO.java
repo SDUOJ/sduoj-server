@@ -27,6 +27,7 @@ public class PermissionDO extends BaseDO {
     private String features;
 
     @TableField(PermissionDOField.IS_DELETED)
+    @TableLogic(value = "0", delval = "1")
     private Integer deleted;
 
     @TableField(PermissionDOField.URL)

@@ -31,6 +31,7 @@ public class ProblemDescriptionDO extends BaseDO {
     private Integer version;
 
     @TableField(ProblemDescriptionDOField.IS_PUBLIC)
+    @TableLogic(value = "0", delval = "1")
     private Integer deleted;
 
     @TableField(ProblemDescriptionDOField.IS_PUBLIC)

@@ -31,6 +31,7 @@ public class ContestDO extends BaseDO {
     private String features;
 
     @TableField(ContestDOField.DELETED)
+    @TableLogic(value = "0", delval = "1")
     private Integer deleted;
 
     @TableField(ContestDOField.VERSION)

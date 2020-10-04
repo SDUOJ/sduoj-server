@@ -27,6 +27,7 @@ public class ContestExtensionDO extends BaseDO {
     private Integer version;
 
     @TableField(ContestExtensionDOField.DELETED)
+    @TableLogic(value = "0", delval = "1")
     private Integer deleted;
 
     @TableField(ContestExtensionDOField.CONTEST_ID)

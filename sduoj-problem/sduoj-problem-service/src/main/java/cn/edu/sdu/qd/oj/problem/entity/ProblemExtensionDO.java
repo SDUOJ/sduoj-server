@@ -27,6 +27,7 @@ public class ProblemExtensionDO extends BaseDO {
     private Integer version;
 
     @TableField(ProblemExtensionDOField.DELETED)
+    @TableLogic(value = "0", delval = "1")
     private Integer deleted;
 
     @TableField(ProblemExtensionDOField.PROBLEM_ID)
