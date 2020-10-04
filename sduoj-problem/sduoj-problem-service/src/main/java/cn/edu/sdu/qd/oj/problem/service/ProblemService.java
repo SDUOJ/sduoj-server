@@ -196,4 +196,22 @@ public class ProblemService {
         Map<String, Object> problemIdToProblemCode = problemDOList.stream().collect(Collectors.toMap(problemDO -> problemDO.getProblemId().toString(), ProblemDO::getProblemCode, (k1, k2) -> k1));
         redisUtils.hmset(RedisConstants.REDIS_KEY_FOR_PROBLEM_ID_TO_PROBLEM_CODE, problemIdToProblemCode);
     }
+
+    public boolean validateProblemCodeList(List<String> problemCodeList) {
+        return problemCodeList.size() == problemDao.lambdaQuery().in(ProblemDO::getProblemCode, problemCodeList).count();
+    }
+
+    public ProblemDTO queryWithDescriptionId(String problemCode, long problemDescriptionId, long userId) {
+        ProblemDO problemDO = problemDao.lambdaQuery().eq(ProblemDO::getProblemCode, problemCode).one();
+        if (problemDO == null) {
+            return null;
+        }
+        if (0 == problemDO.getIsPublic() && userId != problemDO.getUserId()) {
+            return null;
+        }
+        ProblemDescriptionDO problemDescriptionDO = problemDescriptionDao.lambdaQuery()
+                .eq(ProblemDescriptionDO::getProblemId, problemDO.getProblemId())
+                .eq(ProblemDescriptionDO::getId, problemDescriptionId).one();
+        return problemConverter.to(problemDO, problemDescriptionDO, null);
+    }
 }

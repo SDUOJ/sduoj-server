@@ -31,6 +31,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 /**
  * @ClassName SubmitService
@@ -68,8 +69,14 @@ public class SubmitService {
     // TODO: 临时采用 IP+PID 格式, 生产时加配置文件 Autowired
     private SnowflakeIdWorker snowflakeIdWorker = new SnowflakeIdWorker();
 
+    /**
+    * @Description 提交返回提交id
+    * @param submissionUpdateReqDTO
+    * @param contestId 0代表非比赛提交
+    * @return java.lang.Long
+    **/
     @Transactional
-    public Long createSubmission(SubmissionCreateReqDTO submissionUpdateReqDTO) {
+    public Long createSubmission(SubmissionCreateReqDTO submissionUpdateReqDTO, long contestId) {
         // TODO: 校验提交语言支持、校验题目对用户权限
 
 
@@ -83,6 +90,7 @@ public class SubmitService {
                 .language(submissionUpdateReqDTO.getLanguage())
                 .problemId(problemId)
                 .userId(submissionUpdateReqDTO.getUserId())
+                .contestId(contestId)
                 .build();
         if (!submissionDao.save(submissionDO)) {
             throw new ApiException(ApiExceptionEnum.UNKNOWN_ERROR);
@@ -100,9 +108,16 @@ public class SubmitService {
         return submissionDO.getSubmissionId();
     }
 
-
-    public SubmissionDTO queryById(long submissionId) {
-        SubmissionDO submissionDO = submissionDao.getById(submissionId);
+    /*
+    * @Description 按submissionId查询提交
+    * @param submissionId
+    * @param contestId 0 表示查非比赛提交
+    * @return cn.edu.sdu.qd.oj.submit.dto.SubmissionDTO
+    **/
+    public SubmissionDTO queryById(long submissionId, long contestId) {
+        SubmissionDO submissionDO = submissionDao.lambdaQuery()
+                .eq(SubmissionDO::getContestId, contestId)
+                .eq(SubmissionDO::getSubmissionId, submissionId).one();
         if (submissionDO == null) {
             throw new ApiException(ApiExceptionEnum.SUBMISSION_NOT_FOUND);
         }
@@ -113,7 +128,13 @@ public class SubmitService {
         return submissionDTO;
     }
 
-    public PageResult<SubmissionListDTO> querySubmissionByPage(SubmissionListReqDTO reqDTO) throws InternalApiException {
+    /**
+    * @Description 分页查询提交
+    * @param reqDTO
+    * @param contestId 0 表示查非比赛提交
+    * @return cn.edu.sdu.qd.oj.common.entity.PageResult<cn.edu.sdu.qd.oj.submit.dto.SubmissionListDTO>
+    **/
+    public PageResult<SubmissionListDTO> querySubmissionByPage(SubmissionListReqDTO reqDTO, long contestId) throws InternalApiException {
         // 填充字段
         if (StringUtils.isNotBlank(reqDTO.getUsername())) {
             Long userId = userClient.queryUserId(reqDTO.getUsername());
@@ -145,7 +166,7 @@ public class SubmitService {
             SubmissionDO::getUsedTime,
             SubmissionDO::getUsedMemory,
             SubmissionDO::getCodeLength
-        );
+        ).eq(SubmissionDO::getContestId, contestId);
 
         // 排序字段
         Optional.ofNullable(reqDTO.getOrderBy()).ifPresent(orderBy -> {
@@ -180,6 +201,10 @@ public class SubmitService {
         });
         Optional.of(reqDTO).map(SubmissionListReqDTO::getProblemId).ifPresent(problemId -> {
             query.eq(SubmissionDO::getProblemId, problemId);
+        });
+        Optional.of(reqDTO).map(SubmissionListReqDTO::getProblemCodeList).ifPresent(problemCodeList -> {
+            List<Long> problemIdList = problemCodeList.stream().map(problemCacheUtils::getProblemId).collect(Collectors.toList());
+            query.in(SubmissionDO::getProblemId, problemIdList);
         });
 
         // 查询数据

@@ -2,11 +2,9 @@ package cn.edu.sdu.qd.oj.common.config;
 
 import cn.edu.sdu.qd.oj.common.entity.ApiResponseBody;
 import cn.edu.sdu.qd.oj.common.entity.ResponseResult;
-import org.springframework.beans.BeansException;
+import cn.edu.sdu.qd.oj.common.util.SpringContextUtils;
 import org.springframework.beans.factory.InitializingBean;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.context.ApplicationContext;
-import org.springframework.context.ApplicationContextAware;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.core.MethodParameter;
@@ -55,14 +53,8 @@ public class ApiResponseHandlerConfig implements InitializingBean {
     }
 
 
-    public static class ResponseResultProcessorDecorator implements HandlerMethodReturnValueHandler, ApplicationContextAware {
+    public static class ResponseResultProcessorDecorator implements HandlerMethodReturnValueHandler {
         private RequestResponseBodyMethodProcessor delegate;
-        private ApplicationContext applicationContext;
-
-        @Override
-        public void setApplicationContext(ApplicationContext applicationContext) throws BeansException {
-            this.applicationContext = applicationContext;
-        }
 
         @Override
         public boolean supportsReturnType(MethodParameter returnType) {
@@ -74,7 +66,7 @@ public class ApiResponseHandlerConfig implements InitializingBean {
         public void handleReturnValue(Object returnValue, MethodParameter returnType, ModelAndViewContainer mavContainer, NativeWebRequest webRequest) throws IOException, HttpMediaTypeNotAcceptableException {
             if (delegate == null) {
                 delegate = (RequestResponseBodyMethodProcessor)
-                        Objects.requireNonNull(applicationContext.getBean(RequestMappingHandlerAdapter.class)
+                        Objects.requireNonNull(SpringContextUtils.getBean(RequestMappingHandlerAdapter.class)
                                 .getReturnValueHandlers())
                                 .stream()
                                 .filter(handler -> handler instanceof RequestResponseBodyMethodProcessor)

@@ -1,14 +1,7 @@
 package cn.edu.sdu.qd.oj.common.converter;
 
-import com.google.common.collect.Lists;
-import com.google.common.collect.Maps;
-import org.apache.commons.lang3.StringUtils;
-import org.springframework.util.CollectionUtils;
-
-import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
-import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 @org.mapstruct.MapperConfig
@@ -53,18 +46,18 @@ public interface BaseConverter<S, T> {
     /** 常用 DO、DTO 转换方法 **/
 
     default List<String> stringToList(String str) {
-        return StringUtils.isBlank(str) ? null : Arrays.stream(str.split(",")).collect(Collectors.toList());
+        return BaseConvertUtils.stringToList(str);
     }
 
     default String listToString(List<String> list) {
-        return CollectionUtils.isEmpty(list) ? null : StringUtils.join(list, ',');
+        return BaseConvertUtils.listToString(list);
     }
 
     default Map<String, String> stringToMap(String str) {
-        return StringUtils.isBlank(str) ? null : Arrays.stream(str.split(";")).collect(Collectors.toMap(s -> s.substring(0, s.indexOf(":")), s -> s.substring(s.indexOf(":") + 1), (k1, k2) -> k1));
+        return BaseConvertUtils.stringToMap(str);
     }
 
     default String mapToString(Map<String, String> map) {
-        return CollectionUtils.isEmpty(map) ? null : StringUtils.join(map.entrySet().stream().map(entry -> entry.getKey() + ":" + entry.getValue()).collect(Collectors.toList()), ";");
+        return BaseConvertUtils.mapToString(map);
     }
 }

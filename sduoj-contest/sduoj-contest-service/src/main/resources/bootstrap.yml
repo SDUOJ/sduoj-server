@@ -1,0 +1,12 @@
+server:
+  port: 8099
+spring:
+  application:
+    name: contest-service
+  profiles:
+    active: dev
+  cloud:
+    nacos:
+      config:
+        server-addr: nacos.oj.sdu.edu.cn:8848
+        file-extension: yml

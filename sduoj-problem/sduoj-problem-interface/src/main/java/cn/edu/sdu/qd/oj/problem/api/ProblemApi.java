@@ -6,9 +6,10 @@
 package cn.edu.sdu.qd.oj.problem.api;
 
 import cn.edu.sdu.qd.oj.common.exception.InternalApiException;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
+import cn.edu.sdu.qd.oj.problem.dto.ProblemDTO;
+import org.springframework.web.bind.annotation.*;
 
+import java.util.List;
 import java.util.Map;
 
 /**
@@ -25,4 +26,15 @@ public interface ProblemApi {
 
     @GetMapping("/queryIdToTitleMap")
     Map<Long, String> queryIdToTitleMap() throws InternalApiException;
+
+    @PostMapping(value = "/validateProblemCodeList",consumes = "application/json")
+    boolean validateProblemCodeList(@RequestBody List<String> problemCodeList) throws InternalApiException;
+
+    /**
+     * @Description 获取题目和指定描述模板，找不到时返回null; userId 为鉴权使用
+     **/
+    @GetMapping("/queryAndValidate")
+    ProblemDTO queryAndValidate(@RequestParam("problemCode") String problemCode,
+                                @RequestParam("problemDescriptionId") long problemDescriptionId,
+                                @RequestParam("userId") long userId);
 }

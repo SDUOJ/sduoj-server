@@ -4,6 +4,7 @@ import cn.edu.sdu.qd.oj.common.entity.BaseDTO;
 import lombok.*;
 
 import javax.validation.constraints.NotBlank;
+import java.util.List;
 
 @Data
 @Builder
@@ -23,4 +24,6 @@ public class SubmissionListReqDTO extends BaseDTO {
 
     private String language;
     private Integer judgeResult;
+
+    private List<String> problemCodeList;
 }

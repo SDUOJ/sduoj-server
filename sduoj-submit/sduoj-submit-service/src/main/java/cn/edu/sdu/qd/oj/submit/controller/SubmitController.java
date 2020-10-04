@@ -16,6 +16,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.*;
 
+import javax.annotation.Nullable;
 import javax.validation.Valid;
 
 /**
@@ -41,15 +42,15 @@ public class SubmitController {
                                    @RequestHeader("authorization-userId") Long userId) {
         reqDTO.setIpv4(ipv4);
         reqDTO.setUserId(userId);
-        return Long.toHexString(this.submitService.createSubmission(reqDTO));
+        return Long.toHexString(this.submitService.createSubmission(reqDTO, 0));
     }
 
     @GetMapping("/query")
     @ApiResponseBody
     public SubmissionDTO query(@RequestParam("submissionId") String submissionIdHex,
-                               @RequestHeader("authorization-userId") Long userId) {
+                               @RequestHeader("authorization-userId") @Nullable Long userId) {
         long submissionId = Long.valueOf(submissionIdHex, 16);
-        SubmissionDTO submissionDTO = this.submitService.queryById(submissionId);
+        SubmissionDTO submissionDTO = this.submitService.queryById(submissionId, 0);
         // TODO: 超级管理员可以看所有代码
         if (submissionDTO != null && !submissionDTO.getUserId().equals(userId)) {
             submissionDTO.setCode(null);
@@ -61,6 +62,7 @@ public class SubmitController {
     @ApiResponseBody
     public PageResult<SubmissionListDTO> queryList(@Valid SubmissionListReqDTO reqDTO) throws Exception {
         log.info("submissionList: req:{}", reqDTO);
-        return this.submitService.querySubmissionByPage(reqDTO);
+        reqDTO.setProblemCodeList(null); // 禁掉指定题目
+        return this.submitService.querySubmissionByPage(reqDTO, 0);
     }
 }

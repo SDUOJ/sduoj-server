@@ -7,10 +7,12 @@ package cn.edu.sdu.qd.oj.problem.controller;
 
 import cn.edu.sdu.qd.oj.common.exception.InternalApiException;
 import cn.edu.sdu.qd.oj.problem.api.ProblemApi;
+import cn.edu.sdu.qd.oj.problem.dto.ProblemDTO;
 import cn.edu.sdu.qd.oj.problem.service.ProblemService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.RestController;
 
+import java.util.List;
 import java.util.Map;
 
 /**
@@ -31,4 +33,16 @@ public class ProblemInternalController implements ProblemApi {
     public Map<Long, String> queryIdToTitleMap() throws InternalApiException {
         return problemService.queryIdToTitleMap();
     }
+
+    @Override
+    public boolean validateProblemCodeList(List<String> problemCodeList) throws InternalApiException {
+        return problemService.validateProblemCodeList(problemCodeList);
+    }
+
+    @Override
+    public ProblemDTO queryAndValidate(String problemCode, long problemDescriptionId, long userId) {
+        return problemService.queryWithDescriptionId(problemCode, problemDescriptionId, userId);
+    }
+
+
 }

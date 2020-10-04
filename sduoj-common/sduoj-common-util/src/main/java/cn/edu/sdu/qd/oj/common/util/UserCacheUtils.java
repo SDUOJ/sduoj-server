@@ -35,7 +35,7 @@ public class UserCacheUtils {
         if (username == null) {
             throw new RuntimeException("param error");
         }
-        Object o = redisUtils.hget(RedisConstants.REDIS_KEY_FOR_PROBLEM_CODE_TO_PROBLEM_ID, username);
+        Object o = redisUtils.hget(RedisConstants.REDIS_KEY_FOR_USERNAME_TO_ID, username);
         if (o == null) {
             throw new RuntimeException("cache error, no data");
         }
