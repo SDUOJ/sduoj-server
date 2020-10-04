@@ -5,8 +5,10 @@
 
 package cn.edu.sdu.qd.oj.submit.controller;
 
+import cn.edu.sdu.qd.oj.common.annotation.UserSession;
 import cn.edu.sdu.qd.oj.common.entity.ApiResponseBody;
 import cn.edu.sdu.qd.oj.common.entity.PageResult;
+import cn.edu.sdu.qd.oj.common.entity.UserSessionDTO;
 import cn.edu.sdu.qd.oj.common.enums.ApiExceptionEnum;
 import cn.edu.sdu.qd.oj.common.exception.ApiException;
 import cn.edu.sdu.qd.oj.submit.dto.*;
@@ -39,9 +41,9 @@ public class SubmitController {
     @ApiResponseBody
     public String createSubmission(@RequestBody @Valid SubmissionCreateReqDTO reqDTO,
                                    @RequestHeader("X-FORWARDED-FOR") String ipv4,
-                                   @RequestHeader("authorization-userId") Long userId) {
+                                   @UserSession UserSessionDTO userSessionDTO) {
         reqDTO.setIpv4(ipv4);
-        reqDTO.setUserId(userId);
+        reqDTO.setUserId(userSessionDTO.getUserId());
         return Long.toHexString(this.submitService.createSubmission(reqDTO, 0));
     }
 
