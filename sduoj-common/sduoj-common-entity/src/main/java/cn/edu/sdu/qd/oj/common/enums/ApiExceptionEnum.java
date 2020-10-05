@@ -23,7 +23,11 @@ public enum ApiExceptionEnum {
     SERVER_BUSY(500, "服务器正忙，请重试"),
 
     GATEWAY_ERROR(500, "网关错误"),
+
     USER_NOT_FOUND(400, "该用户不存在"),
+    USER_NOT_LOGIN(400, "该用户未登录"),
+
+
     PASSWORD_NOT_MATCHING(400, "该用户账号或密码错误"), // 不能直接提示密码错误哦
     NEWPASSWORD_LENGTH_ERROR(400, "新密码长度不在4~32位间"),
     PROBLEM_NOT_FOUND(400, "题目未找到"),

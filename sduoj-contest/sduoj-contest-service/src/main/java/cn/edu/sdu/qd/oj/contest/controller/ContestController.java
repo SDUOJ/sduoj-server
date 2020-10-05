@@ -1,11 +1,14 @@
 package cn.edu.sdu.qd.oj.contest.controller;
 
+import cn.edu.sdu.qd.oj.common.annotation.UserSession;
 import cn.edu.sdu.qd.oj.common.entity.ApiResponseBody;
 import cn.edu.sdu.qd.oj.common.entity.PageResult;
+import cn.edu.sdu.qd.oj.common.entity.UserSessionDTO;
 import cn.edu.sdu.qd.oj.common.enums.ApiExceptionEnum;
 import cn.edu.sdu.qd.oj.common.exception.ApiException;
 import cn.edu.sdu.qd.oj.contest.dto.*;
 import cn.edu.sdu.qd.oj.contest.service.ContestService;
+import org.apache.commons.lang.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.*;
@@ -15,6 +18,7 @@ import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.NotNull;
 import java.util.Date;
 import java.util.Map;
+import java.util.Optional;
 
 @Controller
 @RequestMapping("/contest")
@@ -33,18 +37,18 @@ public class ContestController {
     @PostMapping("/participate")
     @ApiResponseBody
     public Void participate(@RequestBody Map<String, String> json,
-                            @RequestHeader("authorization-userId") Long userId) {
+                            @UserSession UserSessionDTO userSessionDTO) {
         String password = json.get("password");
         Long contestId = Long.valueOf(json.get("contestId"));
-        this.contestService.participate(contestId, userId, password);
+        this.contestService.participate(contestId, userSessionDTO.getUserId(), password);
         return null;
     }
 
     @GetMapping("/query")
     @ApiResponseBody
     public ContestDTO list(@RequestParam("contestId") @NotBlank Long contestId,
-                           @RequestHeader("authorization-userId") long userId) {
-        ContestDTO contestDTO = contestService.queryAndValidate(contestId, userId);
+                           @UserSession UserSessionDTO userSessionDTO) {
+        ContestDTO contestDTO = contestService.queryAndValidate(contestId, userSessionDTO.getUserId());
         // 脱敏
         int problemIndex = 1;
         for (ContestProblemListDTO problem : contestDTO.getProblems()) {
@@ -69,8 +73,8 @@ public class ContestController {
     @ApiResponseBody
     public ContestProblemDTO queryProblem(@RequestParam("contestId") @NotBlank Long contestId,
                                           @RequestParam("problemCode") @NotBlank Integer problemIndex,
-                                          @RequestHeader("authorization-userId") @NotNull Long userId) {
-        ContestProblemDTO contestProblemDTO = contestService.queryProblem(contestId, problemIndex, userId);
+                                          @UserSession UserSessionDTO userSessionDTO) {
+        ContestProblemDTO contestProblemDTO = contestService.queryProblem(contestId, problemIndex, userSessionDTO.getUserId());
         // 脱敏
         contestProblemDTO.setProblemCode(String.valueOf(problemIndex));
         return contestProblemDTO;
@@ -80,10 +84,10 @@ public class ContestController {
     @ApiResponseBody
     public String submitCode(@RequestBody @Valid ContestSubmissionCreateReqDTO reqDTO,
                              @RequestHeader("X-FORWARDED-FOR") String ipv4,
-                             @RequestHeader("authorization-userId") @NotNull Long userId) {
+                             @UserSession UserSessionDTO userSessionDTO) {
         // 增补数据
         reqDTO.setIpv4(ipv4);
-        reqDTO.setUserId(userId);
+        reqDTO.setUserId(userSessionDTO.getUserId());
         try {
             reqDTO.setProblemIndex(Integer.parseInt(reqDTO.getProblemCode()));
         } catch (Exception e){
@@ -94,14 +98,16 @@ public class ContestController {
 
     @GetMapping("/listSubmission")
     @ApiResponseBody
-    public PageResult<ContestSubmissionListDTO> querySubmission(@RequestBody @Valid ContestSubmissionListReqDTO reqDTO,
-                                                                @RequestHeader("authorization-userId") @NotNull Long requestUserId) {
-        try {
-            reqDTO.setProblemIndex(Integer.parseInt(reqDTO.getProblemCode()));
-        } catch (Exception e){
-            throw new ApiException(ApiExceptionEnum.PARAMETER_ERROR);
-        }
-        return contestService.listSubmission(reqDTO, requestUserId);
+    public PageResult<ContestSubmissionListDTO> querySubmission(@Valid ContestSubmissionListReqDTO reqDTO,
+                                                                @UserSession UserSessionDTO userSessionDTO) {
+        Optional.of(reqDTO).map(ContestSubmissionListReqDTO::getProblemCode).filter(StringUtils::isNotEmpty).ifPresent(problemCode -> {
+            try {
+                reqDTO.setProblemIndex(Integer.parseInt(reqDTO.getProblemCode()));
+            } catch (Exception e){
+                throw new ApiException(ApiExceptionEnum.PARAMETER_ERROR, "problemCode 非法");
+            }
+        });
+        return contestService.listSubmission(reqDTO, userSessionDTO.getUserId());
     }
 
 }

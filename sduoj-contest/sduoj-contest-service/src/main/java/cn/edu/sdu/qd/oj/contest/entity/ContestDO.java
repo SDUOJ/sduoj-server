@@ -93,7 +93,10 @@ public class ContestDO extends BaseDO {
     /**
     * @Description 通过下标获取比赛中题目的 problemCode，下标从 1 开始算
     */
-    public ContestProblemListDTO getProblemCodeByIndex(int problemIndex) {
+    public ContestProblemListDTO getProblemCodeByIndex(Integer problemIndex) {
+        if (problemIndex == null) {
+            return null;
+        }
         List<ContestProblemListDTO> contestProblemListDTOList = ContestConvertUtils.problemsTo(problems);
         if (problemIndex > contestProblemListDTOList.size() || problemIndex < 1) {
             return null;

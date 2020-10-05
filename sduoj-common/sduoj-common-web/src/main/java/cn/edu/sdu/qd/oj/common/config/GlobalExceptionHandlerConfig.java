@@ -5,6 +5,7 @@
 
 package cn.edu.sdu.qd.oj.common.config;
 
+import cn.edu.sdu.qd.oj.common.enums.ApiExceptionEnum;
 import cn.edu.sdu.qd.oj.common.exception.ApiException;
 import cn.edu.sdu.qd.oj.common.entity.ResponseResult;
 import cn.edu.sdu.qd.oj.common.exception.InternalApiException;
@@ -37,7 +38,6 @@ public class GlobalExceptionHandlerConfig {
         log.error("", e);
         return ResponseEntity.status(HttpStatus.FORBIDDEN.value())
                 .body(ResponseResult.fail(HttpStatus.FORBIDDEN));
-
     }
 
     @ExceptionHandler(Exception.class)
@@ -70,9 +70,8 @@ public class GlobalExceptionHandlerConfig {
 
 
     @ExceptionHandler(HttpMessageNotReadableException.class)
-    public ResponseEntity<ResponseResult> handleException(HttpMessageNotReadableException e) {
-        log.error("", e);
-        return ResponseEntity.status(HttpStatus.BAD_REQUEST.value())
-                .body(ResponseResult.fail(HttpStatus.BAD_REQUEST));
+    public void handleException(HttpMessageNotReadableException e) {
+        log.warn("{} {}", e.getMessage(), e.getStackTrace()[0]);
+        throw new ApiException(ApiExceptionEnum.PARAMETER_ERROR);
     }
 }

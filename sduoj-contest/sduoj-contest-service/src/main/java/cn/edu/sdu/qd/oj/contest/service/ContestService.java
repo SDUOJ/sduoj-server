@@ -61,6 +61,10 @@ public class ContestService {
             contestDO.setProblems(null);
             contestDO.setMarkdownDescription(null);
         }
+        // 比赛未开始无法查题
+        if (!contestDO.getGmtStart().after(new Date())) {
+            contestDO.setProblems(null);
+        }
 
         return contestConverter.to(contestDO);
     }
@@ -153,6 +157,7 @@ public class ContestService {
         ContestDO contestDO = contestDao.lambdaQuery().select(
                 ContestDO::getFeatures,
                 ContestDO::getGmtStart,
+                ContestDO::getGmtEnd,
                 ContestDO::getProblems,
                 ContestDO::getParticipants
         ).eq(ContestDO::getContestId, contestId).one();
@@ -180,6 +185,10 @@ public class ContestService {
         // 未登记参加比赛不能做提交    TODO: 更好的设计方式
         if (!contestDO.containsUserIdInParticipants(reqDTO.getUserId())) {
             throw new ApiException(ApiExceptionEnum.CONTEST_NOT_PARTICIPATE);
+        }
+        // 比赛未开始不能提交
+        if (!contestDO.getGmtStart().after(new Date())) {
+            throw new ApiException(ApiExceptionEnum.CONTEST_NOT_BEGIN);
         }
 
         ContestProblemListDTO contestProblemListDTO = contestDO.getProblemCodeByIndex(reqDTO.getProblemIndex());

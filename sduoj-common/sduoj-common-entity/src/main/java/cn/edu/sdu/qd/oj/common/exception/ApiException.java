@@ -24,8 +24,14 @@ import lombok.ToString;
 public class ApiException extends RuntimeException {
     public int code;
     public String message;
+
     public ApiException(ApiExceptionEnum e) {
         this.code = e.code;
         this.message = e.message;
+    }
+
+    public ApiException(ApiExceptionEnum e, String additionalMessage) {
+        this.code = e.code;
+        this.message = e.message + " " + additionalMessage;
     }
 }

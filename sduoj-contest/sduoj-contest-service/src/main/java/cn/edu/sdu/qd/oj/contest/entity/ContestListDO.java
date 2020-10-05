@@ -29,6 +29,10 @@ public class ContestListDO extends BaseDO {
     @TableField(ContestDOField.FEATURES)
     private String features;
 
+    @TableField(ContestDOField.DELETED)
+    @TableLogic(value = "0", delval = "1")
+    private Integer deleted;
+
     @TableField(ContestDOField.TITLE)
     private String contestTitle;
 
