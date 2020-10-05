@@ -6,6 +6,7 @@ import cn.edu.sdu.qd.oj.common.exception.ApiException;
 import cn.edu.sdu.qd.oj.common.exception.InternalApiException;
 import cn.edu.sdu.qd.oj.contest.client.ProblemClient;
 import cn.edu.sdu.qd.oj.contest.client.SubmissionClient;
+import cn.edu.sdu.qd.oj.contest.client.UserClient;
 import cn.edu.sdu.qd.oj.contest.converter.ContestConvertUtils;
 import cn.edu.sdu.qd.oj.contest.converter.ContestConverter;
 import cn.edu.sdu.qd.oj.contest.converter.ContestListConverter;
@@ -20,9 +21,11 @@ import cn.edu.sdu.qd.oj.submit.dto.SubmissionCreateReqDTO;
 import cn.edu.sdu.qd.oj.submit.dto.SubmissionListDTO;
 import cn.edu.sdu.qd.oj.submit.dto.SubmissionListReqDTO;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
+import org.assertj.core.util.Lists;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.*;
 import java.util.stream.Collectors;
@@ -48,6 +51,9 @@ public class ContestService {
     @Autowired
     private SubmissionClient submissionClient;
 
+    @Autowired
+    private UserClient userClient;
+
     public ContestDTO queryAndValidate(Long contestId, long userId) {
         ContestDO contestDO = contestDao.getById(contestId);
         if (contestDO == null) {
@@ -62,13 +68,14 @@ public class ContestService {
             contestDO.setMarkdownDescription(null);
         }
         // 比赛未开始无法查题
-        if (!contestDO.getGmtStart().after(new Date())) {
+        if (contestDO.getGmtStart().after(new Date())) {
             contestDO.setProblems(null);
         }
 
         return contestConverter.to(contestDO);
     }
 
+    @Transactional
     public void participate(Long contestId, Long userId, String password) {
         ContestDO contestDO = contestDao.lambdaQuery().select(
                 ContestDO::getContestId,
@@ -105,6 +112,8 @@ public class ContestService {
         if (!contestDao.updateById(contestDO)) { // 此时乐观锁会自动填入
             throw new ApiException(ApiExceptionEnum.SERVER_BUSY);
         }
+
+        userClient.addUserParticipateContest(userId, contestId);
     }
 
     public PageResult<ContestListDTO> page(ContestListReqDTO reqDTO) {
@@ -242,5 +251,16 @@ public class ContestService {
         } catch (InternalApiException exception) {
             throw new ApiException(ApiExceptionEnum.UNKNOWN_ERROR);
         }
+    }
+
+    public List<String> queryACProblem(Long userId, long contestId) {
+        ContestDO contestDO = queryContestAndValidate(contestId, userId);
+        List<ContestProblemListDTO> contestProblemListDTOList = ContestConvertUtils.problemsTo(contestDO.getProblems());
+        Map<String, String> problemCodeToProblemIndexMap = new HashMap<>(contestProblemListDTOList.size());
+        for (int i = 0, n = contestProblemListDTOList.size(); i < n; i++) {
+            problemCodeToProblemIndexMap.put(contestProblemListDTOList.get(i).getProblemCode(), String.valueOf(i + 1));
+        }
+        List<String> problemCodeList = Optional.ofNullable(userClient.queryACProblem(userId, contestId)).orElse(Lists.newArrayList());
+        return problemCodeList.stream().map(problemCodeToProblemIndexMap::get).filter(Objects::nonNull).collect(Collectors.toList());
     }
 }

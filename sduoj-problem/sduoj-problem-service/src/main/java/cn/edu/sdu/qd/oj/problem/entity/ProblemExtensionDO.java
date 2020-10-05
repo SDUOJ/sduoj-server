@@ -35,8 +35,8 @@ public class ProblemExtensionDO extends BaseDO {
     private Long problemId;
 
     @TableField(ProblemExtensionDOField.KEY)
-    private String key;
+    private String extensionKey;
 
     @TableField(ProblemExtensionDOField.VALUE)
-    private String value;
+    private String extensionValue;
 }

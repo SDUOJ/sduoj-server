@@ -7,17 +7,21 @@ package cn.edu.sdu.qd.oj.submit.service;
 
 import cn.edu.sdu.qd.oj.common.enums.ApiExceptionEnum;
 import cn.edu.sdu.qd.oj.common.exception.ApiException;
+import cn.edu.sdu.qd.oj.submit.client.UserClient;
 import cn.edu.sdu.qd.oj.submit.converter.SubmissionConverter;
 import cn.edu.sdu.qd.oj.submit.converter.SubmissionJudgeConverter;
 import cn.edu.sdu.qd.oj.submit.dao.SubmissionDao;
 import cn.edu.sdu.qd.oj.submit.dto.SubmissionUpdateReqDTO;
 import cn.edu.sdu.qd.oj.submit.entity.SubmissionDO;
-import cn.edu.sdu.qd.oj.submit.dto.SubmissionDTO;
 import cn.edu.sdu.qd.oj.submit.dto.SubmissionJudgeDTO;
+import cn.edu.sdu.qd.oj.submit.enums.SubmissionJudgeResult;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+
+import java.util.Optional;
 
 /**
  * @ClassName SubmitJudgerService
@@ -39,6 +43,9 @@ public class SubmitJudgerService {
     @Autowired
     private SubmissionConverter submissionConverter;
 
+    @Autowired
+    private UserClient userClient;
+
     public SubmissionJudgeDTO query(long submissionId) {
         SubmissionDO submissionJudgeDO = submissionDao.lambdaQuery().select(
                 SubmissionDO::getSubmissionId,
@@ -55,11 +62,22 @@ public class SubmitJudgerService {
         return submissionJudgeConverter.to(submissionJudgeDO);
     }
 
+    @Transactional
     public void updateSubmission(SubmissionUpdateReqDTO reqDTO) {
         SubmissionDO submissionDO = new SubmissionDO();
         BeanUtils.copyProperties(reqDTO, submissionDO);
         if (!submissionDao.updateById(submissionDO)) {
             throw new ApiException(ApiExceptionEnum.UNKNOWN_ERROR);
+        }
+        submissionDO = submissionDao.lambdaQuery().select(
+                SubmissionDO::getSubmissionId,
+                SubmissionDO::getUserId,
+                SubmissionDO::getContestId,
+                SubmissionDO::getProblemId,
+                SubmissionDO::getJudgeResult
+        ).eq(SubmissionDO::getSubmissionId, reqDTO.getSubmissionId()).one();
+        if (submissionDao != null && SubmissionJudgeResult.AC.equals(submissionDO.getJudgeResult())) {
+            userClient.addUserACProblem(submissionDO.getUserId(), submissionDO.getContestId(), submissionDO.getProblemId());
         }
     }
 }

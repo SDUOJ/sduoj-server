@@ -5,9 +5,12 @@
 
 package cn.edu.sdu.qd.oj.user.controller;
 
+import cn.edu.sdu.qd.oj.common.enums.ApiExceptionEnum;
+import cn.edu.sdu.qd.oj.common.exception.ApiException;
 import cn.edu.sdu.qd.oj.common.exception.InternalApiException;
 import cn.edu.sdu.qd.oj.user.api.UserApi;
 import cn.edu.sdu.qd.oj.user.dto.UserDTO;
+import cn.edu.sdu.qd.oj.user.service.UserExtensionService;
 import cn.edu.sdu.qd.oj.user.service.UserService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
@@ -28,6 +31,9 @@ public class UserInternalController implements UserApi {
 
     @Autowired
     private UserService userService;
+
+    @Autowired
+    private UserExtensionService userExtensionService;
 
     @Override
     public UserDTO verify(Map<String, String> map) throws InternalApiException {
@@ -54,6 +60,42 @@ public class UserInternalController implements UserApi {
     @Override
     public List<String> queryRolesById(Long userId) {
         return userService.queryRolesById(userId);
+    }
+
+
+    @Override
+    public void addUserACProblem(long userId, long contestId, long problemId) {
+        // TODO: 外置的自动 retry 机制
+        for (int i = 0; i < 5; i++) {
+            try {
+                userExtensionService.addUserACProblem(userId, contestId, problemId);
+            } catch (ApiException e) {
+                if (ApiExceptionEnum.SERVER_BUSY.code == e.code) {
+                    continue;
+                }
+            }
+            break;
+        }
+    }
+
+    @Override
+    public void addUserParticipateContest(long userId, long contestId) {
+        // TODO: 外置的自动 retry 机制
+        for (int i = 0; i < 5; i++) {
+            try {
+                userExtensionService.addUserParticipateContest(userId, contestId);
+            } catch (ApiException e) {
+                if (ApiExceptionEnum.SERVER_BUSY.code == e.code) {
+                    continue;
+                }
+            }
+            break;
+        }
+    }
+
+    @Override
+    public List<String> queryACProblem(long userId, long contestId) {
+        return userExtensionService.queryACProblem(userId, contestId);
     }
 
 }

@@ -35,8 +35,8 @@ public class UserExtensionDO extends BaseDO {
     private Long userId;
 
     @TableField(UserExtensionDOField.KEY)
-    private String key;
+    private String extensionKey;
 
     @TableField(UserExtensionDOField.VALUE)
-    private String value;
+    private String extensionValue;
 }

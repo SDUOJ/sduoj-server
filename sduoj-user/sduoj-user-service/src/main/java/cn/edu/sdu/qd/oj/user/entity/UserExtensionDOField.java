@@ -10,4 +10,13 @@ public class UserExtensionDOField {
     public static final String USER_ID = "u_id";
     public static final String KEY = "ue_key";
     public static final String VALUE = "ue_value";
+
+    public static String acProblem(long contestId) {
+        return "acproblem:" + contestId;
+    }
+
+    public static String participateContest() {
+        return "pcontest";
+    }
+
 }

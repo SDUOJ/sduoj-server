@@ -35,8 +35,8 @@ public class ContestExtensionDO extends BaseDO {
     private Long contestId;
 
     @TableField(ContestExtensionDOField.KEY)
-    private String key;
+    private String extensionKey;
 
     @TableField(ContestExtensionDOField.VALUE)
-    private String value;
+    private String extensionValue;
 }

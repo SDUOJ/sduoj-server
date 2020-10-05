@@ -5,6 +5,7 @@
 
 package cn.edu.sdu.qd.oj.user.controller;
 
+import cn.edu.sdu.qd.oj.common.annotation.UserSession;
 import cn.edu.sdu.qd.oj.common.entity.ApiResponseBody;
 import cn.edu.sdu.qd.oj.common.entity.ResponseResult;
 import cn.edu.sdu.qd.oj.common.enums.ApiExceptionEnum;
@@ -15,6 +16,7 @@ import cn.edu.sdu.qd.oj.common.util.RedisUtils;
 import cn.edu.sdu.qd.oj.user.dto.UserDTO;
 import cn.edu.sdu.qd.oj.common.entity.UserSessionDTO;
 import cn.edu.sdu.qd.oj.user.dto.UserUpdateReqDTO;
+import cn.edu.sdu.qd.oj.user.service.UserExtensionService;
 import cn.edu.sdu.qd.oj.user.service.UserService;
 import com.alibaba.fastjson.JSON;
 import lombok.extern.slf4j.Slf4j;
@@ -22,7 +24,6 @@ import org.apache.commons.lang3.StringUtils;
 import org.hibernate.validator.constraints.Length;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
-import org.springframework.util.Assert;
 import org.springframework.web.bind.annotation.*;
 
 import javax.annotation.Nullable;
@@ -31,10 +32,7 @@ import javax.servlet.http.HttpServletResponse;
 import javax.validation.Valid;
 import javax.validation.constraints.Email;
 import javax.validation.constraints.NotNull;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Optional;
-import java.util.UUID;
+import java.util.*;
 
 /**
  * @ClassName UserController
@@ -51,6 +49,9 @@ public class UserController {
 
     @Autowired
     private UserService userService;
+
+    @Autowired
+    private UserExtensionService userExtensionService;
 
     @Autowired
     private RedisUtils redisUtils;
@@ -213,4 +214,25 @@ public class UserController {
             throw new ApiException(ApiExceptionEnum.CAPTCHA_NOT_MATCHING);
         }
     }
+
+
+    /**
+     * @Description 查询用户过题
+     * @return problemCodeList
+     **/
+    @GetMapping("/queryACProblem")
+    @ApiResponseBody
+    public List<String> queryACProblem(@UserSession UserSessionDTO userSessionDTO) {
+        return userExtensionService.queryACProblem(userSessionDTO.getUserId(), 0);
+    }
+
+    /**
+     * @Description 查询用户参加过的比赛
+     **/
+    @GetMapping("/queryParticipateContest")
+    @ApiResponseBody
+    public List<Long> queryParticipateContest(@UserSession UserSessionDTO userSessionDTO) {
+        return userExtensionService.queryParticipateContest(userSessionDTO.getUserId());
+    }
+
 }

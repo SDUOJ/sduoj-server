@@ -16,7 +16,7 @@ public class UserExtensionDTO extends BaseDTO {
 
     private Long userId;
 
-    private String key;
+    private String extensionKey;
 
-    private String value;
+    private String extensionValue;
 }

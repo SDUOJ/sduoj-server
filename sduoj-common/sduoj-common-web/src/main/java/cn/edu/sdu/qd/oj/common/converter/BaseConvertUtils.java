@@ -6,6 +6,7 @@ import org.springframework.util.CollectionUtils;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 /**
@@ -20,7 +21,15 @@ public class BaseConvertUtils {
         return StringUtils.isBlank(str) ? null : Arrays.stream(str.split(",")).collect(Collectors.toList());
     }
 
+    public static Set<String> stringToSet(String str) {
+        return StringUtils.isBlank(str) ? null : Arrays.stream(str.split(",")).collect(Collectors.toSet());
+    }
+
     public static String listToString(List<String> list) {
+        return CollectionUtils.isEmpty(list) ? null : StringUtils.join(list, ',');
+    }
+
+    public static String setToString(Set<String> list) {
         return CollectionUtils.isEmpty(list) ? null : StringUtils.join(list, ',');
     }
 

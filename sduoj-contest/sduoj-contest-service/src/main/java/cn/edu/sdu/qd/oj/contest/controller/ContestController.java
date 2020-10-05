@@ -15,8 +15,7 @@ import org.springframework.web.bind.annotation.*;
 
 import javax.validation.Valid;
 import javax.validation.constraints.NotBlank;
-import javax.validation.constraints.NotNull;
-import java.util.Date;
+import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 
@@ -46,19 +45,17 @@ public class ContestController {
 
     @GetMapping("/query")
     @ApiResponseBody
-    public ContestDTO list(@RequestParam("contestId") @NotBlank Long contestId,
-                           @UserSession UserSessionDTO userSessionDTO) {
+    public ContestDTO query(@RequestParam("contestId") @NotBlank Long contestId,
+                            @UserSession UserSessionDTO userSessionDTO) {
         ContestDTO contestDTO = contestService.queryAndValidate(contestId, userSessionDTO.getUserId());
         // 脱敏
-        int problemIndex = 1;
-        for (ContestProblemListDTO problem : contestDTO.getProblems()) {
-            problem.setProblemCode(String.valueOf(problemIndex));
-            problemIndex++;
-        }
-        // 比赛未开始
-        if (contestDTO.getGmtStart().after(new Date())) {
-            contestDTO.setProblems(null);
-        }
+        Optional.ofNullable(contestDTO.getProblems()).ifPresent(problems -> {
+            int problemIndex = 1;
+            for (ContestProblemListDTO problem : contestDTO.getProblems()) {
+                problem.setProblemCode(String.valueOf(problemIndex));
+                problemIndex++;
+            }
+        });
         return contestDTO;
     }
 
@@ -108,6 +105,13 @@ public class ContestController {
             }
         });
         return contestService.listSubmission(reqDTO, userSessionDTO.getUserId());
+    }
+
+    @GetMapping("/queryACProblem")
+    @ApiResponseBody
+    public List<String> queryACProblem(@RequestParam("contestId") long contestId,
+                                       @UserSession UserSessionDTO userSessionDTO) {
+        return contestService.queryACProblem(userSessionDTO.getUserId(), contestId);
     }
 
 }

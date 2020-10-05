@@ -5,6 +5,8 @@
 
 package cn.edu.sdu.qd.oj.user.api;
 
+import cn.edu.sdu.qd.oj.common.entity.ApiResponseBody;
+import cn.edu.sdu.qd.oj.common.entity.UserSessionDTO;
 import cn.edu.sdu.qd.oj.common.exception.InternalApiException;
 import cn.edu.sdu.qd.oj.user.dto.UserDTO;
 import org.springframework.web.bind.annotation.*;
@@ -56,4 +58,33 @@ public interface UserApi {
     **/
     @GetMapping("/queryRolesById")
     List<String> queryRolesById(@RequestParam("userId") Long userId);
+
+    /**
+    * @Description 新增用户过题
+    * @param userId
+    * @param contestId  比赛id=0, 表示题库提交
+    * @param problemId
+    **/
+    @GetMapping("/addUserACProblem")
+    void addUserACProblem(@RequestParam("userId") long userId,
+                          @RequestParam("contestId") long contestId,
+                          @RequestParam("problemId") long problemId);
+
+    /**
+     * @Description 新增用户参加比赛
+     * @param userId
+     * @param contestId
+     **/
+    @GetMapping("/addUserParticipateContest")
+    void addUserParticipateContest(@RequestParam("userId") long userId,
+                                   @RequestParam("contestId") long contestId);
+
+    /**
+     * @Description 查询用户过题
+     * @return problemCodeList
+     **/
+    @GetMapping("/queryACProblem")
+    List<String> queryACProblem(@RequestParam("userId") long userId,
+                                @RequestParam("contestId") long contestId);
+
 }
