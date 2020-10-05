@@ -42,6 +42,7 @@ public class UserDO extends BaseDO {
     private Integer deleted;
 
     @TableField(UserDOField.VERSION)
+    @Version
     private Integer version;
 
     @TableField(UserDOField.USERNAME)

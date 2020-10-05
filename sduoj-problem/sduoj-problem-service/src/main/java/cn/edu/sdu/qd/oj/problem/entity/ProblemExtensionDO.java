@@ -24,6 +24,7 @@ public class ProblemExtensionDO extends BaseDO {
     private Date gmtModified;
 
     @TableField(ProblemExtensionDOField.VERSION)
+    @Version
     private Integer version;
 
     @TableField(ProblemExtensionDOField.DELETED)

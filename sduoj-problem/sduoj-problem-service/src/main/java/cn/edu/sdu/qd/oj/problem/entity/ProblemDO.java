@@ -32,6 +32,7 @@ public class ProblemDO extends BaseDO {
     private Integer deleted;
 
     @TableField(ProblemDOField.VERSION)
+    @Version
     private Integer version;
 
     @TableField(ProblemDOField.CODE)

@@ -6,10 +6,7 @@
 package cn.edu.sdu.qd.oj.submit.entity;
 
 import cn.edu.sdu.qd.oj.common.entity.BaseDO;
-import com.baomidou.mybatisplus.annotation.FieldFill;
-import com.baomidou.mybatisplus.annotation.TableField;
-import com.baomidou.mybatisplus.annotation.TableId;
-import com.baomidou.mybatisplus.annotation.TableName;
+import com.baomidou.mybatisplus.annotation.*;
 import lombok.*;
 
 import java.util.Date;
@@ -35,6 +32,7 @@ public class SubmissionDO extends BaseDO {
     private String features;
 
     @TableField(SubmissionDOField.VERSION)
+    @Version
     private Integer version;
 
     @TableField(SubmissionDOField.IS_PUBLIC)

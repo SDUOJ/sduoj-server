@@ -181,7 +181,7 @@ public class UserService {
         if (username == null) {
             throw new ApiException(ApiExceptionEnum.TOKEN_EXPIRE);
         }
-        // TODO: 乐观锁处理, mbp自动处理
+        // 单字段更新，不需要先查后改，不需要乐观锁
         if (!userDao.lambdaUpdate().eq(UserDO::getUsername, username).set(UserDO::getEmailVerified, 1).update()) {
             throw new ApiException(ApiExceptionEnum.UNKNOWN_ERROR);
         }

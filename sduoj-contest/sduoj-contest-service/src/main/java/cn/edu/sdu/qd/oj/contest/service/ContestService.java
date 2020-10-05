@@ -71,6 +71,7 @@ public class ContestService {
 
     public void participate(Long contestId, Long userId, String password) {
         ContestDO contestDO = contestDao.lambdaQuery().select(
+                ContestDO::getContestId,
                 ContestDO::getFeatures,
                 ContestDO::getPassword,
                 ContestDO::getVersion,
@@ -94,19 +95,14 @@ public class ContestService {
                 break;
         }
 
+        // 新增一个用户到比赛
         if (!contestDO.addOneParticipant(userId)) {
             throw new ApiException(ApiExceptionEnum.CONTEST_HAD_PARTICIPATED);
         }
+        // 密码不进行更改
+        contestDO.setPassword(null);
 
-        // TODO: 乐观锁自动填入
-        boolean succ = contestDao.lambdaUpdate()
-                .set(ContestDO::getVersion, contestDO.getVersion() + 1)
-                .set(ContestDO::getParticipants, contestDO.getParticipants())
-                .set(ContestDO::getParticipantNum, contestDO.getParticipantNum())
-                .eq(ContestDO::getVersion, contestDO.getVersion())
-                .eq(ContestDO::getContestId, contestId)
-                .update();
-        if (!succ) {
+        if (!contestDao.updateById(contestDO)) { // 此时乐观锁会自动填入
             throw new ApiException(ApiExceptionEnum.SERVER_BUSY);
         }
     }

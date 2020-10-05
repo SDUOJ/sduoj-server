@@ -24,6 +24,7 @@ public class ContestExtensionDO extends BaseDO {
     private Date gmtModified;
 
     @TableField(ContestExtensionDOField.VERSION)
+    @Version
     private Integer version;
 
     @TableField(ContestExtensionDOField.DELETED)

@@ -30,6 +30,10 @@ public class PermissionDO extends BaseDO {
     @TableLogic(value = "0", delval = "1")
     private Integer deleted;
 
+    @TableField(PermissionDOField.VERSION)
+    @Version
+    private Integer version;
+
     @TableField(PermissionDOField.URL)
     private String url;
 

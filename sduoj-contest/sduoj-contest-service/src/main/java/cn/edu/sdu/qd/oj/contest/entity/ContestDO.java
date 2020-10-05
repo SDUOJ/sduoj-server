@@ -35,6 +35,7 @@ public class ContestDO extends BaseDO {
     private Integer deleted;
 
     @TableField(ContestDOField.VERSION)
+    @Version
     private Integer version;
 
     @TableField(ContestDOField.TITLE)

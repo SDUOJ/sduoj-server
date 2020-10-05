@@ -28,6 +28,7 @@ public class ProblemDescriptionDO extends BaseDO {
     private String features;
 
     @TableField(ProblemDescriptionDOField.VERSION)
+    @Version
     private Integer version;
 
     @TableField(ProblemDescriptionDOField.DELETED)
