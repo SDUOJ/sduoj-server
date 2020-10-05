@@ -59,23 +59,54 @@ public class ProblemService {
     @Autowired
     private ProblemTagConverter problemTagConverter;
 
-    public ProblemDTO queryByCode(String problemCode) {
+    public ProblemDTO queryByCode(String problemCode, Long descriptionId, Long userId) {
         ProblemDO problemDO = problemDao.lambdaQuery().select(
                 ProblemDO.class, field -> !field.getColumn().equals(ProblemDOField.CHECKPOINTS)
         ).eq(ProblemDO::getProblemCode, problemCode).one();
         if (problemDO == null) {
             throw new ApiException(ApiExceptionEnum.PROBLEM_NOT_FOUND);
         }
-        if (problemDO.getIsPublic() == 0) {
+        if (problemDO.getIsPublic() == 0 && !problemDO.getUserId().equals(userId)) {
             throw new ApiException(ApiExceptionEnum.PROBLEM_NOT_PUBLIC);
         }
-        ProblemDescriptionDO problemDescriptionDO = problemDescriptionDao.getById(problemDO.getDefaultDescriptionId());
-        List<ProblemDescriptionDO> problemDescriptionDOList = problemDescriptionDao.lambdaQuery().select(
+
+        // 查询题目描述
+        ProblemDescriptionDO problemDescriptionDO = problemDescriptionDao.lambdaQuery()
+                .eq(ProblemDescriptionDO::getProblemId, problemDO.getProblemId())
+                .eq(ProblemDescriptionDO::getId, descriptionId != null ? descriptionId : problemDO.getDefaultDescriptionId())
+                .one();
+        // 过滤掉非公开且非默认且非自己的题面
+        if (problemDescriptionDO != null &&
+            problemDescriptionDO.getIsPublic() == 0 &&
+            !problemDescriptionDO.getId().equals(problemDO.getDefaultDescriptionId()) &&
+            !problemDescriptionDO.getUserId().equals(userId)) {
+            problemDescriptionDO = null;
+        }
+
+        // 查询所有公开的题面 list
+        LambdaQueryChainWrapper<ProblemDescriptionDO> descriptionListQuery = problemDescriptionDao.lambdaQuery().select(
+                ProblemDescriptionDO::getIsPublic,
                 ProblemDescriptionDO::getId,
                 ProblemDescriptionDO::getProblemId,
                 ProblemDescriptionDO::getUserId,
                 ProblemDescriptionDO::getVoteNum
-        ).eq(ProblemDescriptionDO::getProblemId, problemDO.getProblemId()).list();
+        ).eq(ProblemDescriptionDO::getProblemId, problemDO.getProblemId());
+        Optional.ofNullable(problemDescriptionDO).map(ProblemDescriptionDO::getId).ifPresent(problemDescriptionId -> {
+            descriptionListQuery.ne(ProblemDescriptionDO::getId, problemDescriptionId);
+        });
+        // 查询并过滤掉非公开非自己的题面
+        List<ProblemDescriptionDO> problemDescriptionDOList = descriptionListQuery.list()
+                .stream()
+                .filter(o -> o.getIsPublic() == 1 || (o.getIsPublic() == 0 && o.getUserId().equals(userId)))
+                .collect(Collectors.toList());
+        // 将 problemDescriptionDO 加入到 list
+        if (problemDescriptionDO != null) {
+            problemDescriptionDOList.add(problemDescriptionDO);
+        }
+        // 按照 descriptionId 排序
+        problemDescriptionDOList.sort(ProblemDescriptionDO::compareById);
+
+
         ProblemDTO problemDTO = problemConverter.to(problemDO, problemDescriptionDO, problemDescriptionDOList);
 
         // TODO: 考虑设计一个 annotation 和 cacheUtil 关联起来，自动填充一些业务字段
@@ -97,7 +128,7 @@ public class ProblemService {
         return problemDTO;
     }
 
-    public PageResult<ProblemListDTO> queryProblemByPage(ProblemListReqDTO problemListReqDTO) {
+    public PageResult<ProblemListDTO> queryProblemByPage(ProblemListReqDTO problemListReqDTO, Long userId) {
         LambdaQueryChainWrapper<ProblemDO> query = problemDao.lambdaQuery();
         query.select(
                 ProblemDO::getProblemId,
@@ -109,7 +140,9 @@ public class ProblemService {
                 ProblemDO::getRemoteUrl,
                 ProblemDO::getSubmitNum,
                 ProblemDO::getAcceptNum
-        ).eq(ProblemDO::getIsPublic, 1);
+        ).and(o1 -> o1.eq(ProblemDO::getIsPublic, 1)
+                      .or(o2 -> o2.eq(ProblemDO::getIsPublic, 0)
+                                  .and(o3 -> o3.eq(ProblemDO::getUserId, userId))));
         Optional.ofNullable(problemListReqDTO.getOrderBy()).ifPresent(orderBy -> {
             switch (problemListReqDTO.getOrderBy()) {
                 case "acceptNum":

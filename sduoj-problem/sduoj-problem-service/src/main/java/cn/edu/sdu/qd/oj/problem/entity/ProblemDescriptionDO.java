@@ -30,7 +30,7 @@ public class ProblemDescriptionDO extends BaseDO {
     @TableField(ProblemDescriptionDOField.VERSION)
     private Integer version;
 
-    @TableField(ProblemDescriptionDOField.IS_PUBLIC)
+    @TableField(ProblemDescriptionDOField.DELETED)
     @TableLogic(value = "0", delval = "1")
     private Integer deleted;
 
@@ -66,4 +66,8 @@ public class ProblemDescriptionDO extends BaseDO {
 
     @TableField(ProblemDescriptionDOField.HTML_HINT)
     private String htmlHint;
+
+    public static int compareById(ProblemDescriptionDO o1, ProblemDescriptionDO o2){
+        return o1.id.compareTo(o2.id);
+    }
 }

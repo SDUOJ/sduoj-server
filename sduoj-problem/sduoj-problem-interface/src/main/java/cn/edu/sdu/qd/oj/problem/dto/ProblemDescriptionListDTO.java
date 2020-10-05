@@ -21,6 +21,8 @@ public class ProblemDescriptionListDTO extends BaseDTO {
     @JsonProperty(access = JsonProperty.Access.READ_ONLY)
     private Long problemId;
 
+    private Integer isPublic;
+
     @JsonProperty(access = JsonProperty.Access.READ_ONLY)
     private Long userId;
 
