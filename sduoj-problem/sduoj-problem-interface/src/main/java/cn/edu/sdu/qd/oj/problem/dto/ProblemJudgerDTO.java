@@ -28,5 +28,5 @@ public class ProblemJudgerDTO extends BaseDTO {
     private Integer checkpointNum;
 
     @JsonSerialize(using = BytesToCheckpointIdsSerializer.class)
-    private byte[] checkpointIds;
+    private byte[] checkpoints;
 }

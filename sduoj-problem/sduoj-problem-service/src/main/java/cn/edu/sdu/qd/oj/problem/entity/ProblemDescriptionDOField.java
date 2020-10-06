@@ -12,6 +12,7 @@ public class ProblemDescriptionDOField {
     public static final String PROBLEM_ID = "p_id";
     public static final String USER_ID = "u_id";
     public static final String VOTE_NUM = "pd_vote_num";
+    public static final String TITLE = "pd_title";
     public static final String MARKDOWN_DESCRIPTION = "pd_markdown_description";
     public static final String HTML_DESCRIPTION = "pd_html_description";
     public static final String HTML_INPUT = "pd_html_input";

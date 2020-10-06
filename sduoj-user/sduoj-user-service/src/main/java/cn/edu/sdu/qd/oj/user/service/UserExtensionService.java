@@ -61,7 +61,7 @@ public class UserExtensionService {
 
     public List<String> queryACProblem(long userId, long contestId) {
         UserExtensionDO userExtensionDO = getUserExtensionDO(userId, UserExtensionDOField.acProblem(contestId));
-        List<String> problemIdList = Optional.of(userExtensionDO.getExtensionValue()).map(BaseConvertUtils::stringToList).orElse(Lists.newArrayList());
+        List<String> problemIdList = Optional.ofNullable(userExtensionDO.getExtensionValue()).map(BaseConvertUtils::stringToList).orElse(Lists.newArrayList());
         return problemIdList.stream()
                 .filter(StringUtils::isNumeric)
                 .map(Long::parseLong)
@@ -71,7 +71,7 @@ public class UserExtensionService {
 
     public List<Long> queryParticipateContest(long userId) {
         UserExtensionDO userExtensionDO = getUserExtensionDO(userId, UserExtensionDOField.participateContest());
-        List<String> problemIdList = Optional.of(userExtensionDO.getExtensionValue()).map(BaseConvertUtils::stringToList).orElse(Lists.newArrayList());
+        List<String> problemIdList = Optional.ofNullable(userExtensionDO.getExtensionValue()).map(BaseConvertUtils::stringToList).orElse(Lists.newArrayList());
         return problemIdList.stream()
                 .filter(StringUtils::isNumeric)
                 .map(Long::parseLong)

@@ -7,10 +7,8 @@ package cn.edu.sdu.qd.oj.problem.service;
 
 import cn.edu.sdu.qd.oj.problem.converter.ProblemJudgerConverter;
 import cn.edu.sdu.qd.oj.problem.dao.ProblemDao;
-import cn.edu.sdu.qd.oj.problem.dto.ProblemDTO;
 import cn.edu.sdu.qd.oj.problem.entity.ProblemDO;
 import cn.edu.sdu.qd.oj.problem.dto.ProblemJudgerDTO;
-import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -30,7 +28,7 @@ public class ProblemJudgerService {
     @Autowired
     private ProblemJudgerConverter problemJudgerConverter;
 
-    public ProblemJudgerDTO queryByCode(String problemCode) {
+    public ProblemJudgerDTO queryById(Long problemId) {
         ProblemDO problemJudgerDO = problemDao.lambdaQuery().select(
             ProblemDO::getProblemId,
             ProblemDO::getIsPublic,
@@ -38,7 +36,7 @@ public class ProblemJudgerService {
             ProblemDO::getMemoryLimit,
             ProblemDO::getCheckpointNum,
             ProblemDO::getCheckpoints
-        ).eq(ProblemDO::getProblemCode, problemCode).one();
+        ).eq(ProblemDO::getProblemId, problemId).one();
         return problemJudgerConverter.to(problemJudgerDO);
     }
 }

@@ -30,6 +30,8 @@ public class ProblemDescriptionDTO extends BaseDTO {
     @JsonProperty(access = JsonProperty.Access.READ_ONLY)
     private Integer voteNum;
 
+    private String title;
+
     private String markdownDescription;
 
     private String htmlDescription;

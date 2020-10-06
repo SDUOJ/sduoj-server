@@ -47,6 +47,9 @@ public class ProblemDescriptionDO extends BaseDO {
     @TableField(ProblemDescriptionDOField.VOTE_NUM)
     private Integer voteNum;
 
+    @TableField(ProblemDescriptionDOField.TITLE)
+    private String title;
+
     @TableField(ProblemDescriptionDOField.MARKDOWN_DESCRIPTION)
     private String markdownDescription;
 

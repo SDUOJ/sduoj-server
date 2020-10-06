@@ -42,7 +42,7 @@ public class ProblemManageDO extends BaseDO {
     private Integer checkpointNum;
 
     @TableField(ProblemDOField.CHECKPOINTS)
-    private byte[] checkpointIds;
+    private byte[] checkpoints;
 
     @TableField(exist = false)
     private String username;

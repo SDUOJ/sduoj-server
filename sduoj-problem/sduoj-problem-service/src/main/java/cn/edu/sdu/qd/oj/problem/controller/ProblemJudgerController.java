@@ -6,14 +6,11 @@
 package cn.edu.sdu.qd.oj.problem.controller;
 
 import cn.edu.sdu.qd.oj.common.entity.ApiResponseBody;
-import cn.edu.sdu.qd.oj.problem.dto.ProblemDTO;
 import cn.edu.sdu.qd.oj.problem.dto.ProblemJudgerDTO;
 import cn.edu.sdu.qd.oj.problem.service.ProblemJudgerService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.*;
-
-import java.util.Map;
 
 /**
  * @ClassName ProblemJudgerController
@@ -31,7 +28,7 @@ public class ProblemJudgerController {
 
     @GetMapping("/query")
     @ApiResponseBody
-    public ProblemJudgerDTO queryByCode(@RequestParam("problemCode") String problemCode) {
-        return this.problemJudgerService.queryByCode(problemCode);
+    public ProblemJudgerDTO queryByCode(@RequestParam("problemId") Long problemId) {
+        return this.problemJudgerService.queryById(problemId);
     }
 }

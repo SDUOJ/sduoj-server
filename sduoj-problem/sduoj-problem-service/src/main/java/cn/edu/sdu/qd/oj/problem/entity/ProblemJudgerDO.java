@@ -36,5 +36,5 @@ public class ProblemJudgerDO extends BaseDO {
     private Integer checkpointNum;
 
     @TableField(ProblemDOField.CHECKPOINTS)
-    private byte[] checkpointIds;
+    private byte[] checkpoints;
 }

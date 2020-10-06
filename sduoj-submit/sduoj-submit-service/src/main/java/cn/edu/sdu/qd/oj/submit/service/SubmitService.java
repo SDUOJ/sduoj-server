@@ -169,7 +169,8 @@ public class SubmitService {
         ).eq(SubmissionDO::getContestId, contestId);
 
         // 排序字段
-        Optional.ofNullable(reqDTO.getOrderBy()).ifPresent(orderBy -> {
+        String orderBy = reqDTO.getOrderBy();
+        if (orderBy != null) {
             switch (reqDTO.getOrderBy()) {
                 case "usedTime":
                     query.orderBy(true, reqDTO.getAscending(), SubmissionDO::getUsedTime);
@@ -181,13 +182,10 @@ public class SubmitService {
                     query.orderBy(true, reqDTO.getAscending(), SubmissionDO::getGmtCreate);
                     break;
             }
-            if ("gmtCreate".equals(orderBy)) {
-                query.orderBy(true, reqDTO.getAscending(), SubmissionDO::getGmtCreate);
-            } else {
-                // 默认按时间排序
-                query.orderByDesc(SubmissionDO::getGmtCreate);
-            }
-        });
+        } else {
+            // 默认按时间排序
+            query.orderByDesc(SubmissionDO::getGmtCreate);
+        }
 
         // 等值字段
         Optional.of(reqDTO).map(SubmissionListReqDTO::getLanguage).filter(StringUtils::isNotBlank).ifPresent(language -> {
