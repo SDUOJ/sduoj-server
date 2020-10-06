@@ -6,8 +6,10 @@ import cn.edu.sdu.qd.oj.common.entity.PageResult;
 import cn.edu.sdu.qd.oj.common.entity.UserSessionDTO;
 import cn.edu.sdu.qd.oj.common.enums.ApiExceptionEnum;
 import cn.edu.sdu.qd.oj.common.exception.ApiException;
+import cn.edu.sdu.qd.oj.common.exception.InternalApiException;
 import cn.edu.sdu.qd.oj.contest.dto.*;
 import cn.edu.sdu.qd.oj.contest.service.ContestService;
+import cn.edu.sdu.qd.oj.submit.dto.SubmissionDTO;
 import org.apache.commons.lang.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
@@ -93,10 +95,20 @@ public class ContestController {
         return contestService.createSubmission(reqDTO);
     }
 
+    @GetMapping("/querySubmission")
+    @ApiResponseBody
+    public SubmissionDTO querySubmssion(@RequestParam("submissionId") String submissionIdHex,
+                                        @RequestParam("contestId") long contestId,
+                                        @UserSession UserSessionDTO userSessionDTO) throws InternalApiException {
+        Long submissionId = Long.valueOf(submissionIdHex, 16);
+        return contestService.querySubmission(submissionId, contestId, userSessionDTO.getUserId());
+    }
+
+
     @GetMapping("/listSubmission")
     @ApiResponseBody
-    public PageResult<ContestSubmissionListDTO> querySubmission(@Valid ContestSubmissionListReqDTO reqDTO,
-                                                                @UserSession UserSessionDTO userSessionDTO) {
+    public PageResult<ContestSubmissionListDTO> listSubmission(@Valid ContestSubmissionListReqDTO reqDTO,
+                                                               @UserSession UserSessionDTO userSessionDTO) {
         Optional.of(reqDTO).map(ContestSubmissionListReqDTO::getProblemCode).filter(StringUtils::isNotEmpty).ifPresent(problemCode -> {
             try {
                 reqDTO.setProblemIndex(Integer.parseInt(reqDTO.getProblemCode()));

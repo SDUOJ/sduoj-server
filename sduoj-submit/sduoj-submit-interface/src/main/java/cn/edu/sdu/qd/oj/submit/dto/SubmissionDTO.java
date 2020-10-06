@@ -10,6 +10,7 @@ import cn.edu.sdu.qd.oj.common.entity.BaseDTO;
 import cn.edu.sdu.qd.oj.common.util.HexStringToLongDeserializer;
 import cn.edu.sdu.qd.oj.common.util.LongToHexStringSerializer;
 import cn.edu.sdu.qd.oj.submit.util.BytesToCheckpointResultsSerializer;
+import cn.edu.sdu.qd.oj.submit.util.CheckpointResultsToByteDeserializer;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 import lombok.*;
@@ -61,6 +62,7 @@ public class SubmissionDTO extends BaseDTO {
     private String code;
 
     @JsonSerialize(using = BytesToCheckpointResultsSerializer.class)
+    @JsonDeserialize(using = CheckpointResultsToByteDeserializer.class)
     private byte[] checkpointResults;
 
     // -----------------------

@@ -24,6 +24,9 @@ public class BytesToCheckpointResultsSerializer extends JsonSerializer<byte[]> {
 
     @Override
     public void serialize(byte[] bytes, JsonGenerator jsonGenerator, SerializerProvider serializerProvider) throws IOException {
+        if (bytes == null || bytes.length == 0) {
+            return;
+        }
         int size = bytes.length;
         if (size % 12 != 0) {
             jsonGenerator.writeString("The binary of checkpoint results is error!");

@@ -4,6 +4,7 @@ import cn.edu.sdu.qd.oj.common.entity.PageResult;
 import cn.edu.sdu.qd.oj.common.enums.ApiExceptionEnum;
 import cn.edu.sdu.qd.oj.common.exception.ApiException;
 import cn.edu.sdu.qd.oj.common.exception.InternalApiException;
+import cn.edu.sdu.qd.oj.common.util.ProblemCacheUtils;
 import cn.edu.sdu.qd.oj.contest.client.ProblemClient;
 import cn.edu.sdu.qd.oj.contest.client.SubmissionClient;
 import cn.edu.sdu.qd.oj.contest.client.UserClient;
@@ -18,6 +19,7 @@ import cn.edu.sdu.qd.oj.contest.entity.ContestListDO;
 import cn.edu.sdu.qd.oj.problem.dto.ProblemDTO;
 import cn.edu.sdu.qd.oj.problem.dto.ProblemDescriptionDTO;
 import cn.edu.sdu.qd.oj.submit.dto.SubmissionCreateReqDTO;
+import cn.edu.sdu.qd.oj.submit.dto.SubmissionDTO;
 import cn.edu.sdu.qd.oj.submit.dto.SubmissionListDTO;
 import cn.edu.sdu.qd.oj.submit.dto.SubmissionListReqDTO;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
@@ -53,6 +55,9 @@ public class ContestService {
 
     @Autowired
     private UserClient userClient;
+
+    @Autowired
+    private ProblemCacheUtils problemCacheUtils;
 
     public ContestDTO queryAndValidate(Long contestId, long userId) {
         ContestDO contestDO = contestDao.getById(contestId);
@@ -262,5 +267,31 @@ public class ContestService {
         }
         List<String> problemCodeList = Optional.ofNullable(userClient.queryACProblem(userId, contestId)).orElse(Lists.newArrayList());
         return problemCodeList.stream().map(problemCodeToProblemIndexMap::get).filter(Objects::nonNull).collect(Collectors.toList());
+    }
+
+    public SubmissionDTO querySubmission(Long submissionId, long contestId, Long userId) throws InternalApiException {
+        SubmissionDTO submissionDTO = submissionClient.query(submissionId, contestId);
+        if (submissionDTO == null) {
+            return null;
+        }
+
+        ContestDO contestDO = queryContestAndValidate(contestId, userId);
+
+        List<ContestProblemListDTO> contestProblemListDTOList = ContestConvertUtils.problemsTo(contestDO.getProblems());
+        Map<Long, Integer> problemIdToProblemIndexMap = new HashMap<>(contestProblemListDTOList.size());
+        for (int i = 0, n = contestProblemListDTOList.size(); i < n; i++) {
+            problemIdToProblemIndexMap.put(problemCacheUtils.getProblemId(contestProblemListDTOList.get(i).getProblemCode()), i + 1);
+        }
+
+        // problemId、problemCode 脱敏
+        submissionDTO.setProblemCode(problemIdToProblemIndexMap.get(submissionDTO.getProblemId()).toString());
+        submissionDTO.setProblemId(null);
+
+        // code 脱敏      TODO: 管理员可以看所有代码
+        if (!submissionDTO.getUserId().equals(userId)) {
+            submissionDTO.setCode(null);
+            submissionDTO.setCheckpointResults(null);
+        }
+        return submissionDTO;
     }
 }

@@ -4,6 +4,7 @@ import cn.edu.sdu.qd.oj.common.entity.PageResult;
 import cn.edu.sdu.qd.oj.common.exception.InternalApiException;
 import cn.edu.sdu.qd.oj.submit.api.SubmissionApi;
 import cn.edu.sdu.qd.oj.submit.dto.SubmissionCreateReqDTO;
+import cn.edu.sdu.qd.oj.submit.dto.SubmissionDTO;
 import cn.edu.sdu.qd.oj.submit.dto.SubmissionListDTO;
 import cn.edu.sdu.qd.oj.submit.dto.SubmissionListReqDTO;
 import cn.edu.sdu.qd.oj.submit.service.SubmitService;
@@ -25,5 +26,10 @@ public class SubmitInternalController implements SubmissionApi {
     @Override
     public PageResult<SubmissionListDTO> list(long contestId, SubmissionListReqDTO reqDTO) throws InternalApiException {
         return submitService.querySubmissionByPage(reqDTO, contestId);
+    }
+
+    @Override
+    public SubmissionDTO query(long submissionId, long contestId) throws InternalApiException {
+        return submitService.queryById(submissionId, contestId);
     }
 }
