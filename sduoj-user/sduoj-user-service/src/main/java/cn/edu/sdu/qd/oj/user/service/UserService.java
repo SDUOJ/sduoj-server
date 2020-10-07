@@ -21,6 +21,7 @@ import cn.edu.sdu.qd.oj.user.dto.UserDTO;
 import cn.edu.sdu.qd.oj.user.entity.UserSessionDO;
 import cn.edu.sdu.qd.oj.user.utils.CodecUtils;
 import cn.edu.sdu.qd.oj.user.utils.EmailUtil;
+import com.baomidou.mybatisplus.extension.conditions.query.LambdaQueryChainWrapper;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -91,7 +92,13 @@ public class UserService {
      **/
     public @NotNull UserDO verifyAndGetDO(String username, String password) throws ApiException {
         // 查询
-        UserDO userDO = userDao.lambdaQuery().eq(UserDO::getUsername, username).one();
+        LambdaQueryChainWrapper<UserDO> query = userDao.lambdaQuery();
+        if (username.indexOf('@') != -1) {
+            query.eq(UserDO::getEmail, username);
+        } else {
+            query.eq(UserDO::getUsername, username);
+        }
+        UserDO userDO = query.one();
         if (userDO == null) {
             throw new ApiException(ApiExceptionEnum.USER_NOT_FOUND);
         }
@@ -117,6 +124,7 @@ public class UserService {
         UserDO userDO = null;
         try {
             userDO = verifyAndGetDO(username, password);
+            userSessionDO.setUsername(userDO.getUsername());
             userSessionDO.setSuccess(1);
             return userSessionConverter.to(userDO, userSessionDO);
         } catch (ApiException e) {

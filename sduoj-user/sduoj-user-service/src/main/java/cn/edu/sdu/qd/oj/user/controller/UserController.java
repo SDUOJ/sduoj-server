@@ -60,7 +60,7 @@ public class UserController {
     @ApiResponseBody
     public Void register(@Valid @RequestBody UserDTO userDTO) throws Exception {
         verifyCaptcha(userDTO.getCaptchaId(), userDTO.getCaptcha());
-
+        userDTO.setRoles(null);
         this.userService.register(userDTO);
         return null;
     }

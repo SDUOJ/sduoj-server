@@ -197,7 +197,7 @@ public class ContestService {
             throw new ApiException(ApiExceptionEnum.CONTEST_NOT_PARTICIPATE);
         }
         // 比赛未开始不能提交
-        if (!contestDO.getGmtStart().after(new Date())) {
+        if (contestDO.getGmtStart().after(new Date())) {
             throw new ApiException(ApiExceptionEnum.CONTEST_NOT_BEGIN);
         }
 

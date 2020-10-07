@@ -5,18 +5,16 @@
 
 package cn.edu.sdu.qd.oj.user.dto;
 
-import cn.edu.sdu.qd.oj.common.util.DateToTimestampSerializer;
 import cn.edu.sdu.qd.oj.common.entity.BaseDTO;
 import com.fasterxml.jackson.annotation.JsonProperty;
-import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 import lombok.*;
 import org.hibernate.validator.constraints.Length;
 import org.hibernate.validator.constraints.Range;
+import org.springframework.lang.Nullable;
 
 import javax.validation.constraints.Email;
 import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.Pattern;
-import java.util.Date;
 import java.util.List;
 import java.util.Map;
 
@@ -33,11 +31,10 @@ import java.util.Map;
 @NoArgsConstructor
 @AllArgsConstructor
 @EqualsAndHashCode(callSuper = true)
-public class UserDTO extends BaseDTO {
+public class UserManageUpdateReqDTO extends BaseDTO {
 
     private Long userId;
 
-    @JsonProperty(access = JsonProperty.Access.READ_ONLY)
     private Map<String, String> features;
 
     @Pattern(regexp = "^[A-Za-z0-9_]{4,16}$", message = "用户名必须由英文、数字、'_'构成，且长度为4~16")
@@ -45,35 +42,30 @@ public class UserDTO extends BaseDTO {
     private String username;
 
     @Length(max = 30, message = "昵称长度不合法，比如在30位之内")
+    @Nullable
     private String nickname;
 
-    @JsonProperty(access = JsonProperty.Access.WRITE_ONLY)
     @Length(min = 4, max = 32, message = "密码长度必须在4-32位之间")
-    @NotBlank(message = "密码不能为空")
+    @Nullable
     private String password;
 
     @Email(message = "邮箱不合法")
-    @NotBlank(message = "邮箱不能为空")
+    @NotBlank
     private String email;
 
     private Integer emailVerified;
 
     @Length(min = 11, max = 16, message = "手机号码长度不合法")
+    @Nullable
     private String phone;
 
     @Range(min = 0, max = 2, message = "性别不合法, 0.女, 1.男, 2.问号")
+    @Nullable
     private Integer gender;
 
     @Length(max = 20, message = "学号长度不合法")
+    @Nullable
     private String studentId;
 
     private List<String> roles;
-
-    // -----------------------
-
-    @JsonProperty(access = JsonProperty.Access.WRITE_ONLY)
-    private String captchaId;
-
-    @JsonProperty(access = JsonProperty.Access.WRITE_ONLY)
-    private String captcha;
 }
