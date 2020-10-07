@@ -10,6 +10,7 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 
 import java.util.List;
+import java.util.Optional;
 
 /**
  * @ClassName PageResult
@@ -23,20 +24,17 @@ import java.util.List;
 @NoArgsConstructor
 @AllArgsConstructor
 public class PageResult<T> {
-    private Long total;
-    private Long totalPage;
+    private long total;
+    private long totalPage;
     private List<T> rows;
 
     public PageResult(Long totalPage, List<T> rows) {
-        this.totalPage = totalPage;
         this.rows = rows;
-        if (rows != null)
-            this.total = (long) rows.size();
-        else
-            this.total = 0L;
+        this.totalPage = Optional.ofNullable(totalPage).orElse(0L);
+        this.total = Optional.ofNullable(rows).map(List::size).orElse(0);
     }
 
     public PageResult(Integer totalPage, List<T> rows) {
-        this((long) totalPage, rows);
+        this((long) Optional.ofNullable(totalPage).orElse(0), rows);
     }
 }

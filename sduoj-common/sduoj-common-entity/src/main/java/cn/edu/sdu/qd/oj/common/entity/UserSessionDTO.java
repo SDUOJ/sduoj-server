@@ -4,6 +4,7 @@ import cn.edu.sdu.qd.oj.common.entity.BaseDTO;
 import lombok.*;
 
 import java.util.List;
+import java.util.function.Function;
 
 @Data
 @Builder
@@ -21,4 +22,12 @@ public class UserSessionDTO extends BaseDTO {
 
     private String ipv4;
     private String userAgent;
+
+    public boolean userIdEquals(Long userId) {
+        return this.userId != null && this.userId.equals(userId);
+    }
+
+    public boolean userIdNotEquals(Long userId) {
+        return userIdEquals(userId);
+    }
 }

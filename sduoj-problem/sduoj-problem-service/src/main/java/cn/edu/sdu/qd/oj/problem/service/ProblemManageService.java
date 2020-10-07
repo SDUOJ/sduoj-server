@@ -5,6 +5,7 @@
 
 package cn.edu.sdu.qd.oj.problem.service;
 
+import cn.edu.sdu.qd.oj.common.entity.UserSessionDTO;
 import cn.edu.sdu.qd.oj.common.util.ProblemCacheUtils;
 import cn.edu.sdu.qd.oj.common.util.RedisConstants;
 import cn.edu.sdu.qd.oj.common.entity.PageResult;
@@ -15,20 +16,22 @@ import cn.edu.sdu.qd.oj.common.util.UserCacheUtils;
 import cn.edu.sdu.qd.oj.problem.converter.*;
 import cn.edu.sdu.qd.oj.problem.dao.ProblemDao;
 import cn.edu.sdu.qd.oj.problem.dao.ProblemDescriptionDao;
-import cn.edu.sdu.qd.oj.problem.dto.ProblemDescriptionDTO;
+import cn.edu.sdu.qd.oj.problem.dao.ProblemManageListDao;
+import cn.edu.sdu.qd.oj.problem.dto.*;
 import cn.edu.sdu.qd.oj.problem.entity.ProblemDO;
 import cn.edu.sdu.qd.oj.problem.entity.ProblemDescriptionDO;
-import cn.edu.sdu.qd.oj.problem.entity.ProblemManageDO;
-import cn.edu.sdu.qd.oj.problem.dto.ProblemManageDTO;
-import cn.edu.sdu.qd.oj.problem.dto.ProblemManageListDTO;
+import cn.edu.sdu.qd.oj.problem.entity.ProblemManageListDO;
+import com.baomidou.mybatisplus.extension.conditions.query.LambdaQueryChainWrapper;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.BeanUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
+import java.util.Map;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 /**
@@ -44,7 +47,13 @@ import java.util.stream.Collectors;
 public class ProblemManageService {
 
     @Autowired
+    private ProblemCommonService problemCommonService;
+
+    @Autowired
     private ProblemDao problemDao;
+
+    @Autowired
+    private ProblemManageListDao problemManageListDao;
 
     @Autowired
     private ProblemDescriptionDao problemDescriptionDao;
@@ -69,6 +78,9 @@ public class ProblemManageService {
 
     public ProblemManageDTO queryByCode(String problemCode) {
         ProblemDO problemManageDO = problemDao.lambdaQuery().eq(ProblemDO::getProblemCode, problemCode).one();
+        if (problemManageDO == null) {
+            throw new ApiException(ApiExceptionEnum.PROBLEM_NOT_FOUND);
+        }
         ProblemManageDTO problemManageDTO = problemManageConverter.to(problemManageDO);
         problemManageDTO.setUsername(userCacheUtils.getUsername(problemManageDO.getUserId()));
         return problemManageDTO;
@@ -97,25 +109,42 @@ public class ProblemManageService {
         return problemDO.getProblemCode();
     }
 
-    public PageResult<ProblemManageListDTO> queryProblemByPage(int pageNow, int pageSize) {
-        Page<ProblemDO> pageResult = problemDao.lambdaQuery().select(
-                ProblemDO::getProblemId,
-                ProblemDO::getGmtCreate,
-                ProblemDO::getGmtModified,
-                ProblemDO::getProblemCode,
-                ProblemDO::getIsPublic,
-                ProblemDO::getUserId,
-                ProblemDO::getProblemTitle,
-                ProblemDO::getSource,
-                ProblemDO::getSubmitNum,
-                ProblemDO::getAcceptNum,
-                ProblemDO::getCheckpointNum
-        ).page(new Page<>(pageNow, pageSize));
-        List<ProblemManageListDTO> problemManageListDTOlist = problemManageListConverter.to(pageResult.getRecords());
-        if (problemManageListDTOlist != null) {
-            problemManageListDTOlist.forEach(problemManageListDTO ->
-                    problemManageListDTO.setUsername(userCacheUtils.getUsername(problemManageListDTO.getUserId())));
+    public PageResult<ProblemManageListDTO> queryProblemByPage(ProblemListReqDTO reqDTO,
+                                                               UserSessionDTO userSessionDTO) {
+        // 构造 query，只查 public 题或自己的题
+        LambdaQueryChainWrapper<ProblemManageListDO> query = problemManageListDao.lambdaQuery()
+            .and(o1 -> o1.eq(ProblemManageListDO::getIsPublic, 1)
+                         .or(o2 -> o2.eq(ProblemManageListDO::getIsPublic, 0)
+                                     .and(o3 -> o3.eq(ProblemManageListDO::getUserId, userSessionDTO.getUserId()))));
+        // 置排序条件
+        Optional.ofNullable(reqDTO.getOrderBy()).filter(StringUtils::isNotBlank).ifPresent(orderBy -> {
+            switch (orderBy) {
+                case "acceptNum":
+                    query.orderBy(true, reqDTO.getAscending(), ProblemManageListDO::getAcceptNum);
+                    break;
+                default:
+                    break;
+            }
+        });
+        // 置等值条件
+        Optional.ofNullable(reqDTO.getRemoteOj()).filter(StringUtils::isNotBlank).ifPresent(remoteOj -> {
+            query.eq(ProblemManageListDO::getRemoteOj, remoteOj);
+        });
+        // 分页查结果
+        Page<ProblemManageListDO> pageResult = query.page(new Page<>(reqDTO.getPageNow(), reqDTO.getPageSize()));
+        if (pageResult.getSize() == 0) {
+            return new PageResult<>();
         }
+        // 转换
+        List<ProblemManageListDTO> problemManageListDTOlist = problemManageListConverter.to(pageResult.getRecords());
+        // 查询 tagDTOMap
+        Map<Long, ProblemTagDTO> tagIdToDTOMap = problemCommonService.getTagDTOMapByProblemListDOList(pageResult.getRecords());
+        // 置入 tagDTOList
+        problemManageListDTOlist.forEach(o -> o.setProblemTagDTOList(
+                problemCommonService.getTagIdListByFeatureMap(o.getFeatures()).stream().map(tagIdToDTOMap::get).collect(Collectors.toList())
+        ));
+        // 置入 username
+        problemManageListDTOlist.forEach(problemManageListDTO -> problemManageListDTO.setUsername(userCacheUtils.getUsername(problemManageListDTO.getUserId())));
         return new PageResult<>(pageResult.getPages(), problemManageListDTOlist);
     }
 
@@ -144,5 +173,13 @@ public class ProblemManageService {
             throw new ApiException(ApiExceptionEnum.UNKNOWN_ERROR);
         }
         return problemDescriptionDO.getId();
+    }
+
+    public void updateDescription(ProblemDescriptionDTO problemDescriptionDTO) {
+        ProblemDescriptionDO problemDescriptionDO = problemDescriptionConverter.from(problemDescriptionDTO);
+        problemDescriptionDao.lambdaUpdate()
+                .eq(ProblemDescriptionDO::getId, problemDescriptionDO.getId())
+                .eq(ProblemDescriptionDO::getUserId, problemDescriptionDO.getUserId())
+                .update(problemDescriptionDO);
     }
 }

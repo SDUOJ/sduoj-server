@@ -26,13 +26,10 @@ public class ProblemManageListDTO extends BaseDTO {
 
     private Long problemId;
 
-    @JsonProperty(access = JsonProperty.Access.READ_ONLY)
     private Date gmtCreate;
 
-    @JsonProperty(access = JsonProperty.Access.READ_ONLY)
     private Date gmtModified;
 
-    @JsonProperty(access = JsonProperty.Access.READ_ONLY)
     private Map<String, String> features;
 
     private String problemCode;
@@ -49,16 +46,23 @@ public class ProblemManageListDTO extends BaseDTO {
 
     private String remoteUrl;
 
-    @JsonProperty(access = JsonProperty.Access.READ_ONLY)
     private Integer submitNum;
 
-    @JsonProperty(access = JsonProperty.Access.READ_ONLY)
     private Integer acceptNum;
 
-    @JsonProperty(access = JsonProperty.Access.READ_ONLY)
+    private List<String> languages;
+
+    private Integer memoryLimit;
+
+    private Integer timeLimit;
+
+    private Long defaultDescriptionId;
+
     private Integer checkpointNum;
 
     // ------------------------------------------
+
+    private List<ProblemTagDTO> problemTagDTOList;
 
     private String username;
 }

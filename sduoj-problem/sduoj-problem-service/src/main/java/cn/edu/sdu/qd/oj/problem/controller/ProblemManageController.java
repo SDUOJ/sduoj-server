@@ -5,8 +5,11 @@
 
 package cn.edu.sdu.qd.oj.problem.controller;
 
+import cn.edu.sdu.qd.oj.common.annotation.UserSession;
 import cn.edu.sdu.qd.oj.common.entity.ApiResponseBody;
 import cn.edu.sdu.qd.oj.common.entity.PageResult;
+import cn.edu.sdu.qd.oj.common.entity.ResponseResult;
+import cn.edu.sdu.qd.oj.common.entity.UserSessionDTO;
 import cn.edu.sdu.qd.oj.common.enums.ApiExceptionEnum;
 import cn.edu.sdu.qd.oj.common.exception.ApiException;
 import cn.edu.sdu.qd.oj.problem.dto.*;
@@ -16,7 +19,11 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.*;
 
+import javax.annotation.Nullable;
+import javax.validation.Valid;
+import javax.validation.constraints.NotNull;
 import java.util.Map;
+import java.util.Optional;
 
 /**
  * @ClassName ProblemManageController
@@ -36,8 +43,14 @@ public class ProblemManageController {
 
     @GetMapping("/query")
     @ApiResponseBody
-    public ProblemManageDTO queryByCode(@RequestParam("problemCode") String problemCode) {
-        return this.problemManageService.queryByCode(problemCode);
+    public ProblemManageDTO queryByCode(@RequestParam("problemCode") String problemCode,
+                                        @UserSession UserSessionDTO userSessionDTO) {
+        ProblemManageDTO problemManageDTO = this.problemManageService.queryByCode(problemCode);
+        // 脱敏  TODO: 超级管理员能看
+        if (problemManageDTO.getIsPublic() == 0 && userSessionDTO.userIdNotEquals(problemManageDTO.getUserId())) {
+            problemManageDTO = null;
+        }
+        return problemManageDTO;
     }
 
     @PostMapping("/create")
@@ -50,13 +63,9 @@ public class ProblemManageController {
 
     @GetMapping("/list")
     @ApiResponseBody
-    public PageResult<ProblemManageListDTO> queryList(@RequestParam("pageNow") int pageNow,
-                                                      @RequestParam("pageSize") int pageSize) {
-        PageResult<ProblemManageListDTO> result = this.problemManageService.queryProblemByPage(pageNow, pageSize);
-        if (result == null || result.getRows().size() == 0) {
-            throw new ApiException(ApiExceptionEnum.PROBLEM_NOT_FOUND);
-        }
-        return result;
+    public PageResult<ProblemManageListDTO> queryList(@Valid ProblemListReqDTO reqDTO,
+                                                      @UserSession UserSessionDTO userSessionDTO) {
+        return this.problemManageService.queryProblemByPage(reqDTO, userSessionDTO);
     }
 
     @PostMapping("/update")
@@ -79,6 +88,18 @@ public class ProblemManageController {
                                   @RequestHeader("authorization-userId") Long userId) {
         problemDescriptionDTO.setUserId(userId);
         return problemManageService.createDescription(problemDescriptionDTO);
+    }
+
+    @PostMapping("/updateDescription")
+    @ApiResponseBody
+    public Void updateDescription(@RequestBody @NotNull ProblemDescriptionDTO problemDescriptionDTO,
+                                  @RequestHeader("authorization-userId") Long userId) {
+        if (problemDescriptionDTO.getId() == null) {
+            throw new ApiException(ApiExceptionEnum.PARAMETER_ERROR);
+        }
+        problemDescriptionDTO.setUserId(userId);
+        problemManageService.updateDescription(problemDescriptionDTO);
+        return null;
     }
 
 }

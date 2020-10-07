@@ -21,19 +21,20 @@ import cn.edu.sdu.qd.oj.problem.entity.ProblemDescriptionDO;
 import cn.edu.sdu.qd.oj.problem.entity.ProblemTagDO;
 import com.baomidou.mybatisplus.extension.conditions.query.LambdaQueryChainWrapper;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
-import com.google.common.collect.Collections2;
-import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.util.CollectionUtils;
 
 import javax.annotation.PostConstruct;
 import java.util.*;
-import java.util.function.Function;
 import java.util.stream.Collectors;
 
 @Service
 public class ProblemService {
+
+    @Autowired
+    private ProblemCommonService problemCommonService;
 
     @Autowired
     private ProblemDao problemDao;
@@ -128,7 +129,7 @@ public class ProblemService {
         return problemDTO;
     }
 
-    public PageResult<ProblemListDTO> queryProblemByPage(ProblemListReqDTO problemListReqDTO, Long userId) {
+    public PageResult<ProblemListDTO> queryProblemByPage(ProblemListReqDTO reqDTO, Long userId) {
         LambdaQueryChainWrapper<ProblemDO> query = problemDao.lambdaQuery();
         query.select(
                 ProblemDO::getProblemId,
@@ -143,42 +144,27 @@ public class ProblemService {
         ).and(o1 -> o1.eq(ProblemDO::getIsPublic, 1)
                       .or(o2 -> o2.eq(ProblemDO::getIsPublic, 0)
                                   .and(o3 -> o3.eq(ProblemDO::getUserId, userId))));
-        Optional.ofNullable(problemListReqDTO.getOrderBy()).ifPresent(orderBy -> {
-            switch (problemListReqDTO.getOrderBy()) {
+        Optional.ofNullable(reqDTO.getOrderBy()).filter(StringUtils::isNotBlank).ifPresent(orderBy -> {
+            switch (orderBy) {
                 case "acceptNum":
-                    query.orderBy(true, problemListReqDTO.getAscending(), ProblemDO::getAcceptNum);
+                    query.orderBy(true, reqDTO.getAscending(), ProblemDO::getAcceptNum);
                     break;
                 default:
                     break;
             }
         });
-        Optional.ofNullable(problemListReqDTO.getRemoteOj()).ifPresent(remoteOj -> {
+        Optional.ofNullable(reqDTO.getRemoteOj()).filter(StringUtils::isNotBlank).ifPresent(remoteOj -> {
             query.eq(ProblemDO::getRemoteOj, remoteOj);
         });
-        Page<ProblemDO> pageResult = query.page(new Page<>(problemListReqDTO.getPageNow(), problemListReqDTO.getPageSize()));
+        // 分页查结果
+        Page<ProblemDO> pageResult = query.page(new Page<>(reqDTO.getPageNow(), reqDTO.getPageSize()));
+        // 转换
         List<ProblemListDTO> problemListDTOList = problemListConverter.to(pageResult.getRecords());
-
-        // 取 tag TODO: 魔法值解决
-        List<Long> tags = problemListDTOList.stream()
-                .map(ProblemListDTO::getFeatures)
-                .filter(Objects::nonNull)
-                .map(map -> map.get("tags"))
-                .map(tagsStr -> tagsStr.split(","))
-                .flatMap(Arrays::stream)
-                .map(Long::parseLong)
-                .collect(Collectors.toList());
-        List<ProblemTagDO> problemTagDOList = problemTagDao.lambdaQuery().in(ProblemTagDO::getId, tags).list();
-        List<ProblemTagDTO> problemTagDTOList = problemTagConverter.to(problemTagDOList);
-        Map<Long, ProblemTagDTO> tagIdToProblemTagDTOMap = problemTagDTOList.stream().collect(Collectors.toMap(ProblemTagDTO::getId, Function.identity()));
+        // 查询 tagDTOMap
+        Map<Long, ProblemTagDTO> tagIdToDTOMap = problemCommonService.getTagDTOMapByProblemDOList(pageResult.getRecords());
+        // 置入 tagDTOList
         problemListDTOList.forEach(o -> o.setProblemTagDTOList(
-                Optional.ofNullable(o.getFeatures())
-                        .map(map -> map.get("tags"))
-                        .map(tagsStr -> tagsStr.split(","))
-                        .map(tagArray -> Arrays.stream(tagArray)
-                                .map(Long::parseLong)
-                                .map(tagIdToProblemTagDTOMap::get)
-                                .collect(Collectors.toList()))
-                        .orElse(null)
+            problemCommonService.getTagIdListByFeatureMap(o.getFeatures()).stream().map(tagIdToDTOMap::get).collect(Collectors.toList())
         ));
         return new PageResult<>(pageResult.getPages(), problemListDTOList);
     }

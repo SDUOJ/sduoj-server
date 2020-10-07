@@ -15,7 +15,6 @@ import java.util.Map;
 @EqualsAndHashCode(callSuper = true)
 public class ProblemDescriptionDTO extends BaseDTO {
 
-    @JsonProperty(access = JsonProperty.Access.READ_ONLY)
     private Long id;
 
     @JsonProperty(access = JsonProperty.Access.READ_ONLY)
