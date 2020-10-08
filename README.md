@@ -2,11 +2,11 @@
 
 This is the service server of the SDUOJ.
 
-## Solution stack
+## Solution Stack
 
 *   Spring Boot
 *   Spring Cloud
 *   MyBatis
-*   Mybatis Common Mapper
+*   MyBatis-Plus
 *   Lombok
-*   PageHelper
+*   MapStruct
