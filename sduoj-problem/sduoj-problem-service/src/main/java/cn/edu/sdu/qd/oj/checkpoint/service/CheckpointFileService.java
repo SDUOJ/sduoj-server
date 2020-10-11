@@ -30,6 +30,7 @@ import org.springframework.web.multipart.MultipartFile;
 
 import java.io.File;
 import java.io.IOException;
+import java.nio.file.Paths;
 import java.util.*;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipOutputStream;
@@ -64,9 +65,8 @@ public class CheckpointFileService {
      * @Description 批量上传成对的测试点文件，如果不配对或者写入到文件系统中出现错误，则全部回滚
      **/
     @Transactional
-    public CheckpointDTO[] uploadCheckpointFiles(MultipartFile[] files) {
-        List<CheckpointDTO> checkpointDTOList = new ArrayList<>(files.length / 2 + 1);
-        Arrays.sort(files, Comparator.comparing(MultipartFile::getOriginalFilename));
+    public List<CheckpointDTO> uploadCheckpointFiles(MultipartFile[] files) {
+        List<CheckpointDO> checkpointDOList = new ArrayList<>(files.length / 2 + 1);
         Map<String, MultipartFile> map = new HashMap<>();
         for (MultipartFile file : files) {
             map.put(file.getOriginalFilename(), file);
@@ -89,32 +89,32 @@ public class CheckpointFileService {
                     byte[] outputBytes = output.getBytes();
                     long snowflaskId = snowflakeIdWorker.nextId();
                     String snowflaskIdString = Long.toHexString(snowflaskId);
-                    CheckpointDTO checkpointDTO = CheckpointDTO.builder()
+                    CheckpointDO checkpointDO = CheckpointDO.builder()
                             .checkpointId(snowflaskId)
-                            .inputDescription(new String(inputBytes, 0, Math.min(CheckpointDTO.MAX_DESCRIPTION_LENGTH, inputBytes.length)))
-                            .outputDescription(new String(outputBytes, 0, Math.min(CheckpointDTO.MAX_DESCRIPTION_LENGTH, outputBytes.length)))
+                            .inputPreview(new String(inputBytes, 0, Math.min(CheckpointDTO.MAX_DESCRIPTION_LENGTH, inputBytes.length)))
+                            .outputPreview(new String(outputBytes, 0, Math.min(CheckpointDTO.MAX_DESCRIPTION_LENGTH, outputBytes.length)))
                             .inputSize(inputBytes.length)
                             .outputSize(outputBytes.length)
-                            .inputFileName(input.getOriginalFilename())
-                            .outputFileName(output.getOriginalFilename())
+                            .inputFilename(input.getOriginalFilename())
+                            .outputFilename(output.getOriginalFilename())
                             .build();
-                    checkpointDTOList.add(checkpointDTO);
-                    File inputFile = new File(checkpointFileSystemProperties.getBaseDir() + File.separator + snowflaskIdString + ".in");
-                    File outputFile = new File(checkpointFileSystemProperties.getBaseDir() + File.separator + snowflaskIdString + ".out");
+                    checkpointDOList.add(checkpointDO);
+
+                    File inputFile = new File(Paths.get(checkpointFileSystemProperties.getBaseDir(), snowflaskIdString + ".in").toString());
+                    File outputFile = new File(Paths.get(checkpointFileSystemProperties.getBaseDir(), snowflaskIdString + ".out").toString());
                     FileUtils.writeByteArrayToFile(inputFile, inputBytes);
                     FileUtils.writeByteArrayToFile(outputFile, outputBytes);
                 }
             }
-            List<CheckpointDO> checkpointDOList = checkpointConverter.from(checkpointDTOList);
             checkpointDao.saveBatch(checkpointDOList);
         } catch (Exception e) {
-            for (CheckpointDTO checkpointDTO : checkpointDTOList) {
-                new File(checkpointFileSystemProperties.getBaseDir() + File.separator + Long.toHexString(checkpointDTO.getCheckpointId()) + ".in").delete();
-                new File(checkpointFileSystemProperties.getBaseDir() + File.separator + Long.toHexString(checkpointDTO.getCheckpointId()) + ".out").delete();
+            for (CheckpointDO checkpointDO : checkpointDOList) {
+                new File(Paths.get(checkpointFileSystemProperties.getBaseDir(), Long.toHexString(checkpointDO.getCheckpointId()) + ".in").toString()).delete();
+                new File(Paths.get(checkpointFileSystemProperties.getBaseDir(), Long.toHexString(checkpointDO.getCheckpointId()) + ".out").toString()).delete();
             }
             throw new ApiException(ApiExceptionEnum.FILE_WRITE_ERROR);
         }
-        return checkpointDTOList.toArray(new CheckpointDTO[0]);
+        return checkpointConverter.to(checkpointDOList);
     }
 
 
@@ -128,17 +128,16 @@ public class CheckpointFileService {
     public CheckpointDTO updateCheckpointFile(String input, String output) {
         long snowflaskId = snowflakeIdWorker.nextId();
         String snowflaskIdString = Long.toHexString(snowflaskId);
-        File inputFile = new File(checkpointFileSystemProperties.getBaseDir() + File.separator + snowflaskIdString + ".in");
-        File outputFile = new File(checkpointFileSystemProperties.getBaseDir() + File.separator + snowflaskIdString + ".out");
-        CheckpointDTO checkpointDTO = new CheckpointDTO(
-                snowflaskId,
-                input.substring(0, Math.min(CheckpointDTO.MAX_DESCRIPTION_LENGTH, input.length())),
-                output.substring(0, Math.min(CheckpointDTO.MAX_DESCRIPTION_LENGTH, output.length())),
-                input.length(),
-                output.length()
-        );
+        File inputFile = new File(Paths.get(checkpointFileSystemProperties.getBaseDir(), snowflaskIdString + ".in").toString());
+        File outputFile = new File(Paths.get(checkpointFileSystemProperties.getBaseDir(), snowflaskIdString + ".out").toString());
+        CheckpointDO checkpointDO = CheckpointDO.builder()
+                .checkpointId(snowflaskId)
+                .inputPreview(input.substring(0, Math.min(CheckpointDTO.MAX_DESCRIPTION_LENGTH, input.length())))
+                .outputPreview(output.substring(0, Math.min(CheckpointDTO.MAX_DESCRIPTION_LENGTH, output.length())))
+                .inputSize(input.length())
+                .outputSize(output.length())
+                .build();
         try {
-            CheckpointDO checkpointDO = checkpointConverter.from(checkpointDTO);
             checkpointDao.save(checkpointDO);
             FileUtils.writeStringToFile(inputFile, input);
             FileUtils.writeStringToFile(outputFile, output); 
@@ -147,7 +146,7 @@ public class CheckpointFileService {
             outputFile.delete();
             throw new ApiException(ApiExceptionEnum.FILE_WRITE_ERROR);
         }
-        return checkpointDTO;
+        return checkpointConverter.to(checkpointDO);
     }
 
     /**
@@ -160,8 +159,8 @@ public class CheckpointFileService {
         // TODO: 文件安全性 校验
         List<FileSystemResource> files = new ArrayList<>();
         for (String checkpointId : checkpointIds) {
-            FileSystemResource input = new FileSystemResource(checkpointFileSystemProperties.getBaseDir() + File.separator + checkpointId + ".in");
-            FileSystemResource output = new FileSystemResource(checkpointFileSystemProperties.getBaseDir() + File.separator + checkpointId + ".out");
+            FileSystemResource input = new FileSystemResource(Paths.get(checkpointFileSystemProperties.getBaseDir(), checkpointId + ".in").toString());
+            FileSystemResource output = new FileSystemResource(Paths.get(checkpointFileSystemProperties.getBaseDir(), checkpointId + ".out").toString());
             if (!input.exists() || !output.exists()) {
                 throw new ApiException(ApiExceptionEnum.FILE_NOT_EXISTS);
             }
@@ -184,8 +183,9 @@ public class CheckpointFileService {
     * @param checkpointId
     **/
     public CheckpointDTO queryCheckpointFileContent(String checkpointId) throws IOException {
-        File inputFile = new File(checkpointFileSystemProperties.getBaseDir() + File.separator + checkpointId + ".in");
-        File outputFile = new File(checkpointFileSystemProperties.getBaseDir() + File.separator + checkpointId + ".out");
+
+        File inputFile = new File(Paths.get(checkpointFileSystemProperties.getBaseDir(), checkpointId + ".in").toString());
+        File outputFile = new File(Paths.get(checkpointFileSystemProperties.getBaseDir(), checkpointId + ".out").toString());
         if (!inputFile.exists() || !outputFile.exists()) {
             throw new ApiException(ApiExceptionEnum.FILE_NOT_EXISTS);
         }

@@ -16,8 +16,8 @@ public class CheckpointDOField {
     public static final String GMT_CREATE = "c_gmt_create";
     public static final String GMT_MODIFIED = "c_gmt_modified";
     public static final String features = "c_features";
-    public static final String INPUT_DESC = "c_input_desc";
-    public static final String OUTPUT_DESC = "c_output_desc";
+    public static final String INPUT_PREVIEW = "c_input_preview";
+    public static final String OUTPUT_PREVIEW = "c_output_preview";
     public static final String INPUT_SIZE = "c_input_size";
     public static final String OUTPUT_SIZE = "c_output_size";
     public static final String INPUT_FILE_NAME = "c_input_file_name";

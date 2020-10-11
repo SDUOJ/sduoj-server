@@ -12,6 +12,7 @@ package cn.edu.sdu.qd.oj.checkpoint.controller;
 
 import cn.edu.sdu.qd.oj.checkpoint.service.CheckpointFileService;
 import com.netflix.ribbon.proxy.annotation.Http;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpHeaders;
 import org.springframework.stereotype.Controller;
@@ -32,6 +33,7 @@ import java.util.zip.ZipOutputStream;
  * @Version V1.0
  **/
 
+@Slf4j
 @Controller
 @RequestMapping("/judger/checkpoint")
 public class CheckpointJudgerController {
@@ -41,16 +43,17 @@ public class CheckpointJudgerController {
 
     /**
      * @Description 传入 checkpoint id 数组，以 zip 包形式下载数据
-     * @param checkpointIdList
+     * @param checkpointIds
      * @return void
      **/
     @PostMapping(value = "/download")
-    public void zipDownload(@RequestBody List<String> checkpointIdList,
+    public void zipDownload(@RequestBody List<String> checkpointIds,
                             HttpServletResponse response) throws IOException {
-        String zipFileName = "checkpoints.zip"; // TODO: 下载文件名定义问题
-        response.addHeader(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=\"" + zipFileName + "\"");
-        response.setHeader(HttpHeaders.CONTENT_TYPE, "application/zip");
+        log.warn("zipDownload: {}", checkpointIds);
+        response.addHeader(HttpHeaders.CONTENT_DISPOSITION, "attachment"); // 前端定义文件名
+        response.setContentType("application/zip; charset=utf-8");
+        response.setCharacterEncoding("UTF-8");
         response.setStatus(HttpServletResponse.SC_OK);
-        checkpointFileService.downloadCheckpointFiles(checkpointIdList, new ZipOutputStream(response.getOutputStream()));
+        checkpointFileService.downloadCheckpointFiles(checkpointIds, new ZipOutputStream(response.getOutputStream()));
     }
 }

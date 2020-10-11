@@ -82,7 +82,7 @@ public class CheckpointManageController {
      **/
     @PostMapping(value = "/uploadFiles", headers = "content-type=multipart/form-data")
     @ApiResponseBody
-    public CheckpointDTO[] upload(@RequestParam("files") MultipartFile[] files) {
+    public List<CheckpointDTO> upload(@RequestParam("files") MultipartFile[] files) {
         return checkpointFileService.uploadCheckpointFiles(files);
     }
 
@@ -95,9 +95,9 @@ public class CheckpointManageController {
     public void zipDownload(@RequestBody List<String> checkpointIds,
                             HttpServletResponse response) throws IOException {
         log.warn("zipDownload: {}", checkpointIds);
-        String zipFileName = "checkpoints.zip"; // TODO: 下载文件名定义问题
-        response.addHeader(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=\"" + zipFileName + "\"");
-        response.setHeader(HttpHeaders.CONTENT_TYPE, "application/zip");
+        response.addHeader(HttpHeaders.CONTENT_DISPOSITION, "attachment"); // 前端定义文件名
+        response.setContentType("application/zip; charset=utf-8");
+        response.setCharacterEncoding("UTF-8");
         response.setStatus(HttpServletResponse.SC_OK);
         checkpointFileService.downloadCheckpointFiles(checkpointIds, new ZipOutputStream(response.getOutputStream()));
     }

@@ -40,11 +40,11 @@ public class CheckpointDO extends BaseDO {
     @TableField(value = CheckpointDOField.GMT_MODIFIED, fill = FieldFill.INSERT_UPDATE)
     private Date gmtModified;
 
-    @TableField(CheckpointDOField.INPUT_DESC)
-    private String inputDescription;
+    @TableField(CheckpointDOField.INPUT_PREVIEW)
+    private String inputPreview;
 
-    @TableField(CheckpointDOField.OUTPUT_DESC)
-    private String outputDescription;
+    @TableField(CheckpointDOField.OUTPUT_PREVIEW)
+    private String outputPreview;
 
     @TableField(CheckpointDOField.INPUT_SIZE)
     private Integer inputSize;
@@ -53,15 +53,15 @@ public class CheckpointDO extends BaseDO {
     private Integer outputSize;
 
     @TableField(CheckpointDOField.INPUT_FILE_NAME)
-    private String inputFileName;
+    private String inputFilename;
 
     @TableField(CheckpointDOField.OUTPUT_FILE_NAME)
-    private String outputFileName;
+    private String outputFilename;
 
-    public CheckpointDO(Long checkpointId, String inputDescription, String outputDescription, Integer inputSize, Integer outputSize) {
+    public CheckpointDO(Long checkpointId, String inputPreview, String outputPreview, Integer inputSize, Integer outputSize) {
         this.checkpointId = checkpointId;
-        this.inputDescription = inputDescription;
-        this.outputDescription = outputDescription;
+        this.inputPreview = inputPreview;
+        this.outputPreview = outputPreview;
         this.inputSize = inputSize;
         this.outputSize = outputSize;
     }

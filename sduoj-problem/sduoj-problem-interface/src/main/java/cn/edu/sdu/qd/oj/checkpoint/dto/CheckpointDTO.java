@@ -44,26 +44,26 @@ public class CheckpointDTO extends BaseDTO {
 
     private Date gmtModified;
 
-    private String inputDescription;
+    private String inputPreview;
 
-    private String outputDescription;
+    private String outputPreview;
 
     private Integer inputSize;
 
     private Integer outputSize;
 
-    private String inputFileName;
+    private String inputFilename;
 
-    private String outputFileName;
+    private String outputFilename;
 
     private String input;
 
     private String output;
 
-    public CheckpointDTO(Long checkpointId, String inputDescription, String outputDescription, Integer inputSize, Integer outputSize) {
+    public CheckpointDTO(Long checkpointId, String inputPreview, String outputPreview, Integer inputSize, Integer outputSize) {
         this.checkpointId = checkpointId;
-        this.inputDescription = inputDescription;
-        this.outputDescription = outputDescription;
+        this.inputPreview = inputPreview;
+        this.outputPreview = outputPreview;
         this.inputSize = inputSize;
         this.outputSize = outputSize;
     }
