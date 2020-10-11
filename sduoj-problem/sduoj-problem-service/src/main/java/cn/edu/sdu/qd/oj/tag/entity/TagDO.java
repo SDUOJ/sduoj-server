@@ -8,7 +8,7 @@
  *      https://www.gnu.org/licenses/gpl-3.0.en.html
  */
 
-package cn.edu.sdu.qd.oj.problem.entity;
+package cn.edu.sdu.qd.oj.tag.entity;
 
 import cn.edu.sdu.qd.oj.common.entity.BaseDO;
 import com.baomidou.mybatisplus.annotation.*;
@@ -21,28 +21,28 @@ import java.util.Date;
 @NoArgsConstructor
 @AllArgsConstructor
 @EqualsAndHashCode(callSuper = true)
-@TableName(ProblemTagDOField.TABLE_NAME)
-public class ProblemTagDO extends BaseDO {
+@TableName(TagDOField.TABLE_NAME)
+public class TagDO extends BaseDO {
 
-    @TableId(value = ProblemTagDOField.ID, type = IdType.AUTO)
+    @TableId(value = TagDOField.ID, type = IdType.AUTO)
     private Long id;
 
-    @TableField(value = ProblemTagDOField.GMT_CREATE, fill = FieldFill.INSERT)
+    @TableField(value = TagDOField.GMT_CREATE, fill = FieldFill.INSERT)
     private Date gmtCreate;
 
-    @TableField(value = ProblemTagDOField.GMT_MODIFIED, fill = FieldFill.INSERT_UPDATE)
+    @TableField(value = TagDOField.GMT_MODIFIED, fill = FieldFill.INSERT_UPDATE)
     private Date gmtModified;
 
-    @TableField(ProblemTagDOField.FEATURES)
+    @TableField(TagDOField.FEATURES)
     private String features;
 
-    @TableField(ProblemTagDOField.IS_DELETED)
+    @TableField(TagDOField.IS_DELETED)
     @TableLogic(value = "0", delval = "1")
     private Integer deleted;
 
-    @TableField(ProblemTagDOField.PARENT_ID)
+    @TableField(TagDOField.PARENT_ID)
     private Long parentId;
 
-    @TableField(ProblemTagDOField.TITLE)
+    @TableField(TagDOField.TITLE)
     private String title;
 }

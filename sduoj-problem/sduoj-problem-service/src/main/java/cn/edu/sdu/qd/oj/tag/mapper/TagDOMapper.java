@@ -8,10 +8,10 @@
  *      https://www.gnu.org/licenses/gpl-3.0.en.html
  */
 
-package cn.edu.sdu.qd.oj.problem.mapper;
+package cn.edu.sdu.qd.oj.tag.mapper;
 
-import cn.edu.sdu.qd.oj.problem.entity.ProblemTagDO;
+import cn.edu.sdu.qd.oj.tag.entity.TagDO;
 import com.baomidou.mybatisplus.core.mapper.BaseMapper;
 
-public interface ProblemTagDOMapper extends BaseMapper<ProblemTagDO> {
+public interface TagDOMapper extends BaseMapper<TagDO> {
 }

@@ -24,11 +24,9 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.*;
 
-import javax.annotation.Nullable;
 import javax.validation.Valid;
 import javax.validation.constraints.NotNull;
-import java.util.Map;
-import java.util.Optional;
+import java.util.List;
 
 /**
  * @ClassName ProblemManageController
@@ -105,6 +103,20 @@ public class ProblemManageController {
         problemDescriptionDTO.setUserId(userId);
         problemManageService.updateDescription(problemDescriptionDTO);
         return null;
+    }
+
+    @GetMapping("/queryDescription")
+    @ApiResponseBody
+    public ProblemDescriptionDTO queryDescription(@RequestParam("descriptionId") long id,
+                                                  @UserSession(nullable = true) UserSessionDTO userSessionDTO) {
+        return problemManageService.queryDescription(id, userSessionDTO.getUserId());
+    }
+
+    @GetMapping("/queryDescriptionList")
+    @ApiResponseBody
+    public List<ProblemDescriptionListDTO> queryDescriptionList(@RequestParam("problemCode") String problemCode,
+                                                                @UserSession(nullable = true) UserSessionDTO userSessionDTO) {
+        return problemManageService.queryDescriptionList(problemCode, userSessionDTO.getUserId());
     }
 
 }

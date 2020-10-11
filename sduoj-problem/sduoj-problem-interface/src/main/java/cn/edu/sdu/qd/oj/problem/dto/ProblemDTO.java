@@ -11,10 +11,9 @@
 package cn.edu.sdu.qd.oj.problem.dto;
 
 import cn.edu.sdu.qd.oj.common.entity.BaseDTO;
-import com.fasterxml.jackson.annotation.JsonProperty;
+import cn.edu.sdu.qd.oj.tag.dto.TagDTO;
 import lombok.*;
 
-import java.util.Date;
 import java.util.List;
 import java.util.Map;
 
@@ -57,5 +56,5 @@ public class ProblemDTO extends BaseDTO {
 
     private List<ProblemDescriptionListDTO> problemDescriptionListDTOList;
 
-    private List<ProblemTagDTO> problemTagDTOList;
+    private List<TagDTO> tagDTOList;
 }

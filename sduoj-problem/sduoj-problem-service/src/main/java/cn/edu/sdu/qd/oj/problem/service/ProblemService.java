@@ -19,16 +19,17 @@ import cn.edu.sdu.qd.oj.common.util.UserCacheUtils;
 import cn.edu.sdu.qd.oj.problem.converter.*;
 import cn.edu.sdu.qd.oj.problem.dao.ProblemDao;
 import cn.edu.sdu.qd.oj.problem.dao.ProblemDescriptionDao;
-import cn.edu.sdu.qd.oj.problem.dao.ProblemTagDao;
+import cn.edu.sdu.qd.oj.tag.converter.TagConverter;
+import cn.edu.sdu.qd.oj.tag.dao.TagDao;
 import cn.edu.sdu.qd.oj.problem.dto.ProblemListReqDTO;
-import cn.edu.sdu.qd.oj.problem.dto.ProblemTagDTO;
+import cn.edu.sdu.qd.oj.tag.dto.TagDTO;
 import cn.edu.sdu.qd.oj.problem.entity.ProblemDO;
 import cn.edu.sdu.qd.oj.problem.dto.ProblemDTO;
 
 import cn.edu.sdu.qd.oj.problem.dto.ProblemListDTO;
 import cn.edu.sdu.qd.oj.problem.entity.ProblemDOField;
 import cn.edu.sdu.qd.oj.problem.entity.ProblemDescriptionDO;
-import cn.edu.sdu.qd.oj.problem.entity.ProblemTagDO;
+import cn.edu.sdu.qd.oj.tag.entity.TagDO;
 import com.baomidou.mybatisplus.extension.conditions.query.LambdaQueryChainWrapper;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import org.apache.commons.lang3.StringUtils;
@@ -53,7 +54,7 @@ public class ProblemService {
     private ProblemDescriptionDao problemDescriptionDao;
 
     @Autowired
-    private ProblemTagDao problemTagDao;
+    private TagDao tagDao;
 
     @Autowired
     private RedisUtils redisUtils;
@@ -68,7 +69,7 @@ public class ProblemService {
     private ProblemListConverter problemListConverter;
 
     @Autowired
-    private ProblemTagConverter problemTagConverter;
+    private TagConverter tagConverter;
 
     public ProblemDTO queryByCode(String problemCode, Long descriptionId, Long userId) {
         ProblemDO problemDO = problemDao.lambdaQuery().select(
@@ -133,8 +134,8 @@ public class ProblemService {
         // 置 tagDTO
         List<Long> tags = getTagIdListFromFeatureMap(problemDTO.getFeatures());
         if (!CollectionUtils.isEmpty(tags)) {
-            List<ProblemTagDO> problemTagDOList = problemTagDao.lambdaQuery().in(ProblemTagDO::getId, tags).list();
-            problemDTO.setProblemTagDTOList(problemTagConverter.to(problemTagDOList));
+            List<TagDO> tagDOList = tagDao.lambdaQuery().in(TagDO::getId, tags).list();
+            problemDTO.setTagDTOList(tagConverter.to(tagDOList));
         }
         return problemDTO;
     }
@@ -171,22 +172,22 @@ public class ProblemService {
         // 转换
         List<ProblemListDTO> problemListDTOList = problemListConverter.to(pageResult.getRecords());
         // 查询 tagDTOMap
-        Map<Long, ProblemTagDTO> tagIdToDTOMap = problemCommonService.getTagDTOMapByProblemDOList(pageResult.getRecords());
+        Map<Long, TagDTO> tagIdToDTOMap = problemCommonService.getTagDTOMapByProblemDOList(pageResult.getRecords());
         // 置入 tagDTOList
-        problemListDTOList.forEach(o -> o.setProblemTagDTOList(
+        problemListDTOList.forEach(o -> o.setTagDTOList(
             problemCommonService.getTagIdListByFeatureMap(o.getFeatures()).stream().map(tagIdToDTOMap::get).collect(Collectors.toList())
         ));
         return new PageResult<>(pageResult.getPages(), problemListDTOList);
     }
 
-    private List<ProblemTagDO> getTagDTOListFromFeatures(String features) {
+    private List<TagDO> getTagDTOListFromFeatures(String features) {
         if (StringUtils.isBlank(features)) {
             return null;
         }
         Map<String, String> featureMap = Arrays.stream(features.split(";")).collect(Collectors.toMap(s -> s.substring(0, s.indexOf(":")), s -> s.substring(s.indexOf(":") + 1), (k1, k2) -> k1));
         List<Long> tags = getTagIdListFromFeatureMap(featureMap);
-        List<ProblemTagDO> problemTagDOList = problemTagDao.lambdaQuery().in(ProblemTagDO::getId, tags).list();
-        return problemTagDOList;
+        List<TagDO> tagDOList = tagDao.lambdaQuery().in(TagDO::getId, tags).list();
+        return tagDOList;
     }
 
     private List<Long> getTagIdListFromFeatureMap(Map<String, String> featureMap) {

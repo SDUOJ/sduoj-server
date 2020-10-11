@@ -30,6 +30,8 @@ public class ProblemDescriptionDTO extends BaseDTO {
     @JsonProperty(access = JsonProperty.Access.READ_ONLY)
     private Map<String, String> features;
 
+    private Integer isPublic;
+
     @JsonProperty(access = JsonProperty.Access.READ_ONLY)
     private Long problemId;
 

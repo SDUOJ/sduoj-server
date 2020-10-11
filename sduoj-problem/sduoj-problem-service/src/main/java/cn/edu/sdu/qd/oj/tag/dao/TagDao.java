@@ -8,13 +8,13 @@
  *      https://www.gnu.org/licenses/gpl-3.0.en.html
  */
 
-package cn.edu.sdu.qd.oj.problem.dao;
+package cn.edu.sdu.qd.oj.tag.dao;
 
-import cn.edu.sdu.qd.oj.problem.entity.ProblemTagDO;
-import cn.edu.sdu.qd.oj.problem.mapper.ProblemTagDOMapper;
+import cn.edu.sdu.qd.oj.tag.entity.TagDO;
+import cn.edu.sdu.qd.oj.tag.mapper.TagDOMapper;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import org.springframework.stereotype.Repository;
 
 @Repository
-public class ProblemTagDao extends ServiceImpl<ProblemTagDOMapper, ProblemTagDO> {
+public class TagDao extends ServiceImpl<TagDOMapper, TagDO> {
 }

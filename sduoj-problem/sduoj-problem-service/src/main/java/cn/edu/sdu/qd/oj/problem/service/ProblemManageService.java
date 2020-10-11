@@ -26,6 +26,7 @@ import cn.edu.sdu.qd.oj.problem.dto.*;
 import cn.edu.sdu.qd.oj.problem.entity.ProblemDO;
 import cn.edu.sdu.qd.oj.problem.entity.ProblemDescriptionDO;
 import cn.edu.sdu.qd.oj.problem.entity.ProblemManageListDO;
+import cn.edu.sdu.qd.oj.tag.dto.TagDTO;
 import com.baomidou.mybatisplus.extension.conditions.query.LambdaQueryChainWrapper;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import lombok.extern.slf4j.Slf4j;
@@ -77,6 +78,9 @@ public class ProblemManageService {
 
     @Autowired
     private ProblemDescriptionConverter problemDescriptionConverter;
+
+    @Autowired
+    private ProblemDescriptionListConverter problemDescriptionListConverter;
 
     @Autowired
     private ProblemCacheUtils problemCacheUtils;
@@ -143,9 +147,9 @@ public class ProblemManageService {
         // 转换
         List<ProblemManageListDTO> problemManageListDTOlist = problemManageListConverter.to(pageResult.getRecords());
         // 查询 tagDTOMap
-        Map<Long, ProblemTagDTO> tagIdToDTOMap = problemCommonService.getTagDTOMapByProblemListDOList(pageResult.getRecords());
+        Map<Long, TagDTO> tagIdToDTOMap = problemCommonService.getTagDTOMapByProblemListDOList(pageResult.getRecords());
         // 置入 tagDTOList
-        problemManageListDTOlist.forEach(o -> o.setProblemTagDTOList(
+        problemManageListDTOlist.forEach(o -> o.setTagDTOList(
                 problemCommonService.getTagIdListByFeatureMap(o.getFeatures()).stream().map(tagIdToDTOMap::get).collect(Collectors.toList())
         ));
         // 置入 username
@@ -186,5 +190,36 @@ public class ProblemManageService {
                 .eq(ProblemDescriptionDO::getId, problemDescriptionDO.getId())
                 .eq(ProblemDescriptionDO::getUserId, problemDescriptionDO.getUserId())
                 .update(problemDescriptionDO);
+    }
+
+    public ProblemDescriptionDTO queryDescription(long id, Long userId) {
+        // TODO: 超级管理员能看到所有
+        LambdaQueryChainWrapper<ProblemDescriptionDO> query = problemDescriptionDao.lambdaQuery()
+            .and(o1 -> o1.eq(ProblemDescriptionDO::getIsPublic, 1)
+                         .or(o2 -> o2.eq(ProblemDescriptionDO::getIsPublic, 0)
+                                     .and(o3 -> o3.eq(ProblemDescriptionDO::getUserId, userId))));
+        ProblemDescriptionDO problemDescriptionDO = query.eq(ProblemDescriptionDO::getId, id).one();
+        return problemDescriptionConverter.to(problemDescriptionDO);
+    }
+
+    public List<ProblemDescriptionListDTO> queryDescriptionList(String problemCode, Long userId) {
+        long problemId = problemCacheUtils.getProblemId(problemCode);
+        // TODO: 超级管理员能看到所有
+        LambdaQueryChainWrapper<ProblemDescriptionDO> query = problemDescriptionDao.lambdaQuery().select(
+                ProblemDescriptionDO::getId,
+                ProblemDescriptionDO::getProblemId,
+                ProblemDescriptionDO::getVoteNum,
+                ProblemDescriptionDO::getUserId,
+                ProblemDescriptionDO::getTitle
+        ).and(o1 -> o1.eq(ProblemDescriptionDO::getIsPublic, 1)
+                      .or(o2 -> o2.eq(ProblemDescriptionDO::getIsPublic, 0)
+                                  .and(o3 -> o3.eq(ProblemDescriptionDO::getUserId, userId))));
+        List<ProblemDescriptionDO> problemDescriptionDOList = query.eq(ProblemDescriptionDO::getProblemId, problemId).list();
+        List<ProblemDescriptionListDTO> problemDescriptionDTOList = problemDescriptionListConverter.to(problemDescriptionDOList);
+        problemDescriptionDTOList.forEach(o -> {
+            o.setProblemCode(problemCode);
+            o.setUsername(userCacheUtils.getUsername(o.getUserId()));
+        });
+        return problemDescriptionDTOList;
     }
 }

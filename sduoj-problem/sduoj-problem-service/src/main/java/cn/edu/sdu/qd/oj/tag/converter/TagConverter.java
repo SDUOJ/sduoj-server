@@ -8,12 +8,12 @@
  *      https://www.gnu.org/licenses/gpl-3.0.en.html
  */
 
-package cn.edu.sdu.qd.oj.problem.converter;
+package cn.edu.sdu.qd.oj.tag.converter;
 
 import cn.edu.sdu.qd.oj.common.converter.BaseConverter;
-import cn.edu.sdu.qd.oj.problem.dto.ProblemTagDTO;
-import cn.edu.sdu.qd.oj.problem.entity.ProblemTagDO;
+import cn.edu.sdu.qd.oj.tag.dto.TagDTO;
+import cn.edu.sdu.qd.oj.tag.entity.TagDO;
 
 @org.mapstruct.Mapper(componentModel = "spring")
-public interface ProblemTagConverter extends BaseConverter<ProblemTagDO, ProblemTagDTO> {
+public interface TagConverter extends BaseConverter<TagDO, TagDTO> {
 }

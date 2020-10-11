@@ -11,9 +11,9 @@
 package cn.edu.sdu.qd.oj.problem.dto;
 
 import cn.edu.sdu.qd.oj.common.entity.BaseDTO;
+import cn.edu.sdu.qd.oj.tag.dto.TagDTO;
 import lombok.*;
 
-import java.util.Date;
 import java.util.List;
 import java.util.Map;
 
@@ -51,5 +51,5 @@ public class ProblemListDTO extends BaseDTO {
 
     // ---------------------
 
-    private List<ProblemTagDTO> problemTagDTOList;
+    private List<TagDTO> tagDTOList;
 }

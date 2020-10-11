@@ -11,11 +11,7 @@
 package cn.edu.sdu.qd.oj.problem.dto;
 
 import cn.edu.sdu.qd.oj.common.entity.BaseDTO;
-import cn.edu.sdu.qd.oj.problem.util.BytesToCheckpointIdsSerializer;
-import cn.edu.sdu.qd.oj.problem.util.CheckpointIdsToBytesDeserializer;
-import com.fasterxml.jackson.annotation.JsonProperty;
-import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
-import com.fasterxml.jackson.databind.annotation.JsonSerialize;
+import cn.edu.sdu.qd.oj.tag.dto.TagDTO;
 import lombok.*;
 
 import java.util.Date;
@@ -67,7 +63,7 @@ public class ProblemManageListDTO extends BaseDTO {
 
     // ------------------------------------------
 
-    private List<ProblemTagDTO> problemTagDTOList;
+    private List<TagDTO> tagDTOList;
 
     private String username;
 }
