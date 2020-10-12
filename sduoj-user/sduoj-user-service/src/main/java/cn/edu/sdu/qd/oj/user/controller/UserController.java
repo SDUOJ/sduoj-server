@@ -15,6 +15,7 @@ import cn.edu.sdu.qd.oj.common.entity.ApiResponseBody;
 import cn.edu.sdu.qd.oj.common.entity.ResponseResult;
 import cn.edu.sdu.qd.oj.common.enums.ApiExceptionEnum;
 import cn.edu.sdu.qd.oj.common.exception.ApiException;
+import cn.edu.sdu.qd.oj.common.util.AssertUtils;
 import cn.edu.sdu.qd.oj.common.util.CaptchaUtils;
 import cn.edu.sdu.qd.oj.common.util.RedisConstants;
 import cn.edu.sdu.qd.oj.common.util.RedisUtils;
@@ -105,9 +106,8 @@ public class UserController {
     public Void resetPassword(@RequestBody Map<String, String> json) {
         String token = json.get("token");
         String password = json.get("password");
-        if (token == null || password == null) {
-            throw new ApiException(ApiExceptionEnum.PARAMETER_ERROR);
-        }
+        AssertUtils.notNull(token, ApiExceptionEnum.PARAMETER_ERROR);
+        AssertUtils.notNull(password, ApiExceptionEnum.PARAMETER_ERROR);
         this.userService.resetPassword(token, password);
         return null;
     }
@@ -149,9 +149,7 @@ public class UserController {
     public Map<String, String> getCaptcha() {
         String uuid = UUID.randomUUID().toString();
         CaptchaUtils.CaptchaEntity captcha = CaptchaUtils.getRandomBase64Captcha();
-        if (!redisUtils.set(RedisConstants.getCaptchaKey(uuid), captcha.getRandomStr(), RedisConstants.CAPTCHA_EXPIRE)) {
-            throw new ApiException(ApiExceptionEnum.UNKNOWN_ERROR);
-        }
+        AssertUtils.isTrue(redisUtils.set(RedisConstants.getCaptchaKey(uuid), captcha.getRandomStr(), RedisConstants.CAPTCHA_EXPIRE), ApiExceptionEnum.UNKNOWN_ERROR);
         Map<String, String> map = new HashMap<>();
         map.put("captcha", captcha.getBase64());
         map.put("captchaId", uuid);
@@ -208,16 +206,13 @@ public class UserController {
     * @exception  ApiException CAPTCHA_NOT_FOUND
     **/
     private void verifyCaptcha(String captchaId, String inputCaptcha) {
-        if (captchaId == null || inputCaptcha == null) {
-            throw new ApiException(ApiExceptionEnum.CAPTCHA_NOT_FOUND);
-        }
+        AssertUtils.notNull(captchaId, ApiExceptionEnum.CAPTCHA_NOT_FOUND);
+        AssertUtils.notNull(inputCaptcha, ApiExceptionEnum.CAPTCHA_NOT_FOUND);
+
         String captcha = Optional.ofNullable(redisUtils.get(RedisConstants.getCaptchaKey(captchaId))).map(o -> (String) o).orElse(null);
-        if (captcha == null) {
-            throw new ApiException(ApiExceptionEnum.CAPTCHA_NOT_FOUND);
-        }
-        if (!captcha.equalsIgnoreCase(inputCaptcha)) {
-            throw new ApiException(ApiExceptionEnum.CAPTCHA_NOT_MATCHING);
-        }
+
+        AssertUtils.notNull(captcha, ApiExceptionEnum.CAPTCHA_NOT_FOUND);
+        AssertUtils.isTrue(captcha.equalsIgnoreCase(inputCaptcha), ApiExceptionEnum.CAPTCHA_NOT_MATCHING);
     }
 
 

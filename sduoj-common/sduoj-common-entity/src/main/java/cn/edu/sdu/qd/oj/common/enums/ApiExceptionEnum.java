@@ -11,6 +11,7 @@
 package cn.edu.sdu.qd.oj.common.enums;
 
 import lombok.AllArgsConstructor;
+import lombok.Getter;
 
 /**
  * @ClassName ExceptionEnum
@@ -20,6 +21,7 @@ import lombok.AllArgsConstructor;
  * @Version V1.0
  **/
 
+@Getter
 @AllArgsConstructor
 public enum ApiExceptionEnum {
     PARAMETER_ERROR(400, "请求参数错误"),

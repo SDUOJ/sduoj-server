@@ -14,6 +14,7 @@ import cn.edu.sdu.qd.oj.common.annotation.UserSession;
 import cn.edu.sdu.qd.oj.common.entity.UserSessionDTO;
 import cn.edu.sdu.qd.oj.common.enums.ApiExceptionEnum;
 import cn.edu.sdu.qd.oj.common.exception.ApiException;
+import cn.edu.sdu.qd.oj.common.util.AssertUtils;
 import com.alibaba.fastjson.JSON;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.core.MethodParameter;
@@ -45,10 +46,7 @@ public class UserSessionMethodArgumentResolver implements HandlerMethodArgumentR
             userSessionDTO =  JSON.parseObject(userSessionDTOStr, UserSessionDTO.class);
         } catch (Throwable ignore) {
         }
-        if (!parameterAnnotation.nullable() && userSessionDTO == null) {
-            log.info("未登录 {}", userSessionDTOStr);
-            throw new ApiException(ApiExceptionEnum.USER_NOT_LOGIN);
-        }
+        AssertUtils.isTrue(parameterAnnotation.nullable() || userSessionDTO != null, ApiExceptionEnum.USER_NOT_LOGIN);
         return userSessionDTO;
     }
 }

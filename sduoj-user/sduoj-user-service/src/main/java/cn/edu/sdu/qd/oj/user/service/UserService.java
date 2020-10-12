@@ -11,6 +11,7 @@
 package cn.edu.sdu.qd.oj.user.service;
 
 import cn.edu.sdu.qd.oj.common.entity.UserSessionDTO;
+import cn.edu.sdu.qd.oj.common.util.AssertUtils;
 import cn.edu.sdu.qd.oj.common.util.RedisConstants;
 import cn.edu.sdu.qd.oj.common.enums.ApiExceptionEnum;
 import cn.edu.sdu.qd.oj.common.exception.ApiException;
@@ -27,6 +28,7 @@ import cn.edu.sdu.qd.oj.user.entity.UserSessionDO;
 import cn.edu.sdu.qd.oj.user.utils.CodecUtils;
 import cn.edu.sdu.qd.oj.user.utils.EmailUtil;
 import com.baomidou.mybatisplus.extension.conditions.query.LambdaQueryChainWrapper;
+import com.baomidou.mybatisplus.extension.conditions.update.LambdaUpdateChainWrapper;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -79,9 +81,7 @@ public class UserService {
 
     public UserDTO verify(Long userId) {
         UserDO userDO = userDao.getById(userId);
-        if (userDO == null) {
-            throw new ApiException(ApiExceptionEnum.USER_NOT_FOUND);
-        }
+        AssertUtils.notNull(userDO, ApiExceptionEnum.USER_NOT_FOUND);
         return userConverter.to(userDO);
     }
 
@@ -104,12 +104,8 @@ public class UserService {
             query.eq(UserDO::getUsername, username);
         }
         UserDO userDO = query.one();
-        if (userDO == null) {
-            throw new ApiException(ApiExceptionEnum.USER_NOT_FOUND);
-        }
-        if (!userDO.getPassword().equals(CodecUtils.md5Hex(password, userDO.getSalt()))) {
-            throw new ApiException(ApiExceptionEnum.PASSWORD_NOT_MATCHING);
-        }
+        AssertUtils.notNull(userDO, ApiExceptionEnum.USER_NOT_FOUND);
+        AssertUtils.isTrue(userDO.getPassword().equals(CodecUtils.md5Hex(password, userDO.getSalt())), ApiExceptionEnum.PASSWORD_NOT_MATCHING);
         return userDO;
     }
 
@@ -146,9 +142,7 @@ public class UserService {
         userDO.setPassword(CodecUtils.md5Hex(userDO.getPassword(), userDO.getSalt()));
         // TODO: username 重复时插入失败的异常处理器
         try {
-            if (!userDao.save(userDO)) {
-                throw new ApiException(ApiExceptionEnum.UNKNOWN_ERROR);
-            }
+            AssertUtils.isTrue(userDao.save(userDO), ApiExceptionEnum.UNKNOWN_ERROR);
         } catch (DuplicateKeyException e) {
             throw new ApiException(ApiExceptionEnum.USER_EXIST);
         } catch (Exception e) {
@@ -191,20 +185,14 @@ public class UserService {
 
     public void emailVerify(String token) {
         String username = Optional.ofNullable(redisUtils.get(RedisConstants.getEmailVerificationKey(token))).map(o -> (String) o).orElse(null);
-        if (username == null) {
-            throw new ApiException(ApiExceptionEnum.TOKEN_EXPIRE);
-        }
+        AssertUtils.notNull(username, ApiExceptionEnum.TOKEN_EXPIRE);
         // 单字段更新，不需要先查后改，不需要乐观锁
-        if (!userDao.lambdaUpdate().eq(UserDO::getUsername, username).set(UserDO::getEmailVerified, 1).update()) {
-            throw new ApiException(ApiExceptionEnum.UNKNOWN_ERROR);
-        }
+        AssertUtils.isTrue(userDao.lambdaUpdate().eq(UserDO::getUsername, username).set(UserDO::getEmailVerified, 1).update(), ApiExceptionEnum.UNKNOWN_ERROR);
     }
 
     public UserDTO queryByUserId(Long userId) {
         UserDO userDO = userDao.getById(userId);
-        if (userDO == null) {
-            throw new ApiException(ApiExceptionEnum.USER_NOT_FOUND);
-        }
+        AssertUtils.notNull(userDO, ApiExceptionEnum.USER_NOT_FOUND);
         return userConverter.to(userDO);
     }
 
@@ -217,9 +205,7 @@ public class UserService {
 
     public String sendVerificationEmail(String username) throws MessagingException {
         UserDO userDO = userDao.lambdaQuery().select(UserDO::getEmail).eq(UserDO::getUsername, username).one();
-        if (userDO == null) {
-            throw new ApiException(ApiExceptionEnum.USER_NOT_FOUND);
-        }
+        AssertUtils.notNull(userDO, ApiExceptionEnum.USER_NOT_FOUND);
         sendVerificationEmail(username, userDO.getEmail());
         return userDO.getEmail();
     }
@@ -232,9 +218,7 @@ public class UserService {
         if (userDO == null && email != null) {
             userDO = userDao.lambdaQuery().select(UserDO::getUsername, UserDO::getEmail).eq(UserDO::getEmail, email).one();
         }
-        if (userDO == null) {
-            throw new ApiException(ApiExceptionEnum.USER_NOT_FOUND);
-        }
+        AssertUtils.notNull(userDO, ApiExceptionEnum.USER_NOT_FOUND);
         email = userDO.getEmail();
         // 发送验证邮件
         String uuid = UUID.randomUUID().toString();
@@ -245,16 +229,16 @@ public class UserService {
 
     public void resetPassword(String token, String password) {
         String username = Optional.ofNullable(redisUtils.get(RedisConstants.getForgetPasswordKey(token))).map(o -> (String) o).orElse(null);
-        if (username == null) {
-            throw new ApiException(ApiExceptionEnum.TOKEN_EXPIRE);
-        }
+        AssertUtils.notNull(username, ApiExceptionEnum.TOKEN_EXPIRE);
 
         String salt = CodecUtils.generateSalt();
         String saltPassword = CodecUtils.md5Hex(password, salt);
 
-        if (!userDao.lambdaUpdate().eq(UserDO::getUsername, username).set(UserDO::getSalt, salt).set(UserDO::getPassword, saltPassword).update()) {
-            throw new ApiException(ApiExceptionEnum.UNKNOWN_ERROR);
-        }
+        LambdaUpdateChainWrapper<UserDO> update = userDao.lambdaUpdate()
+                .eq(UserDO::getUsername, username)
+                .set(UserDO::getSalt, salt)
+                .set(UserDO::getPassword, saltPassword);
+        AssertUtils.isTrue(update.update(), ApiExceptionEnum.UNKNOWN_ERROR);
     }
 
     public boolean isExistUsername(String username) {
@@ -273,12 +257,8 @@ public class UserService {
                 UserDO::getUsername,
                 UserDO::getSalt
         ).eq(UserDO::getUserId, reqDTO.getUserId()).one();
-        if (userDO == null) {
-            throw new ApiException(ApiExceptionEnum.USER_NOT_FOUND);
-        }
-        if (!CodecUtils.md5Hex(reqDTO.getPassword(), userDO.getSalt()).equals(userDO.getPassword())) {
-            throw new ApiException(ApiExceptionEnum.PASSWORD_NOT_MATCHING);
-        }
+        AssertUtils.notNull(userDO, ApiExceptionEnum.USER_NOT_FOUND);
+        AssertUtils.isTrue(CodecUtils.md5Hex(reqDTO.getPassword(), userDO.getSalt()).equals(userDO.getPassword()), ApiExceptionEnum.PASSWORD_NOT_MATCHING);
 
         // 构造更新参数
         reqDTO.setPassword(null);
@@ -294,9 +274,7 @@ public class UserService {
 
         // 更改邮箱逻辑
         if (StringUtils.isNotBlank(reqDTO.getNewEmail())) {
-            if (isExistEmail(reqDTO.getNewEmail())) {
-                throw new ApiException(ApiExceptionEnum.EMAIL_EXIST);
-            }
+            AssertUtils.isTrue(isExistEmail(reqDTO.getNewEmail()), ApiExceptionEnum.EMAIL_EXIST);
             updateDTO.setEmail(reqDTO.getNewEmail());
             updateDTO.setEmailVerified(0);
         }

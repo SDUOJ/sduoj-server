@@ -17,6 +17,7 @@ import cn.edu.sdu.qd.oj.common.entity.ResponseResult;
 import cn.edu.sdu.qd.oj.common.entity.UserSessionDTO;
 import cn.edu.sdu.qd.oj.common.enums.ApiExceptionEnum;
 import cn.edu.sdu.qd.oj.common.exception.ApiException;
+import cn.edu.sdu.qd.oj.common.util.AssertUtils;
 import cn.edu.sdu.qd.oj.problem.dto.*;
 import cn.edu.sdu.qd.oj.problem.service.ProblemManageService;
 import lombok.extern.slf4j.Slf4j;
@@ -75,9 +76,7 @@ public class ProblemManageController {
     @ApiResponseBody
     public Void updateProblem(@RequestBody ProblemManageDTO problem) {
         log.info("updateProblem: {}", problem);
-        if (problem.getProblemCode() == null) {
-            throw new ApiException(ApiExceptionEnum.PARAMETER_ERROR);
-        }
+        AssertUtils.notNull(problem.getProblemCode(), ApiExceptionEnum.PARAMETER_ERROR);
         if (problem.getCheckpoints() != null) {
             problem.setCheckpointNum(problem.getCheckpoints().length / 8);
         }
@@ -97,9 +96,7 @@ public class ProblemManageController {
     @ApiResponseBody
     public Void updateDescription(@RequestBody @NotNull ProblemDescriptionDTO problemDescriptionDTO,
                                   @RequestHeader("authorization-userId") Long userId) {
-        if (problemDescriptionDTO.getId() == null) {
-            throw new ApiException(ApiExceptionEnum.PARAMETER_ERROR);
-        }
+        AssertUtils.notNull(problemDescriptionDTO.getId(), ApiExceptionEnum.PARAMETER_ERROR);
         problemDescriptionDTO.setUserId(userId);
         problemManageService.updateDescription(problemDescriptionDTO);
         return null;

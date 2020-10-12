@@ -14,6 +14,7 @@ import cn.edu.sdu.qd.oj.common.entity.ApiResponseBody;
 import cn.edu.sdu.qd.oj.common.enums.ApiExceptionEnum;
 import cn.edu.sdu.qd.oj.common.exception.ApiException;
 import cn.edu.sdu.qd.oj.common.exception.InternalApiException;
+import cn.edu.sdu.qd.oj.common.util.AssertUtils;
 import cn.edu.sdu.qd.oj.common.util.ProblemCacheUtils;
 import cn.edu.sdu.qd.oj.contest.client.ProblemClient;
 import cn.edu.sdu.qd.oj.contest.dto.ContestCreateReqDTO;
@@ -51,9 +52,7 @@ public class ContestManageController {
                     .stream()
                     .map(ContestProblemListDTO::getProblemCode)
                     .collect(Collectors.toList());
-            if (!problemClient.validateProblemCodeList(problemCodeList)) {
-                throw new ApiException(ApiExceptionEnum.PROBLEM_NOT_FOUND);
-            }
+            AssertUtils.isTrue(problemClient.validateProblemCodeList(problemCodeList), ApiExceptionEnum.PROBLEM_NOT_FOUND);
         } catch (Exception e) {
             throw new ApiException(ApiExceptionEnum.UNKNOWN_ERROR);
         }

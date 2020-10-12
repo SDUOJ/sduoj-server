@@ -13,6 +13,7 @@ package cn.edu.sdu.qd.oj.tag.service;
 
 import cn.edu.sdu.qd.oj.common.enums.ApiExceptionEnum;
 import cn.edu.sdu.qd.oj.common.exception.ApiException;
+import cn.edu.sdu.qd.oj.common.util.AssertUtils;
 import cn.edu.sdu.qd.oj.tag.converter.TagConverter;
 import cn.edu.sdu.qd.oj.tag.dao.TagDao;
 import cn.edu.sdu.qd.oj.tag.dto.TagDTO;
@@ -35,9 +36,7 @@ public class TagService {
 
     public Long create(long parentId, String title) {
         TagDO tagDO = TagDO.builder().parentId(parentId).title(title).build();
-        if (!tagDao.save(tagDO)) {
-            throw new ApiException(ApiExceptionEnum.UNKNOWN_ERROR);
-        }
+        AssertUtils.isTrue(tagDao.save(tagDO), ApiExceptionEnum.UNKNOWN_ERROR);
         return tagDO.getId();
     }
 
@@ -56,8 +55,6 @@ public class TagService {
 
     public void update(TagDTO tagDTO) {
         TagDO tagDO = tagConverter.from(tagDTO);
-        if (!tagDao.updateById(tagDO)) {
-            throw new ApiException(ApiExceptionEnum.UNKNOWN_ERROR);
-        }
+        AssertUtils.isTrue(tagDao.updateById(tagDO), ApiExceptionEnum.UNKNOWN_ERROR);
     }
 }

@@ -14,6 +14,7 @@ import cn.edu.sdu.qd.oj.common.entity.PageResult;
 import cn.edu.sdu.qd.oj.common.enums.ApiExceptionEnum;
 import cn.edu.sdu.qd.oj.common.exception.ApiException;
 import cn.edu.sdu.qd.oj.common.exception.InternalApiException;
+import cn.edu.sdu.qd.oj.common.util.AssertUtils;
 import cn.edu.sdu.qd.oj.common.util.ProblemCacheUtils;
 import cn.edu.sdu.qd.oj.common.util.SnowflakeIdWorker;
 import cn.edu.sdu.qd.oj.common.util.UserCacheUtils;
@@ -97,9 +98,7 @@ public class SubmitService {
                 .userId(submissionUpdateReqDTO.getUserId())
                 .contestId(contestId)
                 .build();
-        if (!submissionDao.save(submissionDO)) {
-            throw new ApiException(ApiExceptionEnum.UNKNOWN_ERROR);
-        }
+        AssertUtils.isTrue(submissionDao.save(submissionDO), ApiExceptionEnum.UNKNOWN_ERROR);
         try {
             // TODO: 魔法值解决
             Map<String, Object> msg = new HashMap<>();
@@ -123,9 +122,7 @@ public class SubmitService {
         SubmissionDO submissionDO = submissionDao.lambdaQuery()
                 .eq(SubmissionDO::getContestId, contestId)
                 .eq(SubmissionDO::getSubmissionId, submissionId).one();
-        if (submissionDO == null) {
-            throw new ApiException(ApiExceptionEnum.SUBMISSION_NOT_FOUND);
-        }
+        AssertUtils.notNull(submissionDO, ApiExceptionEnum.SUBMISSION_NOT_FOUND);
         SubmissionDTO submissionDTO = submissionConverter.to(submissionDO);
         submissionDTO.setCheckpointNum(problemCacheUtils.getProblemCheckpointNum(submissionDTO.getProblemId()));
         submissionDTO.setUsername(userCacheUtils.getUsername(submissionDTO.getUserId()));

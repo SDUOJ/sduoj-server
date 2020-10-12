@@ -17,6 +17,7 @@ import cn.edu.sdu.qd.oj.checkpoint.entity.CheckpointDO;
 import cn.edu.sdu.qd.oj.checkpoint.dto.CheckpointDTO;
 import cn.edu.sdu.qd.oj.common.enums.ApiExceptionEnum;
 import cn.edu.sdu.qd.oj.common.exception.ApiException;
+import cn.edu.sdu.qd.oj.common.util.AssertUtils;
 import cn.edu.sdu.qd.oj.common.util.SnowflakeIdWorker;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.FilenameUtils;
@@ -75,9 +76,7 @@ public class CheckpointFileService {
         for (MultipartFile input : files) {
             if ("in".equals(FilenameUtils.getExtension(input.getOriginalFilename()))) {
                 MultipartFile output = map.get(FilenameUtils.getBaseName(input.getOriginalFilename()) + ".out");
-                if (output == null) {
-                    throw new ApiException(ApiExceptionEnum.FILE_NOT_DOUBLE);
-                }
+                AssertUtils.notNull(output, ApiExceptionEnum.FILE_NOT_DOUBLE);
             }
         }
         // 开始写入文件
@@ -161,9 +160,7 @@ public class CheckpointFileService {
         for (String checkpointId : checkpointIds) {
             FileSystemResource input = new FileSystemResource(Paths.get(checkpointFileSystemProperties.getBaseDir(), checkpointId + ".in").toString());
             FileSystemResource output = new FileSystemResource(Paths.get(checkpointFileSystemProperties.getBaseDir(), checkpointId + ".out").toString());
-            if (!input.exists() || !output.exists()) {
-                throw new ApiException(ApiExceptionEnum.FILE_NOT_EXISTS);
-            }
+            AssertUtils.isTrue(input.exists() && output.exists(), ApiExceptionEnum.FILE_NOT_EXISTS);
             files.add(input);
             files.add(output);
         }
@@ -186,12 +183,10 @@ public class CheckpointFileService {
 
         File inputFile = new File(Paths.get(checkpointFileSystemProperties.getBaseDir(), checkpointId + ".in").toString());
         File outputFile = new File(Paths.get(checkpointFileSystemProperties.getBaseDir(), checkpointId + ".out").toString());
-        if (!inputFile.exists() || !outputFile.exists()) {
-            throw new ApiException(ApiExceptionEnum.FILE_NOT_EXISTS);
-        }
-        if (inputFile.length() > 1024*1024 || inputFile.length() > 1024*1024) {
-            throw new ApiException(ApiExceptionEnum.FILE_TOO_LARGE);
-        }
+
+        AssertUtils.isTrue(inputFile.exists() && outputFile.exists(), ApiExceptionEnum.FILE_NOT_EXISTS);
+        AssertUtils.isTrue(!(inputFile.length() > 1024*1024 || outputFile.length() > 1024*1024), ApiExceptionEnum.FILE_TOO_LARGE);
+
         String input = FileUtils.readFileToString(inputFile);
         String output = FileUtils.readFileToString(outputFile);
 

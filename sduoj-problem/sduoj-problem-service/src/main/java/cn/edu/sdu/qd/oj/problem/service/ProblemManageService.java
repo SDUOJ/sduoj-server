@@ -11,13 +11,10 @@
 package cn.edu.sdu.qd.oj.problem.service;
 
 import cn.edu.sdu.qd.oj.common.entity.UserSessionDTO;
-import cn.edu.sdu.qd.oj.common.util.ProblemCacheUtils;
-import cn.edu.sdu.qd.oj.common.util.RedisConstants;
+import cn.edu.sdu.qd.oj.common.util.*;
 import cn.edu.sdu.qd.oj.common.entity.PageResult;
 import cn.edu.sdu.qd.oj.common.enums.ApiExceptionEnum;
 import cn.edu.sdu.qd.oj.common.exception.ApiException;
-import cn.edu.sdu.qd.oj.common.util.RedisUtils;
-import cn.edu.sdu.qd.oj.common.util.UserCacheUtils;
 import cn.edu.sdu.qd.oj.problem.converter.*;
 import cn.edu.sdu.qd.oj.problem.dao.ProblemDao;
 import cn.edu.sdu.qd.oj.problem.dao.ProblemDescriptionDao;
@@ -87,9 +84,7 @@ public class ProblemManageService {
 
     public ProblemManageDTO queryByCode(String problemCode) {
         ProblemDO problemManageDO = problemDao.lambdaQuery().eq(ProblemDO::getProblemCode, problemCode).one();
-        if (problemManageDO == null) {
-            throw new ApiException(ApiExceptionEnum.PROBLEM_NOT_FOUND);
-        }
+        AssertUtils.notNull(problemManageDO, ApiExceptionEnum.PROBLEM_NOT_FOUND);
         ProblemManageDTO problemManageDTO = problemManageConverter.to(problemManageDO);
         problemManageDTO.setUsername(userCacheUtils.getUsername(problemManageDO.getUserId()));
         return problemManageDTO;
@@ -100,9 +95,7 @@ public class ProblemManageService {
         problem.setProblemId(null);
         problem.setProblemCode(null);
         ProblemDO problemDO = problemManageConverter.from(problem);
-        if (!problemDao.save(problemDO)) {
-            throw new ApiException(ApiExceptionEnum.UNKNOWN_ERROR);
-        }
+        AssertUtils.isTrue(problemDao.save(problemDO), ApiExceptionEnum.UNKNOWN_ERROR);
         // TODO: 魔法值解决
         problemDO.setProblemCode("SDUOJ-" + problemDO.getProblemId());
         if (!problemDao.lambdaUpdate()
@@ -160,9 +153,7 @@ public class ProblemManageService {
     public void update(ProblemManageDTO problem) {
         ProblemDO problemDO = problemManageConverter.from(problem);
         log.info("{} -> {}", problem, problemDO);
-        if (!problemDao.lambdaUpdate().eq(ProblemDO::getProblemCode, problemDO.getProblemCode()).update(problemDO)) {
-            throw new ApiException(ApiExceptionEnum.UNKNOWN_ERROR);
-        }
+        AssertUtils.isTrue(problemDao.lambdaUpdate().eq(ProblemDO::getProblemCode, problemDO.getProblemCode()).update(problemDO), ApiExceptionEnum.UNKNOWN_ERROR);
         if (problemDO.getProblemTitle() != null) {
             redisUtils.hset(RedisConstants.REDIS_KEY_FOR_PROBLEM_ID_TO_TITLE,
                     String.valueOf(problem.getProblemId()),
@@ -178,9 +169,7 @@ public class ProblemManageService {
         problemDescriptionDTO.setProblemId(problemCacheUtils.getProblemId(problemDescriptionDTO.getProblemCode()));
 
         ProblemDescriptionDO problemDescriptionDO = problemDescriptionConverter.from(problemDescriptionDTO);
-        if (!problemDescriptionDao.save(problemDescriptionDO)) {
-            throw new ApiException(ApiExceptionEnum.UNKNOWN_ERROR);
-        }
+        AssertUtils.isTrue(problemDescriptionDao.save(problemDescriptionDO), ApiExceptionEnum.UNKNOWN_ERROR);
         return problemDescriptionDO.getId();
     }
 

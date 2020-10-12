@@ -12,6 +12,7 @@ package cn.edu.sdu.qd.oj.contest.service;
 
 import cn.edu.sdu.qd.oj.common.enums.ApiExceptionEnum;
 import cn.edu.sdu.qd.oj.common.exception.ApiException;
+import cn.edu.sdu.qd.oj.common.util.AssertUtils;
 import cn.edu.sdu.qd.oj.contest.converter.ContestCreateReqConverter;
 import cn.edu.sdu.qd.oj.contest.dao.ContestDao;
 import cn.edu.sdu.qd.oj.contest.dto.ContestCreateReqDTO;
@@ -30,9 +31,7 @@ public class ContestManageService {
 
     public Long create(ContestCreateReqDTO reqDTO) {
         ContestDO contestDO = contestCreateReqConverter.from(reqDTO);
-        if (!contestDao.save(contestDO)) {
-            throw new ApiException(ApiExceptionEnum.UNKNOWN_ERROR);
-        }
+        AssertUtils.isTrue(contestDao.save(contestDO), ApiExceptionEnum.UNKNOWN_ERROR);
         return contestDO.getContestId();
     }
 

@@ -14,6 +14,7 @@ import cn.edu.sdu.qd.oj.common.entity.PageResult;
 import cn.edu.sdu.qd.oj.common.enums.ApiExceptionEnum;
 import cn.edu.sdu.qd.oj.common.exception.ApiException;
 import cn.edu.sdu.qd.oj.common.exception.InternalApiException;
+import cn.edu.sdu.qd.oj.common.util.AssertUtils;
 import cn.edu.sdu.qd.oj.common.util.ProblemCacheUtils;
 import cn.edu.sdu.qd.oj.contest.client.ProblemClient;
 import cn.edu.sdu.qd.oj.contest.client.SubmissionClient;
@@ -71,9 +72,7 @@ public class ContestService {
 
     public ContestDTO queryAndValidate(Long contestId, long userId) {
         ContestDO contestDO = contestDao.getById(contestId);
-        if (contestDO == null) {
-            throw new ApiException(ApiExceptionEnum.CONTEST_NOT_FOUND);
-        }
+        AssertUtils.notNull(contestDO, ApiExceptionEnum.CONTEST_NOT_FOUND);
 
         // 鉴权  TODO: feature 能力架构设计，解耦+去魔法值
         Map<String, String> featureMap = ContestConvertUtils.stringToMap(contestDO.getFeatures());
@@ -99,9 +98,7 @@ public class ContestService {
                 ContestDO::getVersion,
                 ContestDO::getParticipants
         ).eq(ContestDO::getContestId, contestId).one();
-        if (contestDO == null) {
-            throw new ApiException(ApiExceptionEnum.CONTEST_NOT_FOUND);
-        }
+        AssertUtils.notNull(contestDO, ApiExceptionEnum.CONTEST_NOT_FOUND);
 
         // TODO: feature 能力架构设计，解耦+去魔法值
         Map<String, String> featureMap = ContestConvertUtils.stringToMap(contestDO.getFeatures());
@@ -111,22 +108,16 @@ public class ContestService {
                 break;
             case "protected":
             case "private":
-                if (!contestDO.getPassword().equals(password)) {
-                    throw new ApiException(ApiExceptionEnum.CONTEST_PASSWORD_NOT_MATCHING);
-                }
+                AssertUtils.isTrue(contestDO.getPassword().equals(password), ApiExceptionEnum.CONTEST_PASSWORD_NOT_MATCHING);
                 break;
         }
 
         // 新增一个用户到比赛
-        if (!contestDO.addOneParticipant(userId)) {
-            throw new ApiException(ApiExceptionEnum.CONTEST_HAD_PARTICIPATED);
-        }
+        AssertUtils.isTrue(contestDO.addOneParticipant(userId), ApiExceptionEnum.CONTEST_HAD_PARTICIPATED);
         // 密码不进行更改
         contestDO.setPassword(null);
 
-        if (!contestDao.updateById(contestDO)) { // 此时乐观锁会自动填入
-            throw new ApiException(ApiExceptionEnum.SERVER_BUSY);
-        }
+        AssertUtils.isTrue(contestDao.updateById(contestDO), ApiExceptionEnum.SERVER_BUSY); // 此时乐观锁会自动填入
 
         userClient.addUserParticipateContest(userId, contestId);
     }
@@ -141,7 +132,7 @@ public class ContestService {
     public ContestListDTO queryUpcomingContest() {
         ContestListDO contestListDO = contestListDao.lambdaQuery()
                 .orderByAsc(ContestListDO::getGmtStart)
-                .ge(ContestListDO::getGmtStart, new Date()).one();
+                .ge(ContestListDO::getGmtStart, new Date()).last("limit 1").one();
         return contestListConverter.to(contestListDO);
     }
 
@@ -181,16 +172,13 @@ public class ContestService {
                 ContestDO::getProblems,
                 ContestDO::getParticipants
         ).eq(ContestDO::getContestId, contestId).one();
-        if (contestDO == null) {
-            throw new ApiException(ApiExceptionEnum.CONTEST_NOT_FOUND);
-        }
+        AssertUtils.notNull(contestDO, ApiExceptionEnum.CONTEST_NOT_FOUND);
 
         // TODO: feature 能力架构设计，解耦+去魔法值
         Map<String, String> featureMap = ContestConvertUtils.stringToMap(contestDO.getFeatures());
         String openness = Optional.ofNullable(featureMap).map(map -> map.get("openness")).orElse("");
-        if (!contestDO.containsUserIdInParticipants(userId) && "private".equals(openness)) {
-            throw new ApiException(ApiExceptionEnum.CONTEST_NOT_PARTICIPATE);
-        }
+
+        AssertUtils.isTrue(contestDO.containsUserIdInParticipants(userId) || !"private".equals(openness), ApiExceptionEnum.CONTEST_NOT_PARTICIPATE);
 
         if (contestDO.getGmtStart().after(new Date())) {
             throw new ApiException(ApiExceptionEnum.CONTEST_NOT_BEGIN);
@@ -203,9 +191,7 @@ public class ContestService {
         ContestDO contestDO = queryContestAndValidate(reqDTO.getContestId(), reqDTO.getUserId());
 
         // 未登记参加比赛不能做提交    TODO: 更好的设计方式
-        if (!contestDO.containsUserIdInParticipants(reqDTO.getUserId())) {
-            throw new ApiException(ApiExceptionEnum.CONTEST_NOT_PARTICIPATE);
-        }
+        AssertUtils.isTrue(contestDO.containsUserIdInParticipants(reqDTO.getUserId()), ApiExceptionEnum.CONTEST_NOT_PARTICIPATE);
         // 比赛未开始不能提交
         if (contestDO.getGmtStart().after(new Date())) {
             throw new ApiException(ApiExceptionEnum.CONTEST_NOT_BEGIN);

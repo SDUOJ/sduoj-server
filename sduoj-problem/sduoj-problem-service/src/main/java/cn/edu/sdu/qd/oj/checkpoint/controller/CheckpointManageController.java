@@ -16,6 +16,7 @@ import cn.edu.sdu.qd.oj.checkpoint.service.CheckpointManageService;
 import cn.edu.sdu.qd.oj.common.entity.ApiResponseBody;
 import cn.edu.sdu.qd.oj.common.enums.ApiExceptionEnum;
 import cn.edu.sdu.qd.oj.common.exception.ApiException;
+import cn.edu.sdu.qd.oj.common.util.AssertUtils;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -69,9 +70,7 @@ public class CheckpointManageController {
     public CheckpointDTO upload(@RequestBody Map<String, String> json) {
         String input = json.get("input");
         String output = json.get("output");
-        if (StringUtils.isBlank(input) || StringUtils.isBlank(output)) {
-            throw new ApiException(ApiExceptionEnum.CONTENT_IS_BLANK);
-        }
+        AssertUtils.isTrue(StringUtils.isNotBlank(input) && StringUtils.isNotBlank(output), ApiExceptionEnum.CONTENT_IS_BLANK);
         return checkpointFileService.updateCheckpointFile(input, output);
     }
 

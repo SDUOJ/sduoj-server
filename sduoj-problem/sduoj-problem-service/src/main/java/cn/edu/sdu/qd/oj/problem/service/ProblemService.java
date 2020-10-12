@@ -10,6 +10,7 @@
 
 package cn.edu.sdu.qd.oj.problem.service;
 
+import cn.edu.sdu.qd.oj.common.util.AssertUtils;
 import cn.edu.sdu.qd.oj.common.util.RedisConstants;
 import cn.edu.sdu.qd.oj.common.entity.PageResult;
 import cn.edu.sdu.qd.oj.common.enums.ApiExceptionEnum;
@@ -33,6 +34,7 @@ import cn.edu.sdu.qd.oj.tag.entity.TagDO;
 import com.baomidou.mybatisplus.extension.conditions.query.LambdaQueryChainWrapper;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import org.apache.commons.lang3.StringUtils;
+import org.assertj.core.util.Lists;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.util.CollectionUtils;
@@ -75,12 +77,8 @@ public class ProblemService {
         ProblemDO problemDO = problemDao.lambdaQuery().select(
                 ProblemDO.class, field -> !field.getColumn().equals(ProblemDOField.CHECKPOINTS)
         ).eq(ProblemDO::getProblemCode, problemCode).one();
-        if (problemDO == null) {
-            throw new ApiException(ApiExceptionEnum.PROBLEM_NOT_FOUND);
-        }
-        if (problemDO.getIsPublic() == 0 && !problemDO.getUserId().equals(userId)) {
-            throw new ApiException(ApiExceptionEnum.PROBLEM_NOT_PUBLIC);
-        }
+        AssertUtils.notNull(problemDO, ApiExceptionEnum.PROBLEM_NOT_FOUND);
+        AssertUtils.isTrue(problemDO.getIsPublic() == 1 || problemDO.getUserId().equals(userId), ApiExceptionEnum.USER_NOT_MATCHING);
 
         // 查询题目描述
         ProblemDescriptionDO problemDescriptionDO = problemDescriptionDao.lambdaQuery()
@@ -177,7 +175,7 @@ public class ProblemService {
         problemListDTOList.forEach(o -> o.setTagDTOList(
             problemCommonService.getTagIdListByFeatureMap(o.getFeatures()).stream().map(tagIdToDTOMap::get).collect(Collectors.toList())
         ));
-        return new PageResult<>(pageResult.getPages(), problemListDTOList);
+        return new PageResult<>(pageResult.getPages(), Optional.ofNullable(problemListDTOList).orElse(Lists.newArrayList()));
     }
 
     private List<TagDO> getTagDTOListFromFeatures(String features) {

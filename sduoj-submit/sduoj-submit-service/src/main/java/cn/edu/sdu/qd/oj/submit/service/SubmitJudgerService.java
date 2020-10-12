@@ -12,6 +12,7 @@ package cn.edu.sdu.qd.oj.submit.service;
 
 import cn.edu.sdu.qd.oj.common.enums.ApiExceptionEnum;
 import cn.edu.sdu.qd.oj.common.exception.ApiException;
+import cn.edu.sdu.qd.oj.common.util.AssertUtils;
 import cn.edu.sdu.qd.oj.submit.client.UserClient;
 import cn.edu.sdu.qd.oj.submit.converter.SubmissionConverter;
 import cn.edu.sdu.qd.oj.submit.converter.SubmissionJudgeConverter;
@@ -60,9 +61,7 @@ public class SubmitJudgerService {
                 SubmissionDO::getCode,
                 SubmissionDO::getCodeLength
         ).eq(SubmissionDO::getSubmissionId, submissionId).one();
-        if (submissionJudgeDO == null) {
-            throw new ApiException(ApiExceptionEnum.SUBMISSION_NOT_FOUND);
-        }
+        AssertUtils.notNull(submissionJudgeDO, ApiExceptionEnum.SUBMISSION_NOT_FOUND);
         return submissionJudgeConverter.to(submissionJudgeDO);
     }
 
@@ -70,9 +69,7 @@ public class SubmitJudgerService {
     public void updateSubmission(SubmissionUpdateReqDTO reqDTO) {
         SubmissionDO submissionDO = new SubmissionDO();
         BeanUtils.copyProperties(reqDTO, submissionDO);
-        if (!submissionDao.updateById(submissionDO)) {
-            throw new ApiException(ApiExceptionEnum.UNKNOWN_ERROR);
-        }
+        AssertUtils.isTrue(submissionDao.updateById(submissionDO), ApiExceptionEnum.UNKNOWN_ERROR);
         submissionDO = submissionDao.lambdaQuery().select(
                 SubmissionDO::getSubmissionId,
                 SubmissionDO::getUserId,

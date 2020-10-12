@@ -13,6 +13,7 @@ package cn.edu.sdu.qd.oj.user.service;
 import cn.edu.sdu.qd.oj.common.converter.BaseConvertUtils;
 import cn.edu.sdu.qd.oj.common.enums.ApiExceptionEnum;
 import cn.edu.sdu.qd.oj.common.exception.ApiException;
+import cn.edu.sdu.qd.oj.common.util.AssertUtils;
 import cn.edu.sdu.qd.oj.common.util.ProblemCacheUtils;
 import cn.edu.sdu.qd.oj.user.dao.UserExtensionDao;
 import cn.edu.sdu.qd.oj.user.entity.UserExtensionDO;
@@ -53,9 +54,7 @@ public class UserExtensionService {
             return;
         }
         userExtensionDO.setExtensionValue(BaseConvertUtils.setToString(problemIdList));
-        if (!userExtensionDao.saveOrUpdate(userExtensionDO)) {
-            throw new ApiException(ApiExceptionEnum.SERVER_BUSY);
-        }
+        AssertUtils.isTrue(userExtensionDao.saveOrUpdate(userExtensionDO), ApiExceptionEnum.SERVER_BUSY);
     }
 
     private UserExtensionDO getUserExtensionDO(long userId, String key) {

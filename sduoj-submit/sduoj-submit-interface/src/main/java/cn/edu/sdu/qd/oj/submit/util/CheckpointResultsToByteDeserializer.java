@@ -12,6 +12,7 @@ package cn.edu.sdu.qd.oj.submit.util;
 
 import cn.edu.sdu.qd.oj.common.enums.ApiExceptionEnum;
 import cn.edu.sdu.qd.oj.common.exception.ApiException;
+import cn.edu.sdu.qd.oj.common.util.AssertUtils;
 import com.fasterxml.jackson.core.JsonParser;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.core.JsonToken;
@@ -29,9 +30,7 @@ public class CheckpointResultsToByteDeserializer extends JsonDeserializer<byte[]
 
     @Override
     public byte[] deserialize(JsonParser p, DeserializationContext ctxt) throws IOException, JsonProcessingException {
-        if (!JsonToken.START_ARRAY.equals(p.getCurrentToken())) {
-            throw new ApiException(ApiExceptionEnum.PARAMETER_ERROR);
-        }
+        AssertUtils.isTrue(JsonToken.START_ARRAY.equals(p.getCurrentToken()), ApiExceptionEnum.PARAMETER_ERROR);
         List<Integer> list = new ArrayList<>();
         JsonToken jsonToken;
         while((jsonToken = p.nextToken()) != null) {
