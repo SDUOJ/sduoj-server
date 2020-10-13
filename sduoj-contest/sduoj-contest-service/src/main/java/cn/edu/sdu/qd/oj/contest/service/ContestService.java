@@ -11,9 +11,11 @@
 package cn.edu.sdu.qd.oj.contest.service;
 
 import cn.edu.sdu.qd.oj.common.entity.PageResult;
+import cn.edu.sdu.qd.oj.common.entity.UserSessionDTO;
 import cn.edu.sdu.qd.oj.common.enums.ApiExceptionEnum;
 import cn.edu.sdu.qd.oj.common.exception.ApiException;
 import cn.edu.sdu.qd.oj.common.exception.InternalApiException;
+import cn.edu.sdu.qd.oj.common.util.*;
 import cn.edu.sdu.qd.oj.common.util.AssertUtils;
 import cn.edu.sdu.qd.oj.common.util.ProblemCacheUtils;
 import cn.edu.sdu.qd.oj.common.util.RedisConstants;
@@ -29,14 +31,17 @@ import cn.edu.sdu.qd.oj.contest.dao.ContestListDao;
 import cn.edu.sdu.qd.oj.contest.dto.*;
 import cn.edu.sdu.qd.oj.contest.entity.ContestDO;
 import cn.edu.sdu.qd.oj.contest.entity.ContestListDO;
+import cn.edu.sdu.qd.oj.contest.enums.ContestTypeEnum;
 import cn.edu.sdu.qd.oj.problem.dto.ProblemDTO;
 import cn.edu.sdu.qd.oj.problem.dto.ProblemDescriptionDTO;
+import cn.edu.sdu.qd.oj.submit.dto.*;
 import cn.edu.sdu.qd.oj.problem.dto.ProblemListDTO;
 import cn.edu.sdu.qd.oj.submit.dto.SubmissionCreateReqDTO;
 import cn.edu.sdu.qd.oj.submit.dto.SubmissionDTO;
 import cn.edu.sdu.qd.oj.submit.dto.SubmissionListDTO;
 import cn.edu.sdu.qd.oj.submit.dto.SubmissionListReqDTO;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
+import com.google.common.collect.Maps;
 import org.assertj.core.util.Lists;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -75,6 +80,12 @@ public class ContestService {
     private ProblemCacheUtils problemCacheUtils;
 
     @Autowired
+<<<<<<< HEAD
+    private UserCacheUtils userCacheUtils;
+
+    @Autowired
+=======
+>>>>>>> master
     private RedisUtils redisUtils;
 
     public ContestDTO queryAndValidate(Long contestId, long userId) {
@@ -275,7 +286,7 @@ public class ContestService {
                 .problemCodeList(problemCodeList)
                 .build();
         try {
-            PageResult<SubmissionListDTO> pageResult = submissionClient.list(reqDTO.getContestId(), submissionListReqDTO);
+            PageResult<SubmissionListDTO> pageResult = submissionClient.page(reqDTO.getContestId(), submissionListReqDTO);
             List<ContestSubmissionListDTO> contestSubmissionListDTOList = pageResult.getRows().stream().map(submissionListDTO -> {
                 Integer problemIndex = problemCodeToProblemIndexMap.get(submissionListDTO.getProblemCode());
                 ContestSubmissionListDTO contestSubmissionListDTO = new ContestSubmissionListDTO();
@@ -325,5 +336,59 @@ public class ContestService {
             submissionDTO.setCheckpointResults(null);
         }
         return submissionDTO;
+    }
+
+    public List<ContestRankDTO> queryRank(long contestId, UserSessionDTO userSessionDTO) throws InternalApiException {
+        // 查比赛
+        ContestDO contestDO = queryContestAndValidate(contestId, userSessionDTO.getUserId());
+
+        // 先查缓存的 rank
+        String cacheKey = RedisConstants.getContestRank(contestId);
+        if (redisUtils.hasKey(cacheKey)) {
+            List<ContestRankDTO> o = (List<ContestRankDTO>) redisUtils.get(cacheKey);
+            if (o != null) {
+                return o;
+            }
+        }
+
+        List<ContestProblemListDTO> contestProblemListDTOList = ContestConvertUtils.problemsTo(contestDO.getProblems());
+        Map<Long, Integer> problemIdToProblemIndexMap = new HashMap<>(contestProblemListDTOList.size());
+        for (int i = 0, n = contestProblemListDTOList.size(); i < n; i++) {
+            problemIdToProblemIndexMap.put(problemCacheUtils.getProblemId(contestProblemListDTOList.get(i).getProblemCode()), i + 1);
+        }
+
+        // 比赛 featureMap
+        Map<String, String> featureMap = Optional.ofNullable(ContestConvertUtils.stringToMap(contestDO.getFeatures())).orElse(Maps.newHashMap());
+
+        // 查提交
+        List<SubmissionResultDTO> submissionResultDTOList = submissionClient.listResult(contestId);
+        // problemCode 脱敏
+        submissionResultDTOList = submissionResultDTOList.stream()
+                .peek(o -> o.setProblemCode(Optional.ofNullable(o.getProblemId())
+                                                    .map(problemIdToProblemIndexMap::get)
+                                                    .map(Long::toString)
+                                                    .orElse(null)))
+                .filter(o -> Objects.nonNull(o.getProblemCode()))
+                .collect(Collectors.toList());
+
+        Map<Long, List<SubmissionResultDTO>> userIdToSubmissionListMap = submissionResultDTOList.stream().collect(Collectors.groupingBy(SubmissionResultDTO::getUserId));
+        // 转换
+        List<ContestRankDTO> contestRankDTOList = ContestRankDTO.create(userIdToSubmissionListMap, contestProblemListDTOList.size());
+        // TODO: 挂星选手
+
+
+        // 置入 username 数据
+        contestRankDTOList.forEach(o -> o.setUsername(userCacheUtils.getUsername(o.getUserId())));
+
+        // 比赛中时需要进行 submissions 转 problemResults
+        if (contestDO.getGmtEnd().after(new Date())) {
+            ContestTypeEnum contestType = ContestTypeEnum.of(featureMap.get("mode"));
+            contestRankDTOList.forEach(o -> o.computeProblemResults(contestType));
+        }
+
+        // 存缓存
+        redisUtils.set(cacheKey, contestRankDTOList, RedisConstants.CONTEST_RANK_EXPIRE);
+
+        return contestRankDTOList;
     }
 }

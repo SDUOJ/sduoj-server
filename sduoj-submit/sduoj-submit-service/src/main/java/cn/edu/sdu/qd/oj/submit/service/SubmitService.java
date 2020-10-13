@@ -19,6 +19,7 @@ import cn.edu.sdu.qd.oj.problem.dto.ProblemListDTO;
 import cn.edu.sdu.qd.oj.submit.client.UserClient;
 import cn.edu.sdu.qd.oj.submit.converter.SubmissionConverter;
 import cn.edu.sdu.qd.oj.submit.converter.SubmissionListConverter;
+import cn.edu.sdu.qd.oj.submit.converter.SubmissionResultConverter;
 import cn.edu.sdu.qd.oj.submit.dao.SubmissionDao;
 import cn.edu.sdu.qd.oj.submit.dto.*;
 import cn.edu.sdu.qd.oj.submit.entity.SubmissionDO;
@@ -67,6 +68,9 @@ public class SubmitService {
 
     @Autowired
     private SubmissionListConverter submissionListConverter;
+
+    @Autowired
+    private SubmissionResultConverter submissionResultConverter;
 
     @Autowired
     private RedisUtils redisUtils;
@@ -240,6 +244,20 @@ public class SubmitService {
         }
 
         return new PageResult<>(pageResult.getPages(), submissionListDTOList);
+    }
+
+    public List<SubmissionResultDTO> listResult(long contestId) {
+        List<SubmissionDO> list = submissionDao.lambdaQuery().select(
+                SubmissionDO::getSubmissionId,
+                SubmissionDO::getGmtCreate,
+                SubmissionDO::getProblemId,
+                SubmissionDO::getUserId,
+                SubmissionDO::getJudgeScore,
+                SubmissionDO::getJudgeResult
+        ).eq(SubmissionDO::getContestId, contestId).list();
+        List<SubmissionResultDTO> submissionResultDTOList = submissionResultConverter.to(list);
+        submissionResultDTOList.forEach(o -> o.setProblemCode(problemCacheUtils.getProblemCode(o.getProblemId())));
+        return submissionResultDTOList;
     }
 
     public List<String> queryACProblem(long userId, long contestId) {

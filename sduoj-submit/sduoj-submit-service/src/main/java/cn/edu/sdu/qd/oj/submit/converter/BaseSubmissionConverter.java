@@ -23,9 +23,9 @@ import java.util.List;
 public interface BaseSubmissionConverter<S, T> extends BaseConverter<S, T> {
 
     default List<List<Integer>> checkpointResultsTo(byte[] bytes) {
-        int size = bytes.length;
-        if (size % (3*4) != 0) {
-            return null;
+        int size = bytes != null ? bytes.length : 0;
+        if (size == 0 || size % (3*4) != 0) {
+            return Lists.newArrayList();
         }
         ByteBuffer wrap = ByteBuffer.wrap(bytes);
         List<List<Integer>> checkpointResults = new ArrayList<>(size / (3*4));

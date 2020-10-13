@@ -99,7 +99,8 @@ public class ProblemService {
                 ProblemDescriptionDO::getId,
                 ProblemDescriptionDO::getProblemId,
                 ProblemDescriptionDO::getUserId,
-                ProblemDescriptionDO::getVoteNum
+                ProblemDescriptionDO::getVoteNum,
+                ProblemDescriptionDO::getTitle
         ).eq(ProblemDescriptionDO::getProblemId, problemDO.getProblemId());
         Optional.ofNullable(problemDescriptionDO).map(ProblemDescriptionDO::getId).ifPresent(problemDescriptionId -> {
             descriptionListQuery.ne(ProblemDescriptionDO::getId, problemDescriptionId);

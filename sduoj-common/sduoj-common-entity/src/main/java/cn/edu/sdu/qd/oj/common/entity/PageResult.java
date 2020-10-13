@@ -12,8 +12,8 @@ package cn.edu.sdu.qd.oj.common.entity;
 
 import lombok.AllArgsConstructor;
 import lombok.Data;
-import lombok.NoArgsConstructor;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
@@ -26,12 +26,15 @@ import java.util.Optional;
  **/
 
 @Data
-@NoArgsConstructor
 @AllArgsConstructor
 public class PageResult<T> {
     private long total;
     private long totalPage;
     private List<T> rows;
+
+    public PageResult() {
+        this.rows = new ArrayList<>();
+    }
 
     public PageResult(Long totalPage, List<T> rows) {
         this.rows = rows;

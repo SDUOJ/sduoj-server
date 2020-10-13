@@ -13,6 +13,7 @@ package cn.edu.sdu.qd.oj.problem.converter;
 import cn.edu.sdu.qd.oj.common.converter.BaseConverter;
 import io.netty.buffer.ByteBuf;
 import io.netty.buffer.Unpooled;
+import org.assertj.core.util.Lists;
 
 import java.nio.ByteBuffer;
 import java.util.ArrayList;
@@ -23,9 +24,9 @@ import java.util.stream.Collectors;
 public interface BaseProblemConverter<S, T> extends BaseConverter<S, T> {
 
     default List<String> checkpointsTo(byte[] bytes) {
-        int size = bytes.length;
-        if (size % 8 != 0) {
-            return null;
+        int size = bytes != null ? bytes.length : 0;
+        if (size == 0 || size % 8 != 0) {
+            return Lists.newArrayList();
         }
         ByteBuffer wrap = ByteBuffer.wrap(bytes);
         List<String> checkpoints = new ArrayList<>(size / 8);

@@ -136,4 +136,10 @@ public class ContestController {
         return contestService.queryACProblem(userSessionDTO.getUserId(), contestId);
     }
 
+    @GetMapping("/rank")
+    @ApiResponseBody
+    public List<ContestRankDTO> queryRank(@RequestParam("contestId") long contestId,
+                                          @UserSession UserSessionDTO userSessionDTO) throws InternalApiException {
+        return contestService.queryRank(contestId, userSessionDTO);
+    }
 }

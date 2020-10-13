@@ -31,6 +31,8 @@ public class RedisConstants {
     public static final int ACPROBLEM_EXPIRE = 60 * 60 * 5;
     public static final int CONTEST_SUBMISSION_NUM_EXPIRE = 60 * 60 * 5;
 
+    public static final int CONTEST_RANK_EXPIRE = 15;
+
     // ------------- 验证码 ----------------------
     public static String getCaptchaKey(String uuid) {
         return "captch:" + uuid;
@@ -44,6 +46,10 @@ public class RedisConstants {
     // ------------- 邮箱验证token ----------------------
     public static String getEmailVerificationKey(String uuid) {
         return "emailVerification:" + uuid;
+    }
+
+    public static String getContestRank(long contestId) {
+        return "contestRank:" + contestId;
     }
 
     // ------------- 用户在某场比赛的过题 ----------------------

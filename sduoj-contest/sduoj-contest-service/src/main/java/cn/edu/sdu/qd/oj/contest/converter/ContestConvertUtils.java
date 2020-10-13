@@ -19,6 +19,7 @@ import com.alibaba.fastjson.JSONArray;
 import io.netty.buffer.ByteBuf;
 import io.netty.buffer.Unpooled;
 import org.apache.commons.lang3.StringUtils;
+import org.assertj.core.util.Lists;
 import org.springframework.util.CollectionUtils;
 
 import java.nio.ByteBuffer;
@@ -82,6 +83,9 @@ public class ContestConvertUtils extends BaseConvertUtils {
     }
 
     public static List<Long> participantsToUserIdList(byte[] participants) {
+        if (participants == null) {
+            return Lists.newArrayList();
+        }
         ByteBuffer wrap = ByteBuffer.wrap(participants);
         List<Long> participantUserIdList = new ArrayList<>(participants.length / 8);
         for (int i = 0, n = participants.length; i < n; i += 8) {
