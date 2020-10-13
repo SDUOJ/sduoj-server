@@ -45,4 +45,8 @@ public class ContestProblemListDTO extends BaseDTO {
     private Long problemDescriptionId;
 
     // 其他字段，如在该比赛内的过题人数
+
+    private int acceptNum;
+
+    private int submitNum;
 }

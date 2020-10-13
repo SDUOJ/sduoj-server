@@ -14,16 +14,15 @@ import cn.edu.sdu.qd.oj.common.entity.PageResult;
 import cn.edu.sdu.qd.oj.common.enums.ApiExceptionEnum;
 import cn.edu.sdu.qd.oj.common.exception.ApiException;
 import cn.edu.sdu.qd.oj.common.exception.InternalApiException;
-import cn.edu.sdu.qd.oj.common.util.AssertUtils;
-import cn.edu.sdu.qd.oj.common.util.ProblemCacheUtils;
-import cn.edu.sdu.qd.oj.common.util.SnowflakeIdWorker;
-import cn.edu.sdu.qd.oj.common.util.UserCacheUtils;
+import cn.edu.sdu.qd.oj.common.util.*;
+import cn.edu.sdu.qd.oj.problem.dto.ProblemListDTO;
 import cn.edu.sdu.qd.oj.submit.client.UserClient;
 import cn.edu.sdu.qd.oj.submit.converter.SubmissionConverter;
 import cn.edu.sdu.qd.oj.submit.converter.SubmissionListConverter;
 import cn.edu.sdu.qd.oj.submit.dao.SubmissionDao;
 import cn.edu.sdu.qd.oj.submit.dto.*;
 import cn.edu.sdu.qd.oj.submit.entity.SubmissionDO;
+import cn.edu.sdu.qd.oj.submit.enums.SubmissionJudgeResult;
 import com.baomidou.mybatisplus.extension.conditions.query.LambdaQueryChainWrapper;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import lombok.extern.slf4j.Slf4j;
@@ -33,10 +32,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
+import java.util.*;
 import java.util.stream.Collectors;
 
 /**
@@ -72,6 +68,9 @@ public class SubmitService {
     @Autowired
     private SubmissionListConverter submissionListConverter;
 
+    @Autowired
+    private RedisUtils redisUtils;
+
     // TODO: 临时采用 IP+PID 格式, 生产时加配置文件 Autowired
     private SnowflakeIdWorker snowflakeIdWorker = new SnowflakeIdWorker();
 
@@ -99,6 +98,15 @@ public class SubmitService {
                 .contestId(contestId)
                 .build();
         AssertUtils.isTrue(submissionDao.save(submissionDO), ApiExceptionEnum.UNKNOWN_ERROR);
+        if (contestId != 0) {
+            // 比赛过题
+            String problemCode = problemCacheUtils.getProblemCode(submissionDO.getProblemId());
+            String key = RedisConstants.getContestSubmission(contestId);
+            if (redisUtils.hasKey(key)) {
+                redisUtils.hincr(key, RedisConstants.getContestProblemSubmit(problemCode), 1);
+            }
+        }
+
         try {
             // TODO: 魔法值解决
             Map<String, Object> msg = new HashMap<>();
@@ -234,4 +242,41 @@ public class SubmitService {
         return new PageResult<>(pageResult.getPages(), submissionListDTOList);
     }
 
+    public List<String> queryACProblem(long userId, long contestId) {
+        String key = RedisConstants.getUserACProblem(contestId, userId);
+        if (redisUtils.hasKey(key)) {
+            return redisUtils.sGet(key).stream().map(o -> (String) o).collect(Collectors.toList());
+        }
+        List<SubmissionDO> submissionDOList = submissionDao.lambdaQuery()
+                .select(SubmissionDO::getProblemId)
+                .eq(SubmissionDO::getContestId, contestId)
+                .eq(SubmissionDO::getUserId, userId)
+                .eq(SubmissionDO::getJudgeResult, SubmissionJudgeResult.AC.code)
+                .groupBy(SubmissionDO::getProblemId)
+                .list();
+        List<String> problemCodeList = submissionDOList.stream().map(SubmissionDO::getProblemId).map(problemCacheUtils::getProblemCode).collect(Collectors.toList());
+        boolean succ = redisUtils.sSetAndTime(key, RedisConstants.ACPROBLEM_EXPIRE, problemCodeList.toArray()) == problemCodeList.size();
+        if (!succ) {
+           log.error("addACProblem Error! {} {}", contestId, userId);
+        }
+        return problemCodeList;
+    }
+
+    public List<ProblemListDTO> queryContestSubmitAndAccept(long contestId) {
+        List<SubmissionDO> submissionDOList = submissionDao.lambdaQuery()
+                .select(SubmissionDO::getProblemId, SubmissionDO::getJudgeResult)
+                .eq(SubmissionDO::getContestId, contestId)
+                .list();
+        List<ProblemListDTO> problemListDTOList = new ArrayList<>();
+        submissionDOList.stream().collect(Collectors.groupingBy(SubmissionDO::getProblemId)).forEach((problemId, submissionList) -> {
+            long acceptNum = submissionList.stream().filter(s -> SubmissionJudgeResult.AC.code == s.getJudgeResult()).count();
+            problemListDTOList.add(ProblemListDTO.builder()
+                    .problemId(problemId)
+                    .problemCode(problemCacheUtils.getProblemCode(problemId))
+                    .acceptNum((int) acceptNum)
+                    .submitNum(submissionList.size())
+                    .build());
+        });
+        return problemListDTOList;
+    }
 }

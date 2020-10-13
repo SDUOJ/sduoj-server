@@ -16,6 +16,8 @@ import cn.edu.sdu.qd.oj.common.exception.ApiException;
 import cn.edu.sdu.qd.oj.common.exception.InternalApiException;
 import cn.edu.sdu.qd.oj.common.util.AssertUtils;
 import cn.edu.sdu.qd.oj.common.util.ProblemCacheUtils;
+import cn.edu.sdu.qd.oj.common.util.RedisConstants;
+import cn.edu.sdu.qd.oj.common.util.RedisUtils;
 import cn.edu.sdu.qd.oj.contest.client.ProblemClient;
 import cn.edu.sdu.qd.oj.contest.client.SubmissionClient;
 import cn.edu.sdu.qd.oj.contest.client.UserClient;
@@ -29,6 +31,7 @@ import cn.edu.sdu.qd.oj.contest.entity.ContestDO;
 import cn.edu.sdu.qd.oj.contest.entity.ContestListDO;
 import cn.edu.sdu.qd.oj.problem.dto.ProblemDTO;
 import cn.edu.sdu.qd.oj.problem.dto.ProblemDescriptionDTO;
+import cn.edu.sdu.qd.oj.problem.dto.ProblemListDTO;
 import cn.edu.sdu.qd.oj.submit.dto.SubmissionCreateReqDTO;
 import cn.edu.sdu.qd.oj.submit.dto.SubmissionDTO;
 import cn.edu.sdu.qd.oj.submit.dto.SubmissionListDTO;
@@ -41,6 +44,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.*;
+import java.util.function.Function;
 import java.util.stream.Collectors;
 
 @Service
@@ -70,6 +74,9 @@ public class ContestService {
     @Autowired
     private ProblemCacheUtils problemCacheUtils;
 
+    @Autowired
+    private RedisUtils redisUtils;
+
     public ContestDTO queryAndValidate(Long contestId, long userId) {
         ContestDO contestDO = contestDao.getById(contestId);
         AssertUtils.notNull(contestDO, ApiExceptionEnum.CONTEST_NOT_FOUND);
@@ -88,6 +95,35 @@ public class ContestService {
 
         return contestConverter.to(contestDO);
     }
+
+    @Transactional
+    public ContestDTO query(long contestId, long userId) {
+        ContestDTO contestDTO = queryAndValidate(contestId, userId);
+
+        // 查询各题的提交情况  缓存优先
+        String key = RedisConstants.getContestSubmission(contestId);
+        if (redisUtils.hasKey(key)) {
+            contestDTO.getProblems().forEach(p -> {
+                p.setAcceptNum((int) redisUtils.hget(key, RedisConstants.getContestProblemAccept(p.getProblemCode())));
+                p.setSubmitNum((int) redisUtils.hget(key, RedisConstants.getContestProblemSubmit(p.getProblemCode())));
+            });
+        } else {
+            Map<String, ProblemListDTO> problemCodeToProblemListDTOMap = submissionClient.queryContestSubmitAndAccept(contestId)
+                    .stream().collect(Collectors.toMap(ProblemListDTO::getProblemCode, Function.identity()));
+            contestDTO.getProblems().forEach(p -> {
+                Optional.ofNullable(problemCodeToProblemListDTOMap.get(p.getProblemCode())).ifPresent(m -> {
+                    p.setAcceptNum(m.getAcceptNum());
+                    p.setSubmitNum(m.getSubmitNum());
+                });
+                redisUtils.hset(key, RedisConstants.getContestProblemAccept(p.getProblemCode()), p.getAcceptNum());
+                redisUtils.hset(key, RedisConstants.getContestProblemSubmit(p.getProblemCode()), p.getSubmitNum());
+            });
+            redisUtils.expire(key, RedisConstants.CONTEST_SUBMISSION_NUM_EXPIRE);
+        }
+
+        return contestDTO;
+    }
+
 
     @Transactional
     public void participate(Long contestId, Long userId, String password) {
@@ -261,7 +297,7 @@ public class ContestService {
         for (int i = 0, n = contestProblemListDTOList.size(); i < n; i++) {
             problemCodeToProblemIndexMap.put(contestProblemListDTOList.get(i).getProblemCode(), String.valueOf(i + 1));
         }
-        List<String> problemCodeList = Optional.ofNullable(userClient.queryACProblem(userId, contestId)).orElse(Lists.newArrayList());
+        List<String> problemCodeList = Optional.ofNullable(submissionClient.queryACProblem(userId, contestId)).orElse(Lists.newArrayList());
         return problemCodeList.stream().map(problemCodeToProblemIndexMap::get).filter(Objects::nonNull).collect(Collectors.toList());
     }
 

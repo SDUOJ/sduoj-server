@@ -36,13 +36,6 @@ public class UserExtensionService {
     @Autowired
     private UserExtensionDao userExtensionDao;
 
-    @Autowired
-    private ProblemCacheUtils problemCacheUtils;
-
-    public void addUserACProblem(long userId, long contestId, long problemId) {
-        setIncrementalUpdate(userId, UserExtensionDOField.acProblem(contestId), String.valueOf(problemId));
-    }
-
     public void addUserParticipateContest(long userId, long contestId) {
         setIncrementalUpdate(userId, UserExtensionDOField.participateContest(), String.valueOf(contestId));
     }
@@ -66,16 +59,6 @@ public class UserExtensionService {
             userExtensionDO = UserExtensionDO.builder().userId(userId).extensionKey(key).build();
         }
         return userExtensionDO;
-    }
-
-    public List<String> queryACProblem(long userId, long contestId) {
-        UserExtensionDO userExtensionDO = getUserExtensionDO(userId, UserExtensionDOField.acProblem(contestId));
-        List<String> problemIdList = Optional.ofNullable(userExtensionDO.getExtensionValue()).map(BaseConvertUtils::stringToList).orElse(Lists.newArrayList());
-        return problemIdList.stream()
-                .filter(StringUtils::isNumeric)
-                .map(Long::parseLong)
-                .map(problemCacheUtils::getProblemCode)
-                .collect(Collectors.toList());
     }
 
     public List<Long> queryParticipateContest(long userId) {

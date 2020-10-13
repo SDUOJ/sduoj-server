@@ -13,6 +13,9 @@ package cn.edu.sdu.qd.oj.submit.service;
 import cn.edu.sdu.qd.oj.common.enums.ApiExceptionEnum;
 import cn.edu.sdu.qd.oj.common.exception.ApiException;
 import cn.edu.sdu.qd.oj.common.util.AssertUtils;
+import cn.edu.sdu.qd.oj.common.util.ProblemCacheUtils;
+import cn.edu.sdu.qd.oj.common.util.RedisConstants;
+import cn.edu.sdu.qd.oj.common.util.RedisUtils;
 import cn.edu.sdu.qd.oj.submit.client.UserClient;
 import cn.edu.sdu.qd.oj.submit.converter.SubmissionConverter;
 import cn.edu.sdu.qd.oj.submit.converter.SubmissionJudgeConverter;
@@ -55,6 +58,12 @@ public class SubmitJudgerService {
     @Autowired
     private UserClient userClient;
 
+    @Autowired
+    private ProblemCacheUtils problemCacheUtils;
+
+    @Autowired
+    private RedisUtils redisUtils;
+
     public SubmissionJudgeDTO query(long submissionId) {
         SubmissionDO submissionJudgeDO = submissionDao.lambdaQuery().select(
                 SubmissionDO::getSubmissionId,
@@ -63,7 +72,8 @@ public class SubmitJudgerService {
                 SubmissionDO::getLanguage,
                 SubmissionDO::getGmtCreate,
                 SubmissionDO::getCode,
-                SubmissionDO::getCodeLength
+                SubmissionDO::getCodeLength,
+                SubmissionDO::getVersion
         ).eq(SubmissionDO::getSubmissionId, submissionId).one();
         AssertUtils.notNull(submissionJudgeDO, ApiExceptionEnum.SUBMISSION_NOT_FOUND);
         return submissionJudgeConverter.to(submissionJudgeDO);
@@ -73,7 +83,8 @@ public class SubmitJudgerService {
     public void updateSubmission(SubmissionUpdateReqDTO reqDTO) {
         SubmissionDO submissionDO = submissionUpdateConverter.from(reqDTO);
         AssertUtils.isTrue(submissionDao.updateById(submissionDO), ApiExceptionEnum.UNKNOWN_ERROR);
-        // 查出 user、problem、contest 信息，同步推送过题消息  TODO: 异步
+
+        // 查出 user、problem、contest 信息，同步推送过题消息
         submissionDO = submissionDao.lambdaQuery().select(
                 SubmissionDO::getSubmissionId,
                 SubmissionDO::getUserId,
@@ -82,7 +93,18 @@ public class SubmitJudgerService {
                 SubmissionDO::getJudgeResult
         ).eq(SubmissionDO::getSubmissionId, reqDTO.getSubmissionId()).one();
         if (SubmissionJudgeResult.AC.equals(submissionDO.getJudgeResult())) {
-            userClient.addUserACProblem(submissionDO.getUserId(), submissionDO.getContestId(), submissionDO.getProblemId());
+            String key;
+            String problemCode = problemCacheUtils.getProblemCode(submissionDO.getProblemId());
+            // 用户过题
+            key = RedisConstants.getUserACProblem(submissionDO.getContestId(), submissionDO.getUserId());
+            if (redisUtils.hasKey(key)) {
+                redisUtils.sSet(key, problemCode);
+            }
+            // 比赛过题
+            key = RedisConstants.getContestSubmission(submissionDO.getContestId());
+            if (redisUtils.hasKey(key)) {
+                redisUtils.hincr(key, RedisConstants.getContestProblemAccept(problemCode), 1);
+            }
         }
     }
 }

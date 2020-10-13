@@ -59,7 +59,7 @@ public class ContestController {
     @ApiResponseBody
     public ContestDTO query(@RequestParam("contestId") @NotBlank Long contestId,
                             @UserSession UserSessionDTO userSessionDTO) {
-        ContestDTO contestDTO = contestService.queryAndValidate(contestId, userSessionDTO.getUserId());
+        ContestDTO contestDTO = contestService.query(contestId, userSessionDTO.getUserId());
         // 脱敏
         Optional.ofNullable(contestDTO.getProblems()).ifPresent(problems -> {
             int problemIndex = 1;

@@ -67,22 +67,6 @@ public class UserInternalController implements UserApi {
         return userService.queryRolesById(userId);
     }
 
-
-    @Override
-    public void addUserACProblem(long userId, long contestId, long problemId) {
-        // TODO: 外置的自动 retry 机制
-        for (int i = 0; i < 5; i++) {
-            try {
-                userExtensionService.addUserACProblem(userId, contestId, problemId);
-            } catch (ApiException e) {
-                if (ApiExceptionEnum.SERVER_BUSY.code == e.code) {
-                    continue;
-                }
-            }
-            break;
-        }
-    }
-
     @Override
     public void addUserParticipateContest(long userId, long contestId) {
         // TODO: 外置的自动 retry 机制
@@ -97,10 +81,4 @@ public class UserInternalController implements UserApi {
             break;
         }
     }
-
-    @Override
-    public List<String> queryACProblem(long userId, long contestId) {
-        return userExtensionService.queryACProblem(userId, contestId);
-    }
-
 }

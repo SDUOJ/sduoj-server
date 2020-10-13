@@ -14,8 +14,6 @@ import cn.edu.sdu.qd.oj.common.annotation.UserSession;
 import cn.edu.sdu.qd.oj.common.entity.ApiResponseBody;
 import cn.edu.sdu.qd.oj.common.entity.PageResult;
 import cn.edu.sdu.qd.oj.common.entity.UserSessionDTO;
-import cn.edu.sdu.qd.oj.common.enums.ApiExceptionEnum;
-import cn.edu.sdu.qd.oj.common.exception.ApiException;
 import cn.edu.sdu.qd.oj.submit.dto.*;
 import cn.edu.sdu.qd.oj.submit.service.SubmitService;
 import lombok.extern.slf4j.Slf4j;
@@ -25,6 +23,7 @@ import org.springframework.web.bind.annotation.*;
 
 import javax.annotation.Nullable;
 import javax.validation.Valid;
+import java.util.List;
 
 /**
  * @ClassName SubmitController
@@ -71,5 +70,11 @@ public class SubmitController {
         log.info("submissionList: req:{}", reqDTO);
         reqDTO.setProblemCodeList(null); // 禁掉指定题目
         return this.submitService.querySubmissionByPage(reqDTO, 0);
+    }
+
+    @GetMapping("/queryACProblem")
+    @ApiResponseBody
+    public List<String> queryACProblem(@UserSession UserSessionDTO userSessionDTO) {
+        return this.submitService.queryACProblem(userSessionDTO.getUserId(), 0);
     }
 }

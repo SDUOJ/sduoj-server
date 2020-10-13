@@ -12,11 +12,14 @@ package cn.edu.sdu.qd.oj.submit.api;
 
 import cn.edu.sdu.qd.oj.common.entity.PageResult;
 import cn.edu.sdu.qd.oj.common.exception.InternalApiException;
+import cn.edu.sdu.qd.oj.problem.dto.ProblemListDTO;
 import cn.edu.sdu.qd.oj.submit.dto.SubmissionCreateReqDTO;
 import cn.edu.sdu.qd.oj.submit.dto.SubmissionDTO;
 import cn.edu.sdu.qd.oj.submit.dto.SubmissionListDTO;
 import cn.edu.sdu.qd.oj.submit.dto.SubmissionListReqDTO;
 import org.springframework.web.bind.annotation.*;
+
+import java.util.List;
 
 @RequestMapping("/internal/submit")
 public interface SubmissionApi {
@@ -36,4 +39,17 @@ public interface SubmissionApi {
     @GetMapping("query")
     SubmissionDTO query(@RequestParam("submissionId") long submissionId,
                         @RequestParam("contestId") long contestId) throws InternalApiException;
+
+    /**
+     * @Description 查询用户过题
+     **/
+    @GetMapping("/queryACProblem")
+    List<String> queryACProblem(@RequestParam("userId") long userId,
+                                @RequestParam("contestId") long contestId);
+
+    /**
+     * @Description 查询比赛提交过题情况
+     **/
+    @GetMapping("/queryContestSubmitAndAccept")
+    List<ProblemListDTO> queryContestSubmitAndAccept(@RequestParam("contestId") long contestId);
 }

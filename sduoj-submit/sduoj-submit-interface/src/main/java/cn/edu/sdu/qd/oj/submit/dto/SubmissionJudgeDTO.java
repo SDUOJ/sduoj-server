@@ -40,6 +40,8 @@ public class SubmissionJudgeDTO extends BaseDTO {
 
     private Long userId;
 
+    private Integer version;
+
     private String language;
 
     private Date gmtCreate;

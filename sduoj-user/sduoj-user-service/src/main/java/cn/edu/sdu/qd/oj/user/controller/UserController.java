@@ -215,17 +215,6 @@ public class UserController {
         AssertUtils.isTrue(captcha.equalsIgnoreCase(inputCaptcha), ApiExceptionEnum.CAPTCHA_NOT_MATCHING);
     }
 
-
-    /**
-     * @Description 查询用户过题
-     * @return problemCodeList
-     **/
-    @GetMapping("/queryACProblem")
-    @ApiResponseBody
-    public List<String> queryACProblem(@UserSession UserSessionDTO userSessionDTO) {
-        return userExtensionService.queryACProblem(userSessionDTO.getUserId(), 0);
-    }
-
     /**
      * @Description 查询用户参加过的比赛
      **/

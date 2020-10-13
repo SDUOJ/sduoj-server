@@ -12,6 +12,7 @@ package cn.edu.sdu.qd.oj.submit.controller;
 
 import cn.edu.sdu.qd.oj.common.entity.PageResult;
 import cn.edu.sdu.qd.oj.common.exception.InternalApiException;
+import cn.edu.sdu.qd.oj.problem.dto.ProblemListDTO;
 import cn.edu.sdu.qd.oj.submit.api.SubmissionApi;
 import cn.edu.sdu.qd.oj.submit.dto.SubmissionCreateReqDTO;
 import cn.edu.sdu.qd.oj.submit.dto.SubmissionDTO;
@@ -21,6 +22,8 @@ import cn.edu.sdu.qd.oj.submit.service.SubmitService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.RestController;
+
+import java.util.List;
 
 @RestController
 public class SubmitInternalController implements SubmissionApi {
@@ -41,5 +44,15 @@ public class SubmitInternalController implements SubmissionApi {
     @Override
     public SubmissionDTO query(long submissionId, long contestId) throws InternalApiException {
         return submitService.queryById(submissionId, contestId);
+    }
+
+    @Override
+    public List<String> queryACProblem(long userId, long contestId) {
+        return submitService.queryACProblem(userId, contestId);
+    }
+
+    @Override
+    public List<ProblemListDTO> queryContestSubmitAndAccept(long contestId) {
+        return submitService.queryContestSubmitAndAccept(contestId);
     }
 }

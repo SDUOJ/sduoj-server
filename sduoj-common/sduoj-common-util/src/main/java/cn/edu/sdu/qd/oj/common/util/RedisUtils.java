@@ -281,6 +281,16 @@ public final class RedisUtils {
         return redisTemplate.opsForHash().increment(key, item, by);
     }
     /**
+     * hash递增 如果不存在,就会创建一个 并把新增后的值返回
+     * @param key 键
+     * @param item 项
+     * @param by 要增加几(大于0)
+     * @return
+     */
+    public Long hincr(String key, String item, long by) {
+        return redisTemplate.opsForHash().increment(key, item, by);
+    }
+    /**
      * hash递减
      * @param key 键
      * @param item 项

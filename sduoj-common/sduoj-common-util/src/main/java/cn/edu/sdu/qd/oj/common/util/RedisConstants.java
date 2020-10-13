@@ -27,19 +27,41 @@ public class RedisConstants {
     public static final String REDIS_KEY_FOR_USER_ID_TO_USERNAME = "hash_userIdToUsername";
     public static final String REDIS_KEY_FOR_USERNAME_TO_ID = "hash_usernameToUserId";
 
-
     public static final int CAPTCHA_EXPIRE = 60 * 5;
+    public static final int ACPROBLEM_EXPIRE = 60 * 60 * 5;
+    public static final int CONTEST_SUBMISSION_NUM_EXPIRE = 60 * 60 * 5;
 
+    // ------------- 验证码 ----------------------
     public static String getCaptchaKey(String uuid) {
         return "captch:" + uuid;
     }
 
+    // ------------- 忘记密码token ----------------------
     public static String getForgetPasswordKey(String uuid) {
         return "forgetPassword:" + uuid;
     }
 
+    // ------------- 邮箱验证token ----------------------
     public static String getEmailVerificationKey(String uuid) {
         return "emailVerification:" + uuid;
+    }
+
+    // ------------- 用户在某场比赛的过题 ----------------------
+    public static String getUserACProblem(long contestId, long userId) {
+        return "acproblem:" + contestId + ":" + userId;
+    }
+
+    // ------------- 比赛中的过题 ----------------------
+    public static String getContestSubmission(long contestId) {
+        return "contestSubmission:" + contestId;
+    }
+
+    public static String getContestProblemAccept(String problemCode) {
+        return "ac:" + problemCode;
+    }
+
+    public static String getContestProblemSubmit(String problemCode) {
+        return "su:" + problemCode;
     }
 
 }
