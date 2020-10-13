@@ -11,11 +11,7 @@
 package cn.edu.sdu.qd.oj.problem.dto;
 
 import cn.edu.sdu.qd.oj.common.entity.BaseDTO;
-import cn.edu.sdu.qd.oj.problem.util.BytesToCheckpointIdsSerializer;
-import cn.edu.sdu.qd.oj.problem.util.CheckpointIdsToBytesDeserializer;
 import com.fasterxml.jackson.annotation.JsonProperty;
-import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
-import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 import lombok.*;
 
 import java.util.Date;
@@ -76,9 +72,7 @@ public class ProblemManageDTO extends BaseDTO {
     @JsonProperty(access = JsonProperty.Access.READ_ONLY)
     private Integer checkpointNum;
 
-    @JsonSerialize(using = BytesToCheckpointIdsSerializer.class)
-    @JsonDeserialize(using = CheckpointIdsToBytesDeserializer.class)
-    private byte[] checkpoints;
+    private List<String> checkpoints;
 
     // ------------------------------------------
 

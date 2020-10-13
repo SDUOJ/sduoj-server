@@ -78,7 +78,7 @@ public class ProblemManageController {
         log.info("updateProblem: {}", problem);
         AssertUtils.notNull(problem.getProblemCode(), ApiExceptionEnum.PARAMETER_ERROR);
         if (problem.getCheckpoints() != null) {
-            problem.setCheckpointNum(problem.getCheckpoints().length / 8);
+            problem.setCheckpointNum(problem.getCheckpoints().size());
         }
         problemManageService.update(problem);
         return null;

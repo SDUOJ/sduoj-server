@@ -8,11 +8,11 @@
  *      https://www.gnu.org/licenses/gpl-3.0.en.html
  */
 
-package cn.edu.sdu.qd.oj.problem.converter;
+package cn.edu.sdu.qd.oj.submit.converter;
 
-import cn.edu.sdu.qd.oj.problem.dto.ProblemJudgerDTO;
-import cn.edu.sdu.qd.oj.problem.entity.ProblemDO;
+import cn.edu.sdu.qd.oj.submit.dto.SubmissionUpdateReqDTO;
+import cn.edu.sdu.qd.oj.submit.entity.SubmissionDO;
 
 @org.mapstruct.Mapper(componentModel = "spring")
-public interface ProblemJudgerConverter extends BaseProblemConverter<ProblemDO, ProblemJudgerDTO> {
+public interface SubmissionUpdateConverter extends BaseSubmissionConverter<SubmissionDO, SubmissionUpdateReqDTO> {
 }

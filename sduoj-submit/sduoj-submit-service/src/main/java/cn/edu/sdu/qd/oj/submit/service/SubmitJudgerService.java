@@ -16,6 +16,7 @@ import cn.edu.sdu.qd.oj.common.util.AssertUtils;
 import cn.edu.sdu.qd.oj.submit.client.UserClient;
 import cn.edu.sdu.qd.oj.submit.converter.SubmissionConverter;
 import cn.edu.sdu.qd.oj.submit.converter.SubmissionJudgeConverter;
+import cn.edu.sdu.qd.oj.submit.converter.SubmissionUpdateConverter;
 import cn.edu.sdu.qd.oj.submit.dao.SubmissionDao;
 import cn.edu.sdu.qd.oj.submit.dto.SubmissionUpdateReqDTO;
 import cn.edu.sdu.qd.oj.submit.entity.SubmissionDO;
@@ -49,6 +50,9 @@ public class SubmitJudgerService {
     private SubmissionConverter submissionConverter;
 
     @Autowired
+    private SubmissionUpdateConverter submissionUpdateConverter;
+
+    @Autowired
     private UserClient userClient;
 
     public SubmissionJudgeDTO query(long submissionId) {
@@ -67,9 +71,9 @@ public class SubmitJudgerService {
 
     @Transactional
     public void updateSubmission(SubmissionUpdateReqDTO reqDTO) {
-        SubmissionDO submissionDO = new SubmissionDO();
-        BeanUtils.copyProperties(reqDTO, submissionDO);
+        SubmissionDO submissionDO = submissionUpdateConverter.from(reqDTO);
         AssertUtils.isTrue(submissionDao.updateById(submissionDO), ApiExceptionEnum.UNKNOWN_ERROR);
+        // 查出 user、problem、contest 信息，同步推送过题消息  TODO: 异步
         submissionDO = submissionDao.lambdaQuery().select(
                 SubmissionDO::getSubmissionId,
                 SubmissionDO::getUserId,
@@ -77,7 +81,7 @@ public class SubmitJudgerService {
                 SubmissionDO::getProblemId,
                 SubmissionDO::getJudgeResult
         ).eq(SubmissionDO::getSubmissionId, reqDTO.getSubmissionId()).one();
-        if (submissionDao != null && SubmissionJudgeResult.AC.equals(submissionDO.getJudgeResult())) {
+        if (SubmissionJudgeResult.AC.equals(submissionDO.getJudgeResult())) {
             userClient.addUserACProblem(submissionDO.getUserId(), submissionDO.getContestId(), submissionDO.getProblemId());
         }
     }

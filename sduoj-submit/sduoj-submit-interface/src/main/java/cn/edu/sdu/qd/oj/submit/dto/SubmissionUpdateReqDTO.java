@@ -12,11 +12,11 @@ package cn.edu.sdu.qd.oj.submit.dto;
 
 import cn.edu.sdu.qd.oj.common.entity.BaseDTO;
 import cn.edu.sdu.qd.oj.common.util.HexStringToLongDeserializer;
-import cn.edu.sdu.qd.oj.submit.util.CheckpointResultsToByteDeserializer;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import lombok.*;
 
 import javax.validation.constraints.NotNull;
+import java.util.List;
 
 @Data
 @Builder
@@ -46,6 +46,5 @@ public class SubmissionUpdateReqDTO extends BaseDTO {
     private String judgeLog;
 
     @NotNull
-    @JsonDeserialize(using = CheckpointResultsToByteDeserializer.class)
-    private byte[] checkpointResults;
+    private List<List<Integer>> checkpointResults;
 }

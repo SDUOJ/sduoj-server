@@ -10,17 +10,15 @@
 
 package cn.edu.sdu.qd.oj.submit.dto;
 
-import cn.edu.sdu.qd.oj.common.util.DateToTimestampSerializer;
 import cn.edu.sdu.qd.oj.common.entity.BaseDTO;
 import cn.edu.sdu.qd.oj.common.util.HexStringToLongDeserializer;
 import cn.edu.sdu.qd.oj.common.util.LongToHexStringSerializer;
-import cn.edu.sdu.qd.oj.submit.util.BytesToCheckpointResultsSerializer;
-import cn.edu.sdu.qd.oj.submit.util.CheckpointResultsToByteDeserializer;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 import lombok.*;
 
 import java.util.Date;
+import java.util.List;
 
 /**
  * @Author zhangt2333
@@ -66,9 +64,7 @@ public class SubmissionDTO extends BaseDTO {
 
     private String code;
 
-    @JsonSerialize(using = BytesToCheckpointResultsSerializer.class)
-    @JsonDeserialize(using = CheckpointResultsToByteDeserializer.class)
-    private byte[] checkpointResults;
+    private List<List<Integer>> checkpointResults; // [ [judgeResult, usedTime, usedMemory], ... ]
 
     // -----------------------
 

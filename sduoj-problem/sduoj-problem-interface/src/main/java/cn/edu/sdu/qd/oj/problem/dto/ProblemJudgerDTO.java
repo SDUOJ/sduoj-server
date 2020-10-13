@@ -11,9 +11,9 @@
 package cn.edu.sdu.qd.oj.problem.dto;
 
 import cn.edu.sdu.qd.oj.common.entity.BaseDTO;
-import cn.edu.sdu.qd.oj.problem.util.BytesToCheckpointIdsSerializer;
-import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 import lombok.*;
+
+import java.util.List;
 
 @Data
 @Builder
@@ -32,6 +32,5 @@ public class ProblemJudgerDTO extends BaseDTO {
 
     private Integer checkpointNum;
 
-    @JsonSerialize(using = BytesToCheckpointIdsSerializer.class)
-    private byte[] checkpoints;
+    private List<String> checkpoints;
 }
