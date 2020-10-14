@@ -10,16 +10,19 @@
 
 package cn.edu.sdu.qd.oj.contest.controller;
 
+import cn.edu.sdu.qd.oj.common.annotation.UserSession;
 import cn.edu.sdu.qd.oj.common.entity.ApiResponseBody;
+import cn.edu.sdu.qd.oj.common.entity.PageResult;
+import cn.edu.sdu.qd.oj.common.entity.UserSessionDTO;
 import cn.edu.sdu.qd.oj.common.enums.ApiExceptionEnum;
 import cn.edu.sdu.qd.oj.common.exception.ApiException;
 import cn.edu.sdu.qd.oj.common.exception.InternalApiException;
 import cn.edu.sdu.qd.oj.common.util.AssertUtils;
 import cn.edu.sdu.qd.oj.common.util.ProblemCacheUtils;
 import cn.edu.sdu.qd.oj.contest.client.ProblemClient;
-import cn.edu.sdu.qd.oj.contest.dto.ContestCreateReqDTO;
-import cn.edu.sdu.qd.oj.contest.dto.ContestProblemListDTO;
+import cn.edu.sdu.qd.oj.contest.dto.*;
 import cn.edu.sdu.qd.oj.contest.service.ContestManageService;
+import cn.edu.sdu.qd.oj.contest.service.ContestService;
 import cn.edu.sdu.qd.oj.problem.api.ProblemApi;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
@@ -32,6 +35,9 @@ import java.util.stream.Collectors;
 @Controller
 @RequestMapping("/manage/contest")
 public class ContestManageController {
+
+    @Autowired
+    private ContestService contestService;
 
     @Autowired
     private ContestManageService contestManageService;
@@ -62,6 +68,27 @@ public class ContestManageController {
 
 
         return contestManageService.create(reqDTO);
+    }
+
+    @GetMapping("/page")
+    @ApiResponseBody
+    public PageResult<ContestListDTO> page(ContestListReqDTO reqDTO) {
+        return contestService.page(reqDTO);
+    }
+
+    @GetMapping("/query")
+    @ApiResponseBody
+    public ContestManageDTO query(@RequestParam("contestId") long contestId,
+                            @UserSession UserSessionDTO userSessionDTO) {
+        return contestManageService.query(contestId, userSessionDTO);
+    }
+
+    @PostMapping("/update")
+    @ApiResponseBody
+    public Void update(@RequestBody ContestDTO reqDTO,
+                       @UserSession UserSessionDTO userSessionDTO) {
+        contestManageService.update(reqDTO, userSessionDTO);
+        return null;
     }
 
 

@@ -32,7 +32,7 @@ public enum ApiExceptionEnum {
     GATEWAY_ERROR(500, "网关错误"),
 
     USER_NOT_FOUND(400, "该用户不存在"),
-    USER_NOT_LOGIN(400, "该用户未登录"),
+    USER_NOT_LOGIN(403, "该用户未登录"),
 
 
     PASSWORD_NOT_MATCHING(400, "该用户账号或密码错误"), // 不能直接提示密码错误哦
@@ -57,7 +57,7 @@ public enum ApiExceptionEnum {
 
 
     CONTEST_NOT_FOUND(400, "比赛不存在"),
-    CONTEST_NOT_PARTICIPATE(400, "未参加这场比赛"),
+    CONTEST_NOT_PARTICIPATE(403, "未参加这场比赛"),
     CONTEST_NOT_BEGIN(400, "比赛未开始"),
     CONTEST_HAD_PARTICIPATED(400, "请不要重复参加比赛"),
     CONTEST_PASSWORD_NOT_MATCHING(400, "比赛密码错误"),

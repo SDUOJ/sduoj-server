@@ -10,15 +10,23 @@
 
 package cn.edu.sdu.qd.oj.contest.service;
 
+import cn.edu.sdu.qd.oj.common.entity.UserSessionDTO;
 import cn.edu.sdu.qd.oj.common.enums.ApiExceptionEnum;
 import cn.edu.sdu.qd.oj.common.exception.ApiException;
+import cn.edu.sdu.qd.oj.contest.converter.ContestConverter;
 import cn.edu.sdu.qd.oj.common.util.AssertUtils;
 import cn.edu.sdu.qd.oj.contest.converter.ContestCreateReqConverter;
+import cn.edu.sdu.qd.oj.contest.converter.ContestManageConverter;
 import cn.edu.sdu.qd.oj.contest.dao.ContestDao;
 import cn.edu.sdu.qd.oj.contest.dto.ContestCreateReqDTO;
+import cn.edu.sdu.qd.oj.contest.dto.ContestDTO;
+import cn.edu.sdu.qd.oj.contest.dto.ContestManageDTO;
 import cn.edu.sdu.qd.oj.contest.entity.ContestDO;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+
+import java.util.List;
+import java.util.Optional;
 
 @Service
 public class ContestManageService {
@@ -29,6 +37,12 @@ public class ContestManageService {
     @Autowired
     private ContestCreateReqConverter contestCreateReqConverter;
 
+    @Autowired
+    private ContestConverter contestConverter;
+
+    @Autowired
+    private ContestManageConverter contestManageConverter;
+
     public Long create(ContestCreateReqDTO reqDTO) {
         ContestDO contestDO = contestCreateReqConverter.from(reqDTO);
         AssertUtils.isTrue(contestDao.save(contestDO), ApiExceptionEnum.UNKNOWN_ERROR);
@@ -36,4 +50,42 @@ public class ContestManageService {
     }
 
 
+    public ContestManageDTO query(long contestId, UserSessionDTO userSessionDTO) {
+        // TODO: 超级管理员一定可以查到比赛详情
+
+        ContestDO contestDO = contestDao.getById(contestId);
+        if (contestDO == null) {
+            throw new ApiException(ApiExceptionEnum.CONTEST_NOT_FOUND);
+        }
+        if (userSessionDTO.userIdNotEquals(contestDO.getUserId())) {
+            throw new ApiException(ApiExceptionEnum.USER_NOT_MATCHING);
+        }
+
+        return contestManageConverter.to(contestDO);
+    }
+
+    public void update(ContestDTO reqDTO, UserSessionDTO userSessionDTO) {
+        // TODO: 超级管理员一定可以更新比赛详情
+
+        ContestDO contestDO = contestDao.lambdaQuery().select(
+                ContestDO::getContestId,
+                ContestDO::getUserId,
+                ContestDO::getVersion
+        ).eq(ContestDO::getContestId, reqDTO.getContestId()).one();
+        if (contestDO == null) {
+            throw new ApiException(ApiExceptionEnum.CONTEST_NOT_FOUND);
+        }
+        if (userSessionDTO.userIdNotEquals(contestDO.getUserId())) {
+            throw new ApiException(ApiExceptionEnum.USER_NOT_MATCHING);
+        }
+
+        reqDTO.setParticipantNum(Optional.ofNullable(reqDTO.getParticipants()).map(List::size).orElse(0));
+
+        ContestDO contestUpdateDO = contestConverter.from(reqDTO);
+        contestUpdateDO.setVersion(contestDO.getVersion());
+
+        if (!contestDao.updateById(contestUpdateDO)) {
+            throw new ApiException(ApiExceptionEnum.SERVER_BUSY);
+        }
+    }
 }

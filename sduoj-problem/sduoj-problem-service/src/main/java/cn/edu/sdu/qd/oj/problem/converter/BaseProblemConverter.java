@@ -37,6 +37,10 @@ public interface BaseProblemConverter<S, T> extends BaseConverter<S, T> {
     }
 
     default byte[] checkpointsFrom(List<String> checkpointHexList) {
+        // 不能返回 new byte[0] 不然本来不更新 checkpoints 的，变成清空了
+        if (checkpointHexList == null) {
+            return null;
+        }
         List<Long> checkpoints = checkpointHexList.stream().map(hex -> Long.valueOf(hex, 16)).collect(Collectors.toList());
         ByteBuf byteBuf = Unpooled.buffer(checkpoints.size() * 8);
         checkpoints.forEach(byteBuf::writeLong);

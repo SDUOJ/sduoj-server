@@ -38,6 +38,6 @@ public class UserSessionDTO extends BaseDTO {
     }
 
     public boolean userIdNotEquals(Long userId) {
-        return userIdEquals(userId);
+        return !userIdEquals(userId);
     }
 }

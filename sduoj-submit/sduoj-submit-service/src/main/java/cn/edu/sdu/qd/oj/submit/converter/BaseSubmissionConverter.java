@@ -36,10 +36,10 @@ public interface BaseSubmissionConverter<S, T> extends BaseConverter<S, T> {
     }
 
     default byte[] checkpointResultsFrom(List<List<Integer>> checkpointResults) {
-        ByteBuf byteBuf = Unpooled.buffer(checkpointResults.size() * 12);
         if (checkpointResults.stream().anyMatch(o -> o.size() != 3)) {
             return null;
         }
+        ByteBuf byteBuf = Unpooled.buffer(checkpointResults.size() * 12);
         checkpointResults.forEach(o -> o.forEach(byteBuf::writeInt));
         return byteBuf.array();
     }

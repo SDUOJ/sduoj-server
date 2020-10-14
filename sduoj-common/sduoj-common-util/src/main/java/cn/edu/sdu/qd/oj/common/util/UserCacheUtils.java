@@ -46,4 +46,15 @@ public class UserCacheUtils {
         }
         return Long.parseLong(String.valueOf(o));
     }
+
+    public Long getUserIdWithoutException(String username) {
+        if (username == null) {
+            return null;
+        }
+        Object o = redisUtils.hget(RedisConstants.REDIS_KEY_FOR_USERNAME_TO_ID, username);
+        if (o == null) {
+            return null;
+        }
+        return Long.parseLong(String.valueOf(o));
+    }
 }

@@ -24,7 +24,7 @@ import java.util.Map;
 @NoArgsConstructor
 @AllArgsConstructor
 @EqualsAndHashCode(callSuper = true)
-public class ContestDTO extends BaseDTO {
+public class ContestManageDTO extends BaseDTO {
 
     private Long contestId;
 
@@ -38,14 +38,13 @@ public class ContestDTO extends BaseDTO {
 
     private String contestTitle;
 
-    @JsonProperty(access = JsonProperty.Access.WRITE_ONLY)
+    @JsonProperty(access = JsonProperty.Access.READ_ONLY)
     private Long userId;
 
     private Date gmtStart;
 
     private Date gmtEnd;
 
-    @JsonProperty(access = JsonProperty.Access.WRITE_ONLY)
     private String password;
 
     private String source;
@@ -55,7 +54,7 @@ public class ContestDTO extends BaseDTO {
 
     private String markdownDescription;
 
-    private List<ContestProblemListDTO> problems;
+    private List<ContestProblemManageListDTO> problems;
 
     private List<String> participants; // List<username>
 

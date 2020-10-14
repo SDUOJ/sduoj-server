@@ -161,7 +161,7 @@ public class ProblemManageService {
         }
         if (problemDO.getCheckpointNum() != null) {
             redisUtils.hset(RedisConstants.REDIS_KEY_FOR_PROBLEM_ID_TO_CHECKPOINTNUM,
-                    String.valueOf(problemDO.getProblemId()), problemDO.getCheckpointNum());
+                    String.valueOf(problemCacheUtils.getProblemId(problemDO.getProblemCode())), problemDO.getCheckpointNum());
         }
     }
 

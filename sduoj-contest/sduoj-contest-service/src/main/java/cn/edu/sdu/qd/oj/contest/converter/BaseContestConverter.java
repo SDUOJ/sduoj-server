@@ -11,16 +11,8 @@
 package cn.edu.sdu.qd.oj.contest.converter;
 
 import cn.edu.sdu.qd.oj.common.converter.BaseConverter;
-import cn.edu.sdu.qd.oj.common.util.SpringContextUtils;
-import cn.edu.sdu.qd.oj.common.util.UserCacheUtils;
 import cn.edu.sdu.qd.oj.contest.dto.ContestProblemListDTO;
-import com.alibaba.fastjson.JSON;
-import com.alibaba.fastjson.JSONArray;
-import io.netty.buffer.ByteBuf;
-import io.netty.buffer.Unpooled;
-
-import java.nio.ByteBuffer;
-import java.util.ArrayList;
+import cn.edu.sdu.qd.oj.contest.dto.ContestProblemManageListDTO;
 import java.util.List;
 
 
@@ -33,6 +25,14 @@ public interface BaseContestConverter<S, T> extends BaseConverter<S, T> {
 
     default String problemsFrom(List<ContestProblemListDTO> contestProblemListDTOList) {
         return ContestConvertUtils.problemsFrom(contestProblemListDTOList);
+    }
+
+    default List<ContestProblemManageListDTO> problemManagesTo(String problems) {
+        return ContestConvertUtils.problemManagesTo(problems);
+    }
+
+    default String problemManagesFrom(List<ContestProblemManageListDTO> contestProblemListDTOList) {
+        return ContestConvertUtils.problemManagesFrom(contestProblemListDTOList);
     }
 
     default List<String> participantsTo(byte[] participants) {

@@ -80,12 +80,9 @@ public class ContestService {
     private ProblemCacheUtils problemCacheUtils;
 
     @Autowired
-<<<<<<< HEAD
     private UserCacheUtils userCacheUtils;
 
     @Autowired
-=======
->>>>>>> master
     private RedisUtils redisUtils;
 
     public ContestDTO queryAndValidate(Long contestId, long userId) {
