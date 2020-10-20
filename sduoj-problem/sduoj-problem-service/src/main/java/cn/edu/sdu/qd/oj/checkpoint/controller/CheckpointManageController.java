@@ -15,20 +15,16 @@ import cn.edu.sdu.qd.oj.checkpoint.service.CheckpointFileService;
 import cn.edu.sdu.qd.oj.checkpoint.service.CheckpointManageService;
 import cn.edu.sdu.qd.oj.common.entity.ApiResponseBody;
 import cn.edu.sdu.qd.oj.common.enums.ApiExceptionEnum;
-import cn.edu.sdu.qd.oj.common.exception.ApiException;
 import cn.edu.sdu.qd.oj.common.util.AssertUtils;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.HttpHeaders;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
-import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.util.*;
-import java.util.zip.ZipOutputStream;
 
 /**
  * @ClassName checkpointManageController
@@ -83,22 +79,6 @@ public class CheckpointManageController {
     @ApiResponseBody
     public List<CheckpointDTO> upload(@RequestParam("files") MultipartFile[] files) {
         return checkpointFileService.uploadCheckpointFiles(files);
-    }
-
-    /**
-     * @Description 传入 checkpoint id 数组，以 zip 包形式下载数据
-     * @param checkpointIds
-     * @return void
-     **/
-    @PostMapping(value = "/download")
-    public void zipDownload(@RequestBody List<String> checkpointIds,
-                            HttpServletResponse response) throws IOException {
-        log.warn("zipDownload: {}", checkpointIds);
-        response.addHeader(HttpHeaders.CONTENT_DISPOSITION, "attachment"); // 前端定义文件名
-        response.setContentType("application/zip; charset=utf-8");
-        response.setCharacterEncoding("UTF-8");
-        response.setStatus(HttpServletResponse.SC_OK);
-        checkpointFileService.downloadCheckpointFiles(checkpointIds, new ZipOutputStream(response.getOutputStream()));
     }
 
     @GetMapping(value = "/list")

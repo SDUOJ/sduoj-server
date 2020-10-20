@@ -8,7 +8,7 @@
  *      https://www.gnu.org/licenses/gpl-3.0.en.html
  */
 
-package cn.edu.sdu.qd.oj.checkpoint.config;
+package cn.edu.sdu.qd.oj.filesys.config;
 
 import lombok.Getter;
 import lombok.Setter;
@@ -22,9 +22,9 @@ import org.springframework.boot.context.properties.ConfigurationProperties;
  * @Version V1.0
  **/
 
-@ConfigurationProperties(prefix = "sduoj.checkpoint")
 @Getter
 @Setter
-public class CheckpointFileSystemProperties {
+@ConfigurationProperties(prefix = "sduoj.filesys")
+public class FileSystemProperties {
     private String baseDir; // 工作目录
 }

@@ -25,7 +25,7 @@ import cn.edu.sdu.qd.oj.user.dto.UserUpdateReqDTO;
 import cn.edu.sdu.qd.oj.user.entity.UserDO;
 import cn.edu.sdu.qd.oj.user.dto.UserDTO;
 import cn.edu.sdu.qd.oj.user.entity.UserSessionDO;
-import cn.edu.sdu.qd.oj.user.utils.CodecUtils;
+import cn.edu.sdu.qd.oj.common.util.CodecUtils;
 import cn.edu.sdu.qd.oj.user.utils.EmailUtil;
 import com.baomidou.mybatisplus.extension.conditions.query.LambdaQueryChainWrapper;
 import com.baomidou.mybatisplus.extension.conditions.update.LambdaUpdateChainWrapper;

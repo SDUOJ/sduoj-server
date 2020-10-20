@@ -1,12 +1,19 @@
+sduoj:
+  config:
+    port: 8082
+    application-name: submit-service
+    active: dev
+    nacos-addr: nacos.oj.cs.sdu.edu.cn:8848
+    nacos-config-namespace: ${sduoj.config.active}
+
 server:
-  port: 8082
+  port: ${sduoj.config.port}
 spring:
   application:
-    name: submit-service
-  profiles:
-    active: dev
+    name: ${sduoj.config.application-name}
   cloud:
     nacos:
       config:
-        server-addr: nacos.oj.sdu.edu.cn:8848
+        namespace: ${sduoj.config.active}
+        server-addr: ${sduoj.config.nacos-addr}
         file-extension: yml

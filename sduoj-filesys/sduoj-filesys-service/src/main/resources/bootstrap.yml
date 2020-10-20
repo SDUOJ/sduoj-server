@@ -1,0 +1,19 @@
+sduoj:
+  config:
+    port: 11111
+    application-name: filesys-service
+    active: dev
+    nacos-addr: nacos.oj.cs.sdu.edu.cn:8848
+    nacos-config-namespace: ${sduoj.config.active}
+
+server:
+  port: ${sduoj.config.port}
+spring:
+  application:
+    name: ${sduoj.config.application-name}
+  cloud:
+    nacos:
+      config:
+        namespace: ${sduoj.config.active}
+        server-addr: ${sduoj.config.nacos-addr}
+        file-extension: yml

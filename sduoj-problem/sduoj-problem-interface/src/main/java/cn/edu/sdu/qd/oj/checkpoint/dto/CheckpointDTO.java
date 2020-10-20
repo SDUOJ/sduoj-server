@@ -60,6 +60,10 @@ public class CheckpointDTO extends BaseDTO {
 
     private String output;
 
+    private Long inputFileId;
+
+    private Long outputFileId;
+
     public CheckpointDTO(Long checkpointId, String inputPreview, String outputPreview, Integer inputSize, Integer outputSize) {
         this.checkpointId = checkpointId;
         this.inputPreview = inputPreview;

@@ -29,10 +29,14 @@
             <artifactId>sduoj-common-util</artifactId>
             <version>1.0.0-SNAPSHOT</version>
         </dependency>
-
         <dependency>
             <groupId>cn.edu.sdu.qd.oj.problem</groupId>
             <artifactId>sduoj-problem-interface</artifactId>
+            <version>1.0.0-SNAPSHOT</version>
+        </dependency>
+        <dependency>
+            <groupId>cn.edu.sdu.qd.oj.filesys</groupId>
+            <artifactId>sduoj-filesys-interface</artifactId>
             <version>1.0.0-SNAPSHOT</version>
         </dependency>
 

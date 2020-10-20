@@ -58,11 +58,10 @@ public class CheckpointDO extends BaseDO {
     @TableField(CheckpointDOField.OUTPUT_FILE_NAME)
     private String outputFilename;
 
-    public CheckpointDO(Long checkpointId, String inputPreview, String outputPreview, Integer inputSize, Integer outputSize) {
-        this.checkpointId = checkpointId;
-        this.inputPreview = inputPreview;
-        this.outputPreview = outputPreview;
-        this.inputSize = inputSize;
-        this.outputSize = outputSize;
-    }
+    @TableField(CheckpointDOField.INPUT_FILE_ID)
+    private Long inputFileId;
+
+    @TableField(CheckpointDOField.OUTPUT_FILE_ID)
+    private Long outputFileId;
+
 }

@@ -18,7 +18,7 @@ import cn.edu.sdu.qd.oj.user.dto.UserDTO;
 import cn.edu.sdu.qd.oj.user.dto.UserListReqDTO;
 import cn.edu.sdu.qd.oj.user.dto.UserManageUpdateReqDTO;
 import cn.edu.sdu.qd.oj.user.entity.UserDO;
-import cn.edu.sdu.qd.oj.user.utils.CodecUtils;
+import cn.edu.sdu.qd.oj.common.util.CodecUtils;
 import com.baomidou.mybatisplus.extension.conditions.query.LambdaQueryChainWrapper;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import org.springframework.beans.factory.annotation.Autowired;

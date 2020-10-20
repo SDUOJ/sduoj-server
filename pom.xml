@@ -16,6 +16,7 @@
         <module>sduoj-submit</module>
         <module>sduoj-websocket</module>
         <module>sduoj-contest</module>
+        <module>sduoj-filesys</module>
     </modules>
     <!--父工程用 pom 的打包方式-->
     <packaging>pom</packaging>

@@ -43,8 +43,10 @@ public enum ApiExceptionEnum {
     USER_NOT_MATCHING(403, "用户权限不足"),
     CONTENT_IS_BLANK(500, "文件内容为空"),
     FILE_WRITE_ERROR(500, "文件写入错误"),
+    FILE_READ_ERROR(500, "文件读出错误"),
     FILE_NOT_DOUBLE(400, "文件不配对"),
     FILE_NOT_EXISTS(400, "文件不存在"),
+    FILE_MD5_EXISTS(400, "文件md5已存在"),
     FILE_TOO_LARGE(400, "文件过大，无法预览，请选择下载"),
 
     TOKEN_EXPIRE(400, "验证令牌过期或不存在"),

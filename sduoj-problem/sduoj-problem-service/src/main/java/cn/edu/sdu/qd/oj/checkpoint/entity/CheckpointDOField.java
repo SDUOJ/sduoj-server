@@ -22,4 +22,6 @@ public class CheckpointDOField {
     public static final String OUTPUT_SIZE = "c_output_size";
     public static final String INPUT_FILE_NAME = "c_input_file_name";
     public static final String OUTPUT_FILE_NAME = "c_output_file_name";
+    public static final String INPUT_FILE_ID = "c_input_file_id";
+    public static final String OUTPUT_FILE_ID = "c_output_file_id";
 }
