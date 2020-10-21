@@ -243,4 +243,13 @@ public class ProblemService {
                 .eq(ProblemDescriptionDO::getId, problemDescriptionId).one();
         return problemConverter.to(problemDO, problemDescriptionDO, null);
     }
+
+    public List<Long> queryPrivateProblemIdList(Long userId) {
+        LambdaQueryChainWrapper<ProblemDO> query = problemDao.lambdaQuery();
+        query.select(ProblemDO::getProblemId)
+            .and(o1 -> o1.eq(ProblemDO::getIsPublic, 0)
+                         .and(o3 -> o3.ne(ProblemDO::getUserId, userId)));
+        List<ProblemDO> problemDOList = query.list();
+        return problemDOList.stream().map(ProblemDO::getProblemId).collect(Collectors.toList());
+    }
 }

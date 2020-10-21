@@ -10,13 +10,12 @@
 
 package cn.edu.sdu.qd.oj.problem.controller;
 
+import cn.edu.sdu.qd.oj.auth.enums.PermissionEnum;
 import cn.edu.sdu.qd.oj.common.annotation.UserSession;
 import cn.edu.sdu.qd.oj.common.entity.ApiResponseBody;
 import cn.edu.sdu.qd.oj.common.entity.PageResult;
-import cn.edu.sdu.qd.oj.common.entity.ResponseResult;
 import cn.edu.sdu.qd.oj.common.entity.UserSessionDTO;
 import cn.edu.sdu.qd.oj.common.enums.ApiExceptionEnum;
-import cn.edu.sdu.qd.oj.common.exception.ApiException;
 import cn.edu.sdu.qd.oj.common.util.AssertUtils;
 import cn.edu.sdu.qd.oj.problem.dto.*;
 import cn.edu.sdu.qd.oj.problem.service.ProblemManageService;
@@ -50,7 +49,11 @@ public class ProblemManageController {
     public ProblemManageDTO queryByCode(@RequestParam("problemCode") String problemCode,
                                         @UserSession UserSessionDTO userSessionDTO) {
         ProblemManageDTO problemManageDTO = this.problemManageService.queryByCode(problemCode);
-        // 脱敏  TODO: 超级管理员能看
+        // 超级管理员一定能看所有题
+        if (PermissionEnum.SUPERADMIN.in(userSessionDTO)) {
+            return problemManageDTO;
+        }
+        // 非公开且非自己出的题看不了
         if (problemManageDTO.getIsPublic() == 0 && userSessionDTO.userIdNotEquals(problemManageDTO.getUserId())) {
             problemManageDTO = null;
         }
@@ -106,14 +109,14 @@ public class ProblemManageController {
     @ApiResponseBody
     public ProblemDescriptionDTO queryDescription(@RequestParam("descriptionId") long id,
                                                   @UserSession(nullable = true) UserSessionDTO userSessionDTO) {
-        return problemManageService.queryDescription(id, userSessionDTO.getUserId());
+        return problemManageService.queryDescription(id, userSessionDTO);
     }
 
     @GetMapping("/queryDescriptionList")
     @ApiResponseBody
     public List<ProblemDescriptionListDTO> queryDescriptionList(@RequestParam("problemCode") String problemCode,
                                                                 @UserSession(nullable = true) UserSessionDTO userSessionDTO) {
-        return problemManageService.queryDescriptionList(problemCode, userSessionDTO.getUserId());
+        return problemManageService.queryDescriptionList(problemCode, userSessionDTO);
     }
 
 }

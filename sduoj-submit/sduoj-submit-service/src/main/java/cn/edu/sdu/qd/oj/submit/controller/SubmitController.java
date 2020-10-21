@@ -10,6 +10,7 @@
 
 package cn.edu.sdu.qd.oj.submit.controller;
 
+import cn.edu.sdu.qd.oj.auth.enums.PermissionEnum;
 import cn.edu.sdu.qd.oj.common.annotation.UserSession;
 import cn.edu.sdu.qd.oj.common.entity.ApiResponseBody;
 import cn.edu.sdu.qd.oj.common.entity.PageResult;
@@ -21,9 +22,9 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.*;
 
-import javax.annotation.Nullable;
 import javax.validation.Valid;
 import java.util.List;
+import java.util.Optional;
 
 /**
  * @ClassName SubmitController
@@ -54,22 +55,29 @@ public class SubmitController {
     @GetMapping("/query")
     @ApiResponseBody
     public SubmissionDTO query(@RequestParam("submissionId") String submissionIdHex,
-                               @RequestHeader("authorization-userId") @Nullable Long userId) {
+                               @UserSession(nullable = true) UserSessionDTO userSessionDTO) {
         long submissionId = Long.valueOf(submissionIdHex, 16);
         SubmissionDTO submissionDTO = this.submitService.queryById(submissionId, 0);
-        // TODO: 超级管理员可以看所有代码
-        if (submissionDTO != null && !submissionDTO.getUserId().equals(userId)) {
+        // 超级管理员可以看所有代码
+        if (PermissionEnum.SUPERADMIN.in(userSessionDTO)) {
+            return submissionDTO;
+        }
+        // 他人查看脱敏
+        if (submissionDTO != null &&
+          !Optional.ofNullable(userSessionDTO).map(o -> o.userIdEquals(submissionDTO.getUserId())).orElse(false)) {
             submissionDTO.setCode(null);
+            submissionDTO.setJudgeLog(null);
         }
         return submissionDTO;
     }
 
     @GetMapping("/list")
     @ApiResponseBody
-    public PageResult<SubmissionListDTO> queryList(@Valid SubmissionListReqDTO reqDTO) throws Exception {
+    public PageResult<SubmissionListDTO> page(@Valid SubmissionListReqDTO reqDTO,
+                                              @UserSession(nullable = true) UserSessionDTO userSessionDTO) throws Exception {
         log.info("submissionList: req:{}", reqDTO);
         reqDTO.setProblemCodeList(null); // 禁掉指定题目
-        return this.submitService.querySubmissionByPage(reqDTO, 0);
+        return this.submitService.querySubmissionByPage(reqDTO, 0, userSessionDTO);
     }
 
     @GetMapping("/queryACProblem")

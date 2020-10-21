@@ -42,4 +42,10 @@ public interface ProblemApi {
     ProblemDTO queryAndValidate(@RequestParam("problemCode") String problemCode,
                                 @RequestParam("problemDescriptionId") long problemDescriptionId,
                                 @RequestParam("userId") long userId);
+
+    /**
+    * @Description 获取非该用户出题且不 public 题目的 id 列表
+    **/
+    @GetMapping("/queryPrivateProblemIdList")
+    List<Long> queryPrivateProblemIdList(@RequestParam(value = "userId", required = false) Long userId);
 }

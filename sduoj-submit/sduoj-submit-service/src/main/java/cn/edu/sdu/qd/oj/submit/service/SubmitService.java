@@ -11,11 +11,13 @@
 package cn.edu.sdu.qd.oj.submit.service;
 
 import cn.edu.sdu.qd.oj.common.entity.PageResult;
+import cn.edu.sdu.qd.oj.common.entity.UserSessionDTO;
 import cn.edu.sdu.qd.oj.common.enums.ApiExceptionEnum;
 import cn.edu.sdu.qd.oj.common.exception.ApiException;
 import cn.edu.sdu.qd.oj.common.exception.InternalApiException;
 import cn.edu.sdu.qd.oj.common.util.*;
 import cn.edu.sdu.qd.oj.problem.dto.ProblemListDTO;
+import cn.edu.sdu.qd.oj.submit.client.ProblemClient;
 import cn.edu.sdu.qd.oj.submit.client.UserClient;
 import cn.edu.sdu.qd.oj.submit.converter.SubmissionConverter;
 import cn.edu.sdu.qd.oj.submit.converter.SubmissionListConverter;
@@ -32,6 +34,7 @@ import org.springframework.amqp.rabbit.core.RabbitTemplate;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.util.CollectionUtils;
 
 import java.util.*;
 import java.util.stream.Collectors;
@@ -77,6 +80,9 @@ public class SubmitService {
 
     // TODO: 临时采用 IP+PID 格式, 生产时加配置文件 Autowired
     private SnowflakeIdWorker snowflakeIdWorker = new SnowflakeIdWorker();
+
+    @Autowired
+    private ProblemClient problemClient;
 
     /**
     * @Description 提交返回提交id
@@ -146,9 +152,12 @@ public class SubmitService {
     * @Description 分页查询提交
     * @param reqDTO
     * @param contestId 0 表示查非比赛提交
-    * @return cn.edu.sdu.qd.oj.common.entity.PageResult<cn.edu.sdu.qd.oj.submit.dto.SubmissionListDTO>
+    * @param userSessionDTO
+     * @return cn.edu.sdu.qd.oj.common.entity.PageResult<cn.edu.sdu.qd.oj.submit.dto.SubmissionListDTO>
     **/
-    public PageResult<SubmissionListDTO> querySubmissionByPage(SubmissionListReqDTO reqDTO, long contestId) throws InternalApiException {
+    public PageResult<SubmissionListDTO> querySubmissionByPage(SubmissionListReqDTO reqDTO,
+                                                               long contestId,
+                                                               UserSessionDTO userSessionDTO) throws InternalApiException {
         // 填充字段
         if (StringUtils.isNotBlank(reqDTO.getUsername())) {
             Long userId = userClient.queryUserId(reqDTO.getUsername());
@@ -218,6 +227,12 @@ public class SubmitService {
             List<Long> problemIdList = problemCodeList.stream().map(problemCacheUtils::getProblemId).collect(Collectors.toList());
             query.in(SubmissionDO::getProblemId, problemIdList);
         });
+
+        // 过滤不 public 的题目
+        List<Long> problemIdList = problemClient.queryPrivateProblemIdList(Optional.ofNullable(userSessionDTO).map(UserSessionDTO::getUserId).orElse(null));
+        if (!CollectionUtils.isEmpty(problemIdList)) {
+            query.notIn(SubmissionDO::getProblemId, problemIdList);
+        }
 
         // 查询数据
         Page<SubmissionDO> pageResult = query.page(new Page<>(reqDTO.getPageNow(), reqDTO.getPageSize()));

@@ -10,6 +10,7 @@
 
 package cn.edu.sdu.qd.oj.contest.service;
 
+import cn.edu.sdu.qd.oj.auth.enums.PermissionEnum;
 import cn.edu.sdu.qd.oj.common.entity.UserSessionDTO;
 import cn.edu.sdu.qd.oj.common.enums.ApiExceptionEnum;
 import cn.edu.sdu.qd.oj.common.exception.ApiException;
@@ -50,23 +51,15 @@ public class ContestManageService {
     }
 
 
-    public ContestManageDTO query(long contestId, UserSessionDTO userSessionDTO) {
-        // TODO: 超级管理员一定可以查到比赛详情
-
+    public ContestManageDTO query(long contestId) {
         ContestDO contestDO = contestDao.getById(contestId);
         if (contestDO == null) {
             throw new ApiException(ApiExceptionEnum.CONTEST_NOT_FOUND);
         }
-        if (userSessionDTO.userIdNotEquals(contestDO.getUserId())) {
-            throw new ApiException(ApiExceptionEnum.USER_NOT_MATCHING);
-        }
-
         return contestManageConverter.to(contestDO);
     }
 
     public void update(ContestDTO reqDTO, UserSessionDTO userSessionDTO) {
-        // TODO: 超级管理员一定可以更新比赛详情
-
         ContestDO contestDO = contestDao.lambdaQuery().select(
                 ContestDO::getContestId,
                 ContestDO::getUserId,
@@ -75,7 +68,8 @@ public class ContestManageService {
         if (contestDO == null) {
             throw new ApiException(ApiExceptionEnum.CONTEST_NOT_FOUND);
         }
-        if (userSessionDTO.userIdNotEquals(contestDO.getUserId())) {
+        // 超级管理员一定可以更新比赛详情，除此之外只有出题者能
+        if (PermissionEnum.SUPERADMIN.notIn(userSessionDTO) && userSessionDTO.userIdNotEquals(contestDO.getUserId())) {
             throw new ApiException(ApiExceptionEnum.USER_NOT_MATCHING);
         }
 

@@ -10,6 +10,7 @@
 
 package cn.edu.sdu.qd.oj.problem.service;
 
+import cn.edu.sdu.qd.oj.auth.enums.PermissionEnum;
 import cn.edu.sdu.qd.oj.common.entity.UserSessionDTO;
 import cn.edu.sdu.qd.oj.common.util.*;
 import cn.edu.sdu.qd.oj.common.entity.PageResult;
@@ -113,11 +114,14 @@ public class ProblemManageService {
 
     public PageResult<ProblemManageListDTO> queryProblemByPage(ProblemListReqDTO reqDTO,
                                                                UserSessionDTO userSessionDTO) {
-        // 构造 query，只查 public 题或自己的题
-        LambdaQueryChainWrapper<ProblemManageListDO> query = problemManageListDao.lambdaQuery()
-            .and(o1 -> o1.eq(ProblemManageListDO::getIsPublic, 1)
-                         .or(o2 -> o2.eq(ProblemManageListDO::getIsPublic, 0)
-                                     .and(o3 -> o3.eq(ProblemManageListDO::getUserId, userSessionDTO.getUserId()))));
+        LambdaQueryChainWrapper<ProblemManageListDO> query = problemManageListDao.lambdaQuery();
+        // 超级管理员能查所有的题，其他只查 public 题或自己的题
+        if (PermissionEnum.SUPERADMIN.notIn(userSessionDTO)) {
+            Long userId = Optional.ofNullable(userSessionDTO).map(UserSessionDTO::getUserId).orElse(null);
+            query.and(o1 -> o1.eq(ProblemManageListDO::getIsPublic, 1)
+                              .or(o2 -> o2.eq(ProblemManageListDO::getIsPublic, 0)
+                                          .and(o3 -> o3.eq(ProblemManageListDO::getUserId, userId))));
+        }
         // 置排序条件
         Optional.ofNullable(reqDTO.getOrderBy()).filter(StringUtils::isNotBlank).ifPresent(orderBy -> {
             switch (orderBy) {
@@ -181,28 +185,35 @@ public class ProblemManageService {
                 .update(problemDescriptionDO);
     }
 
-    public ProblemDescriptionDTO queryDescription(long id, Long userId) {
-        // TODO: 超级管理员能看到所有
-        LambdaQueryChainWrapper<ProblemDescriptionDO> query = problemDescriptionDao.lambdaQuery()
-            .and(o1 -> o1.eq(ProblemDescriptionDO::getIsPublic, 1)
-                         .or(o2 -> o2.eq(ProblemDescriptionDO::getIsPublic, 0)
-                                     .and(o3 -> o3.eq(ProblemDescriptionDO::getUserId, userId))));
+    public ProblemDescriptionDTO queryDescription(long id, UserSessionDTO userSessionDTO) {
+        LambdaQueryChainWrapper<ProblemDescriptionDO> query = problemDescriptionDao.lambdaQuery();
+        // 超级管理员能看到所有
+        if (PermissionEnum.SUPERADMIN.notIn(userSessionDTO)) {
+            Long userId = Optional.ofNullable(userSessionDTO).map(UserSessionDTO::getUserId).orElse(null);
+            query.and(o1 -> o1.eq(ProblemDescriptionDO::getIsPublic, 1)
+                              .or(o2 -> o2.eq(ProblemDescriptionDO::getIsPublic, 0)
+                                          .and(o3 -> o3.eq(ProblemDescriptionDO::getUserId, userId))));
+        }
         ProblemDescriptionDO problemDescriptionDO = query.eq(ProblemDescriptionDO::getId, id).one();
         return problemDescriptionConverter.to(problemDescriptionDO);
     }
 
-    public List<ProblemDescriptionListDTO> queryDescriptionList(String problemCode, Long userId) {
+    public List<ProblemDescriptionListDTO> queryDescriptionList(String problemCode, UserSessionDTO userSessionDTO) {
         long problemId = problemCacheUtils.getProblemId(problemCode);
-        // TODO: 超级管理员能看到所有
         LambdaQueryChainWrapper<ProblemDescriptionDO> query = problemDescriptionDao.lambdaQuery().select(
                 ProblemDescriptionDO::getId,
                 ProblemDescriptionDO::getProblemId,
                 ProblemDescriptionDO::getVoteNum,
                 ProblemDescriptionDO::getUserId,
                 ProblemDescriptionDO::getTitle
-        ).and(o1 -> o1.eq(ProblemDescriptionDO::getIsPublic, 1)
-                      .or(o2 -> o2.eq(ProblemDescriptionDO::getIsPublic, 0)
-                                  .and(o3 -> o3.eq(ProblemDescriptionDO::getUserId, userId))));
+        );
+        // 超级管理员能看到所有
+        if (PermissionEnum.SUPERADMIN.notIn(userSessionDTO)) {
+            Long userId = Optional.ofNullable(userSessionDTO).map(UserSessionDTO::getUserId).orElse(null);
+            query.and(o1 -> o1.eq(ProblemDescriptionDO::getIsPublic, 1)
+                    .or(o2 -> o2.eq(ProblemDescriptionDO::getIsPublic, 0)
+                            .and(o3 -> o3.eq(ProblemDescriptionDO::getUserId, userId))));
+        }
         List<ProblemDescriptionDO> problemDescriptionDOList = query.eq(ProblemDescriptionDO::getProblemId, problemId).list();
         List<ProblemDescriptionListDTO> problemDescriptionDTOList = problemDescriptionListConverter.to(problemDescriptionDOList);
         problemDescriptionDTOList.forEach(o -> {

@@ -10,20 +10,18 @@
 
 package cn.edu.sdu.qd.oj.contest.controller;
 
+import cn.edu.sdu.qd.oj.auth.enums.PermissionEnum;
 import cn.edu.sdu.qd.oj.common.annotation.UserSession;
 import cn.edu.sdu.qd.oj.common.entity.ApiResponseBody;
 import cn.edu.sdu.qd.oj.common.entity.PageResult;
 import cn.edu.sdu.qd.oj.common.entity.UserSessionDTO;
 import cn.edu.sdu.qd.oj.common.enums.ApiExceptionEnum;
 import cn.edu.sdu.qd.oj.common.exception.ApiException;
-import cn.edu.sdu.qd.oj.common.exception.InternalApiException;
 import cn.edu.sdu.qd.oj.common.util.AssertUtils;
-import cn.edu.sdu.qd.oj.common.util.ProblemCacheUtils;
 import cn.edu.sdu.qd.oj.contest.client.ProblemClient;
 import cn.edu.sdu.qd.oj.contest.dto.*;
 import cn.edu.sdu.qd.oj.contest.service.ContestManageService;
 import cn.edu.sdu.qd.oj.contest.service.ContestService;
-import cn.edu.sdu.qd.oj.problem.api.ProblemApi;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.*;
@@ -79,8 +77,17 @@ public class ContestManageController {
     @GetMapping("/query")
     @ApiResponseBody
     public ContestManageDTO query(@RequestParam("contestId") long contestId,
-                            @UserSession UserSessionDTO userSessionDTO) {
-        return contestManageService.query(contestId, userSessionDTO);
+                                  @UserSession UserSessionDTO userSessionDTO) {
+        ContestManageDTO contestManageDTO = contestManageService.query(contestId);
+        // 超级管理员一定可以查到比赛详情
+        if (PermissionEnum.SUPERADMIN.in(userSessionDTO)) {
+            return contestManageDTO;
+        }
+        // 非比赛出题者看不到
+        if (userSessionDTO.userIdNotEquals(contestManageDTO.getUserId())) {
+            throw new ApiException(ApiExceptionEnum.USER_NOT_MATCHING);
+        }
+        return contestManageDTO;
     }
 
     @PostMapping("/update")

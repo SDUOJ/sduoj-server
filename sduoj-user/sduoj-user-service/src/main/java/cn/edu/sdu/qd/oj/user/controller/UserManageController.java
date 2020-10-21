@@ -10,6 +10,7 @@
 
 package cn.edu.sdu.qd.oj.user.controller;
 
+import cn.edu.sdu.qd.oj.auth.enums.PermissionEnum;
 import cn.edu.sdu.qd.oj.common.annotation.UserSession;
 import cn.edu.sdu.qd.oj.common.entity.ApiResponseBody;
 import cn.edu.sdu.qd.oj.common.entity.PageResult;
@@ -52,7 +53,7 @@ public class UserManageController {
     public Void update(@RequestBody UserManageUpdateReqDTO reqDTO,
                        @UserSession UserSessionDTO userSessionDTO) {
         // superadmin 才能改密码+改权限
-        if (!userSessionDTO.getRoles().contains("superadmin")) {
+        if (PermissionEnum.SUPERADMIN.notIn(userSessionDTO)) {
             reqDTO.setPassword(null);
             reqDTO.setRoles(null);
         }

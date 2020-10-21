@@ -49,5 +49,10 @@ public class ProblemInternalController implements ProblemApi {
         return problemService.queryWithDescriptionId(problemCode, problemDescriptionId, userId);
     }
 
+    @Override
+    public List<Long> queryPrivateProblemIdList(Long userId) {
+        return problemService.queryPrivateProblemIdList(userId);
+    }
+
 
 }
