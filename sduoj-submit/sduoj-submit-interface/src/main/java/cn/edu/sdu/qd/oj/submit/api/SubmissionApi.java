@@ -56,4 +56,7 @@ public interface SubmissionApi {
      **/
     @GetMapping("/queryContestSubmitAndAccept")
     List<ProblemListDTO> queryContestSubmitAndAccept(@RequestParam("contestId") long contestId);
+
+    @PostMapping("/update")
+    void update(@RequestBody SubmissionUpdateReqDTO reqDTO) throws InternalApiException;
 }

@@ -10,10 +10,16 @@
 
 package cn.edu.sdu.qd.oj.problem.converter;
 
+import cn.edu.sdu.qd.oj.common.converter.BaseConvertUtils;
 import cn.edu.sdu.qd.oj.common.converter.BaseConverter;
+import cn.edu.sdu.qd.oj.common.util.SpringContextUtils;
+import cn.edu.sdu.qd.oj.judgetemplate.dto.JudgeTemplateListDTO;
+import cn.edu.sdu.qd.oj.judgetemplate.service.JudgeTemplateService;
 import io.netty.buffer.ByteBuf;
 import io.netty.buffer.Unpooled;
 import org.assertj.core.util.Lists;
+import org.checkerframework.checker.units.qual.K;
+import org.springframework.util.CollectionUtils;
 
 import java.nio.ByteBuffer;
 import java.util.ArrayList;
@@ -45,5 +51,37 @@ public interface BaseProblemConverter<S, T> extends BaseConverter<S, T> {
         ByteBuf byteBuf = Unpooled.buffer(checkpoints.size() * 8);
         checkpoints.forEach(byteBuf::writeLong);
         return byteBuf.array();
+    }
+
+    default List<JudgeTemplateListDTO> judgeTemplatesTo(String judgeTemplates) {
+        List<String> judgeTemplateIdStrList = BaseConvertUtils.stringToList(judgeTemplates);
+        if (judgeTemplateIdStrList == null) {
+            return new ArrayList<>();
+        }
+        List<Long> judgeTemplateIdList = judgeTemplateIdStrList.stream().map(Long::parseLong).collect(Collectors.toList());
+        JudgeTemplateService judgeTemplateService = SpringContextUtils.getBean(JudgeTemplateService.class);
+        return judgeTemplateService.listByIds(judgeTemplateIdList);
+    }
+
+    default String judgeTemplatesFrom(List<JudgeTemplateListDTO> judgeTemplates) {
+        if (CollectionUtils.isEmpty(judgeTemplates)) {
+            return null;
+        }
+        return BaseConvertUtils.listToString(judgeTemplates.stream().map(JudgeTemplateListDTO::getId).map(String::valueOf).collect(Collectors.toList()));
+    }
+
+    default List<Long> judgeTemplateIdsTo(String judgeTemplates) {
+        List<String> judgeTemplateIdStrList = BaseConvertUtils.stringToList(judgeTemplates);
+        if (judgeTemplateIdStrList == null) {
+            return null;
+        }
+        return judgeTemplateIdStrList.stream().map(Long::parseLong).collect(Collectors.toList());
+    }
+
+    default String judgeTemplateIdsFrom(List<Long> judgeTemplates) {
+        if (judgeTemplates == null) {
+            return null;
+        }
+        return BaseConvertUtils.listToString(judgeTemplates.stream().map(Object::toString).collect(Collectors.toList()));
     }
 }

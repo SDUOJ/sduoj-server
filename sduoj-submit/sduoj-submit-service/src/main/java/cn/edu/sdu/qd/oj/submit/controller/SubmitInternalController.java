@@ -15,6 +15,7 @@ import cn.edu.sdu.qd.oj.common.exception.InternalApiException;
 import cn.edu.sdu.qd.oj.problem.dto.ProblemListDTO;
 import cn.edu.sdu.qd.oj.submit.api.SubmissionApi;
 import cn.edu.sdu.qd.oj.submit.dto.*;
+import cn.edu.sdu.qd.oj.submit.service.SubmitJudgerService;
 import cn.edu.sdu.qd.oj.submit.service.SubmitService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.RestController;
@@ -26,6 +27,9 @@ public class SubmitInternalController implements SubmissionApi {
 
     @Autowired
     private SubmitService submitService;
+
+    @Autowired
+    private SubmitJudgerService submitJudgerService;
 
     @Override
     public long create(long contestId, SubmissionCreateReqDTO reqDTO) {
@@ -55,5 +59,10 @@ public class SubmitInternalController implements SubmissionApi {
     @Override
     public List<ProblemListDTO> queryContestSubmitAndAccept(long contestId) {
         return submitService.queryContestSubmitAndAccept(contestId);
+    }
+
+    @Override
+    public void update(SubmissionUpdateReqDTO reqDTO) throws InternalApiException {
+        this.submitJudgerService.updateSubmission(reqDTO);
     }
 }

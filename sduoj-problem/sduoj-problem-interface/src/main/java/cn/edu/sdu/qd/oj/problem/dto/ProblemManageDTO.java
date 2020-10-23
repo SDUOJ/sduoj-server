@@ -11,6 +11,7 @@
 package cn.edu.sdu.qd.oj.problem.dto;
 
 import cn.edu.sdu.qd.oj.common.entity.BaseDTO;
+import cn.edu.sdu.qd.oj.judgetemplate.dto.JudgeTemplateListDTO;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.*;
 
@@ -73,6 +74,8 @@ public class ProblemManageDTO extends BaseDTO {
     private Integer checkpointNum;
 
     private List<String> checkpoints;
+
+    private List<Long> judgeTemplates;
 
     // ------------------------------------------
 

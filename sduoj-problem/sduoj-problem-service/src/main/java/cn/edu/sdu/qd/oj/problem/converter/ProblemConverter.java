@@ -21,7 +21,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import java.util.List;
 
 @org.mapstruct.Mapper(componentModel = "spring")
-public interface ProblemConverter extends BaseConverter<ProblemDO, ProblemDTO> {
+public interface ProblemConverter extends BaseProblemConverter<ProblemDO, ProblemDTO> {
 
     ProblemDescriptionConverter problemDescriptionConverter = Mappers.getMapper(ProblemDescriptionConverter.class);
 

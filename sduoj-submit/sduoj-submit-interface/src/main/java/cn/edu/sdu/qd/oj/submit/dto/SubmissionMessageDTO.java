@@ -8,21 +8,40 @@
  *      https://www.gnu.org/licenses/gpl-3.0.en.html
  */
 
-package cn.edu.sdu.qd.oj.problem.dto;
+package cn.edu.sdu.qd.oj.submit.dto;
 
 import cn.edu.sdu.qd.oj.common.entity.BaseDTO;
 import lombok.*;
 
+import java.util.Date;
+
+/**
+ * @Author zhangt2333
+ * @Date 2020/3/14 18:59
+ * @Version V1.0
+ **/
 @Data
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
 @EqualsAndHashCode(callSuper = true)
-public class ProblemListReqDTO extends BaseDTO {
-    // TODO: 改名，实现一个底层的 pageReqDTO 来继承
-    private int pageNow;
-    private int pageSize;
-    private String orderBy;
-    private Boolean ascending = false;
-    private String remoteOj;
+public class SubmissionMessageDTO extends BaseDTO {
+
+    private Long submissionId;
+
+    private Long problemId;
+
+    private Long userId;
+
+    private Integer version;
+
+    private Date gmtCreate;
+
+    private String code;
+
+    private Integer codeLength;
+
+    private Long judgeTemplateId;
+
+    private Long zipFileId;
 }

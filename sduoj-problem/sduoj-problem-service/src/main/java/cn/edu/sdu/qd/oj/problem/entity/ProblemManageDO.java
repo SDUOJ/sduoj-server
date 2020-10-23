@@ -49,6 +49,9 @@ public class ProblemManageDO extends BaseDO {
     @TableField(ProblemDOField.CHECKPOINTS)
     private byte[] checkpoints;
 
+    @TableField(ProblemDOField.JUDGE_TEMPLATES)
+    private String judgeTemplates;
+
     @TableField(exist = false)
     private String username;
 }

@@ -13,6 +13,7 @@ package cn.edu.sdu.qd.oj.problem.controller;
 import cn.edu.sdu.qd.oj.common.exception.InternalApiException;
 import cn.edu.sdu.qd.oj.problem.api.ProblemApi;
 import cn.edu.sdu.qd.oj.problem.dto.ProblemDTO;
+import cn.edu.sdu.qd.oj.problem.dto.ProblemJudgerDTO;
 import cn.edu.sdu.qd.oj.problem.service.ProblemService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.RestController;
@@ -54,5 +55,10 @@ public class ProblemInternalController implements ProblemApi {
         return problemService.queryPrivateProblemIdList(userId);
     }
 
+    @Override
+    public ProblemJudgerDTO queryProblemJudgeDTO(Long problemId) {
+        // TODO
+        return null;
+    }
 
 }

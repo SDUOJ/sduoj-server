@@ -22,7 +22,8 @@ import org.springframework.cloud.openfeign.EnableFeignClients;
 @MapperScan(basePackages = {
         "cn.edu.sdu.qd.oj.problem.mapper",
         "cn.edu.sdu.qd.oj.checkpoint.mapper",
-        "cn.edu.sdu.qd.oj.tag.mapper"
+        "cn.edu.sdu.qd.oj.tag.mapper",
+        "cn.edu.sdu.qd.oj.judgetemplate.mapper",
 })
 public class ProblemApplication {
     public static void main(String[] args) {

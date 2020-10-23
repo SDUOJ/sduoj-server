@@ -12,6 +12,7 @@ package cn.edu.sdu.qd.oj.problem.api;
 
 import cn.edu.sdu.qd.oj.common.exception.InternalApiException;
 import cn.edu.sdu.qd.oj.problem.dto.ProblemDTO;
+import cn.edu.sdu.qd.oj.problem.dto.ProblemJudgerDTO;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -48,4 +49,7 @@ public interface ProblemApi {
     **/
     @GetMapping("/queryPrivateProblemIdList")
     List<Long> queryPrivateProblemIdList(@RequestParam(value = "userId", required = false) Long userId);
+
+    @GetMapping("/queryProblemJudgeDTO")
+    ProblemJudgerDTO queryProblemJudgeDTO(@RequestParam("problemId") Long problemId);
 }
