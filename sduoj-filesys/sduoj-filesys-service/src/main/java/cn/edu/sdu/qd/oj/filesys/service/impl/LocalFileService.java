@@ -10,6 +10,7 @@
 
 package cn.edu.sdu.qd.oj.filesys.service.impl;
 
+import cn.edu.sdu.qd.oj.common.entity.UserSessionDTO;
 import cn.edu.sdu.qd.oj.common.enums.ApiExceptionEnum;
 import cn.edu.sdu.qd.oj.common.exception.ApiException;
 import cn.edu.sdu.qd.oj.common.util.AssertUtils;
@@ -18,6 +19,7 @@ import cn.edu.sdu.qd.oj.common.util.SnowflakeIdWorker;
 import cn.edu.sdu.qd.oj.dto.BinaryFileUploadReqDTO;
 import cn.edu.sdu.qd.oj.dto.FileDTO;
 import cn.edu.sdu.qd.oj.dto.FileDownloadReqDTO;
+import cn.edu.sdu.qd.oj.dto.PlainFileDownloadDTO;
 import cn.edu.sdu.qd.oj.filesys.config.FileSystemProperties;
 import cn.edu.sdu.qd.oj.filesys.converter.FileConverter;
 import cn.edu.sdu.qd.oj.filesys.dao.FileDao;
@@ -35,6 +37,7 @@ import org.springframework.web.multipart.MultipartFile;
 
 import java.io.ByteArrayOutputStream;
 import java.io.File;
+import java.io.IOException;
 import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.List;
@@ -96,7 +99,7 @@ public class LocalFileService implements FileService {
 
     @Override
     @Transactional
-    public List<FileDTO> uploadFiles(MultipartFile[] files) {
+    public List<FileDTO> uploadFiles(MultipartFile[] files, Long userId) {
         List<BinaryFileUploadReqDTO> reqDTOList = new ArrayList<>(files.length);
         try {
             for (MultipartFile file : files) {
@@ -113,7 +116,7 @@ public class LocalFileService implements FileService {
         } catch (Exception e) {
             throw new ApiException(ApiExceptionEnum.FILE_WRITE_ERROR);
         }
-        return uploadBinaryFiles(reqDTOList);
+        return uploadBinaryFiles(reqDTOList, userId);
     }
 
     @Override
@@ -151,7 +154,7 @@ public class LocalFileService implements FileService {
 
     @Override
     @Transactional
-    public List<FileDTO> uploadBinaryFiles(List<BinaryFileUploadReqDTO> reqDTOList) {
+    public List<FileDTO> uploadBinaryFiles(List<BinaryFileUploadReqDTO> reqDTOList, Long userId) {
         String[] md5s = new String[reqDTOList.size()];
         // 计算文件 md5
         try {
@@ -179,6 +182,7 @@ public class LocalFileService implements FileService {
                         .extensionName(Files.getFileExtension(reqDTOList.get(i).getFilename()))
                         .md5(md5s[i])
                         .size(reqDTOList.get(i).getSize())
+                        .userId(userId)
                         .build();
                 newFileDOList.add(fileDO);
                 fileDOMap.put(fileDO.getMd5(), fileDO);
@@ -203,5 +207,27 @@ public class LocalFileService implements FileService {
         }
         fileDOList.addAll(newFileDOList);
         return fileConverter.to(fileDOList);
+    }
+
+    @Override
+    public List<PlainFileDownloadDTO> plainFileDownload(Long sizeLimit, List<PlainFileDownloadDTO> reqDTOList) {
+
+        for (PlainFileDownloadDTO plainFileDownloadDTO : reqDTOList) {
+            FileSystemResource file = new FileSystemResource(Paths.get(fileSystemProperties.getBaseDir(), plainFileDownloadDTO.getFileId().toString()).toString());
+            AssertUtils.isTrue(file.exists(), ApiExceptionEnum.FILE_NOT_EXISTS);
+            try {
+                AssertUtils.isTrue(file.contentLength() <= sizeLimit, ApiExceptionEnum.FILE_TOO_LARGE);
+                plainFileDownloadDTO.setBytes(StreamUtils.copyToByteArray(file.getInputStream()));
+            } catch (IOException e) {
+                throw new ApiException(ApiExceptionEnum.FILE_READ_ERROR);
+            }
+        }
+        return reqDTOList;
+    }
+
+    @Override
+    public FileDTO queryByMd5(String md5) {
+        FileDO fileDO = fileDao.lambdaQuery().eq(FileDO::getMd5, md5).one();
+        return fileConverter.to(fileDO);
     }
 }

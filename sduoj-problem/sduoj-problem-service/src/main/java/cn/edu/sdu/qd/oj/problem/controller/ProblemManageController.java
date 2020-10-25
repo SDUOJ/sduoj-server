@@ -77,13 +77,14 @@ public class ProblemManageController {
 
     @PostMapping("/update")
     @ApiResponseBody
-    public Void updateProblem(@RequestBody ProblemManageDTO problem) {
+    public Void updateProblem(@RequestBody @Valid ProblemManageDTO problem,
+                              @UserSession UserSessionDTO userSessionDTO) {
         log.info("updateProblem: {}", problem);
         AssertUtils.notNull(problem.getProblemCode(), ApiExceptionEnum.PARAMETER_ERROR);
         if (problem.getCheckpoints() != null) {
             problem.setCheckpointNum(problem.getCheckpoints().size());
         }
-        problemManageService.update(problem);
+        problemManageService.update(problem, userSessionDTO);
         return null;
     }
 

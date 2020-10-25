@@ -10,17 +10,25 @@
 
 package cn.edu.sdu.qd.oj.checkpoint.service;
 
+import cn.edu.sdu.qd.oj.checkpoint.client.FilesysClient;
 import cn.edu.sdu.qd.oj.checkpoint.converter.CheckpointConverter;
+import cn.edu.sdu.qd.oj.checkpoint.converter.CheckpointManageListConverter;
 import cn.edu.sdu.qd.oj.checkpoint.dao.CheckpointDao;
-import cn.edu.sdu.qd.oj.checkpoint.entity.CheckpointDO;
 import cn.edu.sdu.qd.oj.checkpoint.dto.CheckpointDTO;
+import cn.edu.sdu.qd.oj.checkpoint.dto.CheckpointManageListDTO;
+import cn.edu.sdu.qd.oj.checkpoint.entity.CheckpointDO;
+import cn.edu.sdu.qd.oj.dto.PlainFileDownloadDTO;
+import cn.edu.sdu.qd.oj.problem.converter.ProblemConverterUtils;
 import cn.edu.sdu.qd.oj.problem.dao.ProblemDao;
+import cn.edu.sdu.qd.oj.problem.dto.ProblemCheckpointDTO;
 import cn.edu.sdu.qd.oj.problem.entity.ProblemDO;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.util.CollectionUtils;
 
-import java.nio.ByteBuffer;
 import java.util.*;
+import java.util.function.Function;
+import java.util.stream.Collectors;
 
 /**
  * @ClassName checkpointManageService
@@ -40,41 +48,86 @@ public class CheckpointManageService {
     private ProblemDao problemDao;
 
     @Autowired
+    private FilesysClient filesysClient;
+
+    @Autowired
     private CheckpointConverter checkpointConverter;
 
+    @Autowired
+    private CheckpointManageListConverter checkpointManageListConverter;
 
-    private List<CheckpointDTO> getCheckpoints(ProblemDO problemDO) {
-        byte[] bytes = Optional.ofNullable(problemDO).map(ProblemDO::getCheckpoints).orElse(null);
-        if (bytes == null || bytes.length == 0) {
+    /**
+    * @Description
+    * @param problemDO
+    * @return java.util.List<cn.edu.sdu.qd.oj.checkpoint.dto.CheckpointManageListDTO>
+    **/
+    private List<CheckpointManageListDTO> getCheckpoints(ProblemDO problemDO) {
+        // 查询 problem
+        List<ProblemCheckpointDTO> problemCheckpointDTOList = Optional.ofNullable(problemDO)
+                .map(ProblemDO::getCheckpoints).map(ProblemConverterUtils::checkpointsTo).orElse(null);
+        if (CollectionUtils.isEmpty(problemCheckpointDTOList)) {
             return new ArrayList<>();
         }
-        List<Long> checkpointIds = new ArrayList<>(bytes.length / 8);
-        Map<Long, Integer> indexMap = new HashMap<>(bytes.length / 8);
-        ByteBuffer wrap = ByteBuffer.wrap(bytes);
-        for (int i = 0, size = bytes.length; i < size; i += 8) {
-            checkpointIds.add(wrap.getLong(i));
-            indexMap.put(wrap.getLong(i), i);
-        }
+        // 查询 checkpoint
+        List<Long> checkpointIds = problemCheckpointDTOList.stream().map(ProblemCheckpointDTO::getCheckpointId).collect(Collectors.toList());
         List<CheckpointDO> checkpointDOList = checkpointDao.listByIds(checkpointIds);
-        List<CheckpointDTO> checkpointDTOList = checkpointConverter.to(checkpointDOList);
-        checkpointDTOList.sort(Comparator.comparing(o -> indexMap.get(o.getCheckpointId())));
+        List<CheckpointManageListDTO> checkpointDTOList = checkpointManageListConverter.to(checkpointDOList);
+        // 排序
+        Map<Long, Integer> idToIndex = cn.edu.sdu.qd.oj.common.util.CollectionUtils.getMapToIndex(checkpointIds);
+        checkpointDTOList.sort(Comparator.comparing(o -> idToIndex.get(o.getCheckpointId())));
+        // 填补数据 checkpointScore
+        Map<Long, ProblemCheckpointDTO> problemCheckpointDTOMap = problemCheckpointDTOList.stream()
+                .collect(Collectors.toMap(ProblemCheckpointDTO::getCheckpointId, Function.identity()));
+        checkpointDTOList.forEach(o -> {
+            o.setCheckpointScore(problemCheckpointDTOMap.get(o.getCheckpointId()).getCheckpointScore());
+        });
+        // 增补数据 caseIndex
+        List<Long> caseIdList = Optional.ofNullable(problemDO)
+                .map(ProblemDO::getCheckpointCases).map(ProblemConverterUtils::bytesToLongList).orElse(null);
+        Map<Long, Integer> caseIdToIndex = cn.edu.sdu.qd.oj.common.util.CollectionUtils.getMapToIndex(caseIdList);
+        checkpointDTOList.forEach(o -> {
+            o.setCaseIndex(caseIdToIndex.get(o.getCheckpointId()));
+        });
         return checkpointDTOList;
     }
 
-    public List<CheckpointDTO> getCheckpoints(String problemCode) {
+    public List<CheckpointManageListDTO> getCheckpoints(String problemCode) {
         ProblemDO problemDO = problemDao.lambdaQuery().select(
                 ProblemDO::getProblemId,
-                ProblemDO::getCheckpoints
+                ProblemDO::getCheckpoints,
+                ProblemDO::getCheckpointCases
         ).eq(ProblemDO::getProblemCode, problemCode).one();
         return getCheckpoints(problemDO);
     }
 
-    public List<CheckpointDTO> getCheckpoints(Long problemId) {
+    public List<CheckpointManageListDTO> getCheckpoints(Long problemId) {
         ProblemDO problemDO = problemDao.lambdaQuery().select(
                 ProblemDO::getProblemId,
-                ProblemDO::getCheckpoints
+                ProblemDO::getCheckpoints,
+                ProblemDO::getCheckpointCases
         ).eq(ProblemDO::getProblemId, problemId).one();
         return getCheckpoints(problemDO);
+    }
+
+    public List<CheckpointDTO> listByIdList(List<Long> checkpointIdList) {
+        List<CheckpointDO> checkpointDOList = checkpointDao.lambdaQuery().select(
+            CheckpointDO::getCheckpointId,
+            CheckpointDO::getInputFileId,
+            CheckpointDO::getOutputFileId
+        ).in(CheckpointDO::getCheckpointId, checkpointIdList).list();
+        List<PlainFileDownloadDTO> downloadDTOList = new ArrayList<>(checkpointDOList.size() * 2);
+        checkpointDOList.forEach(o -> {
+            downloadDTOList.add(PlainFileDownloadDTO.builder().fileId(o.getInputFileId()).build());
+            downloadDTOList.add(PlainFileDownloadDTO.builder().fileId(o.getOutputFileId()).build());
+        });
+        // TODO: 魔法值解决
+        List<PlainFileDownloadDTO> checkpointDownloadRespList = filesysClient.plainFileDownload(1024L, downloadDTOList);
+        Map<Long, byte[]> fileIdToBytes = checkpointDownloadRespList.stream().collect(Collectors.toMap(PlainFileDownloadDTO::getFileId, PlainFileDownloadDTO::getBytes));
+        checkpointDOList.forEach(o -> {
+            o.setInputPreview(new String(fileIdToBytes.get(o.getInputFileId())));
+            o.setOutputPreview(new String(fileIdToBytes.get(o.getOutputFileId())));
+        });
+        return checkpointConverter.to(checkpointDOList);
     }
 
 }

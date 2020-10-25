@@ -48,4 +48,8 @@ public class JudgeTemplateManageListDTO extends BaseDTO {
     private String remoteOj;
 
     private String comment;
+
+    // ------------------------
+
+    private String username;
 }

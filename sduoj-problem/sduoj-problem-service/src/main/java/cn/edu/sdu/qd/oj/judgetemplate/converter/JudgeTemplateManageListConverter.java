@@ -14,6 +14,15 @@ import cn.edu.sdu.qd.oj.common.converter.BaseConverter;
 import cn.edu.sdu.qd.oj.judgetemplate.dto.JudgeTemplateManageListDTO;
 import cn.edu.sdu.qd.oj.judgetemplate.entity.JudgeTemplateManageListDO;
 
-@org.mapstruct.Mapper(componentModel = "spring")
+@org.mapstruct.Mapper(
+    componentModel = "spring",
+    imports = {JudgeTemplateConverterUtils.class}
+)
 public interface JudgeTemplateManageListConverter extends BaseConverter<JudgeTemplateManageListDO, JudgeTemplateManageListDTO> {
+
+    @org.mapstruct.Mapping(
+            target = "username",
+            expression = "java( JudgeTemplateConverterUtils.userIdToUsername(source.getUserId()) )"
+    )
+    JudgeTemplateManageListDTO to(JudgeTemplateManageListDO source);
 }

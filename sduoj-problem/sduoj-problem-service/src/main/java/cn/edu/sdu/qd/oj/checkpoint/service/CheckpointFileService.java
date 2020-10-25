@@ -64,7 +64,7 @@ public class CheckpointFileService {
      * @Description 批量上传成对的测试点文件，如果不配对或者写入到文件系统中出现错误，则全部回滚
      **/
     @Transactional
-    public List<CheckpointDTO> uploadCheckpointFiles(MultipartFile[] files) {
+    public List<CheckpointDTO> uploadCheckpointFiles(MultipartFile[] files, Long userId) {
         List<CheckpointDO> checkpointDOList = new ArrayList<>(files.length / 2 + 1);
         Map<String, MultipartFile> map = new HashMap<>();
         for (MultipartFile file : files) {
@@ -88,7 +88,7 @@ public class CheckpointFileService {
                 );
             }
 
-            List<FileDTO> fileDTOList = filesysClient.uploadBinaryFiles(uploadReqDTOList);
+            List<FileDTO> fileDTOList = filesysClient.uploadBinaryFiles(uploadReqDTOList, userId);
             Map<String, FileDTO> fileDTOMap = fileDTOList.stream().collect(Collectors.toMap(FileDTO::getName, Function.identity()));
 
             // 整理成 checkpointDO 存在本微服务数据库
@@ -132,7 +132,7 @@ public class CheckpointFileService {
      * @return cn.edu.sdu.qd.oj.checkpoint.pojo.Checkpoint
      **/
     @Transactional
-    public CheckpointDTO updateCheckpointFile(String input, String output) {
+    public CheckpointDTO updateCheckpointFile(String input, String output, Long userId) {
         long snowflaskId = snowflakeIdWorker.nextId();
         String snowflaskIdString = Long.toHexString(snowflaskId);
 
@@ -151,7 +151,7 @@ public class CheckpointFileService {
                 .outputSize(output.length())
                 .build();
         try {
-            List<FileDTO> fileDTOList = filesysClient.uploadBinaryFiles(uploadReqDTOList);
+            List<FileDTO> fileDTOList = filesysClient.uploadBinaryFiles(uploadReqDTOList, userId);
             Map<String, FileDTO> fileDTOMap = fileDTOList.stream().collect(Collectors.toMap(FileDTO::getName, Function.identity()));
             checkpointDO.setInputFileId(fileDTOMap.get(snowflaskIdString + ".in").getId());
             checkpointDO.setOutputFileId(fileDTOMap.get(snowflaskIdString + ".out").getId());

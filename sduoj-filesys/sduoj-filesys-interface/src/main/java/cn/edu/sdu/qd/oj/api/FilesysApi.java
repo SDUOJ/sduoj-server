@@ -13,6 +13,7 @@ package cn.edu.sdu.qd.oj.api;
 import cn.edu.sdu.qd.oj.dto.BinaryFileUploadReqDTO;
 import cn.edu.sdu.qd.oj.dto.FileDTO;
 import cn.edu.sdu.qd.oj.dto.FileDownloadReqDTO;
+import cn.edu.sdu.qd.oj.dto.PlainFileDownloadDTO;
 import org.springframework.core.io.Resource;
 import org.springframework.web.bind.annotation.*;
 
@@ -29,9 +30,13 @@ public interface FilesysApi {
     String SERVICE_NAME = "filesys-service";
 
     @PostMapping(value = "/uploadBinaryFiles", consumes = "application/json")
-    List<FileDTO> uploadBinaryFiles(@RequestBody List<BinaryFileUploadReqDTO> reqDTOList);
+    List<FileDTO> uploadBinaryFiles(@RequestBody List<BinaryFileUploadReqDTO> reqDTOList,
+                                    @RequestParam("userId") long userId);
 
     @PostMapping(value = "/zipDownload", headers = "content-type=application/json")
     Resource download(@RequestBody List<FileDownloadReqDTO> reqDTOList);
 
+    @PostMapping(value = "/plainFileDownload", headers = "content-type=application/json")
+    List<PlainFileDownloadDTO> plainFileDownload(@RequestParam("sizeLimit") Long sizeLimit,
+                                                 @RequestBody List<PlainFileDownloadDTO> reqDTOList); // 限制下载文件的大小
 }

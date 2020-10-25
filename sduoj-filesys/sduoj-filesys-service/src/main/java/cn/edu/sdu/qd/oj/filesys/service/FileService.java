@@ -10,9 +10,11 @@
 
 package cn.edu.sdu.qd.oj.filesys.service;
 
+import cn.edu.sdu.qd.oj.common.entity.UserSessionDTO;
 import cn.edu.sdu.qd.oj.dto.BinaryFileUploadReqDTO;
 import cn.edu.sdu.qd.oj.dto.FileDTO;
 import cn.edu.sdu.qd.oj.dto.FileDownloadReqDTO;
+import cn.edu.sdu.qd.oj.dto.PlainFileDownloadDTO;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.util.List;
@@ -22,11 +24,15 @@ public interface FileService {
 
     FileDTO upload(MultipartFile file);
 
-    List<FileDTO> uploadFiles(MultipartFile[] files);
+    List<FileDTO> uploadFiles(MultipartFile[] files, Long usedId);
 
     void downloadFilesInZip(List<FileDownloadReqDTO> fileDownloadReqDTOList, ZipOutputStream zipOut);
 
     byte[] downloadFilesInZipBytes(List<FileDownloadReqDTO> fileDownloadReqDTOList);
 
-    List<FileDTO> uploadBinaryFiles(List<BinaryFileUploadReqDTO> reqDTOList);
+    List<FileDTO> uploadBinaryFiles(List<BinaryFileUploadReqDTO> reqDTOList, Long userId);
+
+    List<PlainFileDownloadDTO> plainFileDownload(Long sizeLimit, List<PlainFileDownloadDTO> reqDTOList);
+
+    FileDTO queryByMd5(String md5);
 }

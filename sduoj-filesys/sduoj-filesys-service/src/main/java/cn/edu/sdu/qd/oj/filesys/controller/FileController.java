@@ -10,7 +10,9 @@
 
 package cn.edu.sdu.qd.oj.filesys.controller;
 
+import cn.edu.sdu.qd.oj.common.annotation.UserSession;
 import cn.edu.sdu.qd.oj.common.entity.ApiResponseBody;
+import cn.edu.sdu.qd.oj.common.entity.UserSessionDTO;
 import cn.edu.sdu.qd.oj.dto.FileDTO;
 import cn.edu.sdu.qd.oj.dto.FileDownloadReqDTO;
 import cn.edu.sdu.qd.oj.filesys.service.FileService;
@@ -18,10 +20,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpHeaders;
 import org.springframework.stereotype.Controller;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
 import javax.servlet.http.HttpServletResponse;
@@ -38,16 +37,17 @@ public class FileController {
     @Autowired
     private FileService fileService;
 
-    @PostMapping(value = "/upload", headers = "content-type=multipart/form-data")
-    @ApiResponseBody
-    public FileDTO upload(@RequestParam("file") @NotNull MultipartFile file) {
-        return fileService.upload(file);
-    }
+//    @PostMapping(value = "/upload", headers = "content-type=multipart/form-data")
+//    @ApiResponseBody
+//    public FileDTO upload(@RequestParam("file") @NotNull MultipartFile file) {
+//        return fileService.upload(file);
+//    }
 
     @PostMapping(value = "/uploadFiles", headers = "content-type=multipart/form-data")
     @ApiResponseBody
-    public List<FileDTO> upload(@RequestParam("files") @NotNull MultipartFile[] files) {
-        return fileService.uploadFiles(files);
+    public List<FileDTO> upload(@RequestParam("files") @NotNull MultipartFile[] files,
+                                @UserSession UserSessionDTO userSessionDTO) {
+        return fileService.uploadFiles(files, userSessionDTO.getUserId());
     }
 
     @PostMapping(value = "/zipDownload")
@@ -59,5 +59,11 @@ public class FileController {
         response.setCharacterEncoding("UTF-8");
         response.setStatus(HttpServletResponse.SC_OK);
         fileService.downloadFilesInZip(fileDownloadReqDTOList, new ZipOutputStream(response.getOutputStream()));
+    }
+
+    @GetMapping(value = "/queryByMd5")
+    @ApiResponseBody
+    public FileDTO queryByMd5(@RequestParam("md5") String md5) {
+        return fileService.queryByMd5(md5);
     }
 }

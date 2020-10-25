@@ -44,6 +44,9 @@ public class FileDO extends BaseDO {
     @TableField(FileDOField.IS_PUBLIC)
     private Integer isPublic;
 
+    @TableField(FileDOField.USER_ID)
+    private Long userId;
+
     @TableField(FileDOField.SIZE)
     private Long size;
 

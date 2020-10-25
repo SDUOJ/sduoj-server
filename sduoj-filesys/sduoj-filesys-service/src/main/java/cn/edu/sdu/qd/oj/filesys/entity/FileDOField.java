@@ -17,6 +17,7 @@ public class FileDOField {
     public static final String GMT_MODIFIED = "f_gmt_modified";
     public static final String FEATURES = "f_features";
     public static final String DELETED = "f_is_deleted";
+    public static final String USER_ID = "u_id";
     public static final String SIZE = "f_size";
     public static final String IS_PUBLIC = "f_is_public";
     public static final String NAME = "f_name";

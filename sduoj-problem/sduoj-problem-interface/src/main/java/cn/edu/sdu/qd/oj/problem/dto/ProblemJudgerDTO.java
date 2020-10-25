@@ -32,5 +32,5 @@ public class ProblemJudgerDTO extends BaseDTO {
 
     private Integer checkpointNum;
 
-    private List<String> checkpoints;
+    private List<ProblemCheckpointDTO> checkpoints;
 }

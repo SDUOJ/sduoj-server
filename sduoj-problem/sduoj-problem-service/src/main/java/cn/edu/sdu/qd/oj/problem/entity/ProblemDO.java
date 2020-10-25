@@ -90,6 +90,9 @@ public class ProblemDO extends BaseDO {
     @TableField(ProblemDOField.CHECKPOINTS)
     private byte[] checkpoints;
 
+    @TableField(ProblemDOField.CHECKPOINT_CASES)
+    private byte[] checkpointCases;
+
     @TableField(ProblemDOField.JUDGE_TEMPLATES)
     private String judgeTemplates;
 }

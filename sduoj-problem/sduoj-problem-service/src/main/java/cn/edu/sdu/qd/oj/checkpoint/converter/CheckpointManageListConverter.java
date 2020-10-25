@@ -8,11 +8,12 @@
  *      https://www.gnu.org/licenses/gpl-3.0.en.html
  */
 
-package cn.edu.sdu.qd.oj.problem.converter;
+package cn.edu.sdu.qd.oj.checkpoint.converter;
 
-import cn.edu.sdu.qd.oj.problem.dto.ProblemManageListDTO;
-import cn.edu.sdu.qd.oj.problem.entity.ProblemManageListDO;
+import cn.edu.sdu.qd.oj.checkpoint.dto.CheckpointManageListDTO;
+import cn.edu.sdu.qd.oj.checkpoint.entity.CheckpointDO;
+import cn.edu.sdu.qd.oj.common.converter.BaseConverter;
 
 @org.mapstruct.Mapper(componentModel = "spring")
-public interface ProblemManageListConverter extends BaseProblemConverter<ProblemManageListDO, ProblemManageListDTO> {
+public interface CheckpointManageListConverter extends BaseConverter<CheckpointDO, CheckpointManageListDTO> {
 }

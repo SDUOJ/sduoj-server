@@ -15,6 +15,7 @@ import cn.edu.sdu.qd.oj.judgetemplate.dto.JudgeTemplateListDTO;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.*;
 
+import javax.validation.constraints.Size;
 import java.util.Date;
 import java.util.List;
 import java.util.Map;
@@ -73,7 +74,11 @@ public class ProblemManageDTO extends BaseDTO {
     @JsonProperty(access = JsonProperty.Access.READ_ONLY)
     private Integer checkpointNum;
 
-    private List<String> checkpoints;
+    @Size(max = 1024)
+    private List<ProblemCheckpointDTO> checkpoints;
+
+    @Size(max = 20)
+    private List<Long> checkpointCases;
 
     private List<Long> judgeTemplates;
 

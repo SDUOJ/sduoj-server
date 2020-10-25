@@ -11,6 +11,8 @@
 package cn.edu.sdu.qd.oj.problem.service;
 
 import cn.edu.sdu.qd.oj.auth.enums.PermissionEnum;
+import cn.edu.sdu.qd.oj.checkpoint.dto.CheckpointDTO;
+import cn.edu.sdu.qd.oj.checkpoint.service.CheckpointManageService;
 import cn.edu.sdu.qd.oj.common.entity.UserSessionDTO;
 import cn.edu.sdu.qd.oj.common.util.*;
 import cn.edu.sdu.qd.oj.common.entity.PageResult;
@@ -52,6 +54,12 @@ public class ProblemManageService {
 
     @Autowired
     private ProblemCommonService problemCommonService;
+
+    @Autowired
+    private CheckpointManageService checkpointManageService;
+
+    @Autowired
+    private ProblemExtensionSerivce problemExtensionSerivce;
 
     @Autowired
     private ProblemDao problemDao;
@@ -154,19 +162,51 @@ public class ProblemManageService {
         return new PageResult<>(pageResult.getPages(), problemManageListDTOlist);
     }
 
-    public void update(ProblemManageDTO problem) {
-        ProblemDO problemDO = problemManageConverter.from(problem);
-        log.info("{} -> {}", problem, problemDO);
-        AssertUtils.isTrue(problemDao.lambdaUpdate().eq(ProblemDO::getProblemCode, problemDO.getProblemCode()).update(problemDO), ApiExceptionEnum.UNKNOWN_ERROR);
-        if (problemDO.getProblemTitle() != null) {
+    @Transactional
+    public void update(ProblemManageDTO problem, UserSessionDTO userSessionDTO) {
+        // 查出该题
+        ProblemDO originalProblemDO = problemDao.lambdaQuery().select(
+                ProblemDO::getProblemId,
+                ProblemDO::getVersion,
+                ProblemDO::getUserId
+        ).eq(ProblemDO::getProblemCode, problem.getProblemCode()).one();
+        // 特判题目权限
+        AssertUtils.notNull(originalProblemDO, ApiExceptionEnum.PROBLEM_NOT_FOUND);
+        AssertUtils.isTrue(PermissionEnum.SUPERADMIN.notIn(userSessionDTO) && userSessionDTO.userIdNotEquals(originalProblemDO.getUserId()),
+                ApiExceptionEnum.USER_NOT_MATCHING);
+        problem.setProblemId(originalProblemDO.getUserId());
+
+        // 构造更新器
+        ProblemDO problemUpdateDO = problemManageConverter.from(problem);
+        problemUpdateDO.setVersion(originalProblemDO.getVersion());
+
+        log.info("{} -> {}", problem, problemUpdateDO);
+
+        // 更新题目
+        AssertUtils.isTrue(problemDao.updateById(problemUpdateDO), ApiExceptionEnum.UNKNOWN_ERROR);
+        // 更新 checkpointCase
+        if (problemUpdateDO.getCheckpointCases() != null) {
+            updateCheckpointCase(problem);
+        }
+        // 刷新缓存
+        if (problemUpdateDO.getProblemTitle() != null) {
             redisUtils.hset(RedisConstants.REDIS_KEY_FOR_PROBLEM_ID_TO_TITLE,
                     String.valueOf(problem.getProblemId()),
                     problem.getProblemTitle());
         }
-        if (problemDO.getCheckpointNum() != null) {
+        if (problemUpdateDO.getCheckpointNum() != null) {
             redisUtils.hset(RedisConstants.REDIS_KEY_FOR_PROBLEM_ID_TO_CHECKPOINTNUM,
-                    String.valueOf(problemCacheUtils.getProblemId(problemDO.getProblemCode())), problemDO.getCheckpointNum());
+                    String.valueOf(problemCacheUtils.getProblemId(problemUpdateDO.getProblemCode())), problemUpdateDO.getCheckpointNum());
         }
+    }
+
+    private void updateCheckpointCase(ProblemManageDTO problem) {
+        List<Long> checkpointCases = problem.getCheckpointCases();
+        List<CheckpointDTO> checkpointDTOList = checkpointManageService.listByIdList(checkpointCases);
+        List<ProblemCaseDTO> problemCaseDTOList = checkpointDTOList.stream()
+                .map(o -> ProblemCaseDTO.builder().input(o.getInputPreview()).output(o.getOutputPreview()).build())
+                .collect(Collectors.toList());
+        problemExtensionSerivce.updateProblemCase(problem.getProblemId(), problemCaseDTOList);
     }
 
     public long createDescription(ProblemDescriptionDTO problemDescriptionDTO) {

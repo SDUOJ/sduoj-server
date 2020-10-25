@@ -15,6 +15,7 @@ import cn.edu.sdu.qd.oj.api.FilesysApi;
 import cn.edu.sdu.qd.oj.dto.BinaryFileUploadReqDTO;
 import cn.edu.sdu.qd.oj.dto.FileDTO;
 import cn.edu.sdu.qd.oj.dto.FileDownloadReqDTO;
+import cn.edu.sdu.qd.oj.dto.PlainFileDownloadDTO;
 import cn.edu.sdu.qd.oj.filesys.service.FileService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.io.ByteArrayResource;
@@ -30,12 +31,17 @@ public class FileInternalController implements FilesysApi {
     private FileService fileService;
 
     @Override
-    public List<FileDTO> uploadBinaryFiles(List<BinaryFileUploadReqDTO> reqDTOList) {
-        return fileService.uploadBinaryFiles(reqDTOList);
+    public List<FileDTO> uploadBinaryFiles(List<BinaryFileUploadReqDTO> reqDTOList, long userId) {
+        return fileService.uploadBinaryFiles(reqDTOList, userId);
     }
 
     @Override
     public Resource download(List<FileDownloadReqDTO> reqDTOList) {
         return new ByteArrayResource(fileService.downloadFilesInZipBytes(reqDTOList));
+    }
+
+    @Override
+    public List<PlainFileDownloadDTO> plainFileDownload(Long sizeLimit, List<PlainFileDownloadDTO> reqDTOList) {
+        return fileService.plainFileDownload(sizeLimit, reqDTOList);
     }
 }

@@ -11,9 +11,12 @@
 package cn.edu.sdu.qd.oj.checkpoint.controller;
 
 import cn.edu.sdu.qd.oj.checkpoint.dto.CheckpointDTO;
+import cn.edu.sdu.qd.oj.checkpoint.dto.CheckpointManageListDTO;
 import cn.edu.sdu.qd.oj.checkpoint.service.CheckpointFileService;
 import cn.edu.sdu.qd.oj.checkpoint.service.CheckpointManageService;
+import cn.edu.sdu.qd.oj.common.annotation.UserSession;
 import cn.edu.sdu.qd.oj.common.entity.ApiResponseBody;
+import cn.edu.sdu.qd.oj.common.entity.UserSessionDTO;
 import cn.edu.sdu.qd.oj.common.enums.ApiExceptionEnum;
 import cn.edu.sdu.qd.oj.common.util.AssertUtils;
 import lombok.extern.slf4j.Slf4j;
@@ -63,11 +66,12 @@ public class CheckpointManageController {
      **/
     @PostMapping(value = "/upload", headers = "content-type=application/json")
     @ApiResponseBody
-    public CheckpointDTO upload(@RequestBody Map<String, String> json) {
+    public CheckpointDTO upload(@RequestBody Map<String, String> json,
+                                @UserSession UserSessionDTO userSessionDTO) {
         String input = json.get("input");
         String output = json.get("output");
         AssertUtils.isTrue(StringUtils.isNotBlank(input) && StringUtils.isNotBlank(output), ApiExceptionEnum.CONTENT_IS_BLANK);
-        return checkpointFileService.updateCheckpointFile(input, output);
+        return checkpointFileService.updateCheckpointFile(input, output, userSessionDTO.getUserId());
     }
 
     /**
@@ -77,13 +81,14 @@ public class CheckpointManageController {
      **/
     @PostMapping(value = "/uploadFiles", headers = "content-type=multipart/form-data")
     @ApiResponseBody
-    public List<CheckpointDTO> upload(@RequestParam("files") MultipartFile[] files) {
-        return checkpointFileService.uploadCheckpointFiles(files);
+    public List<CheckpointDTO> upload(@RequestParam("files") MultipartFile[] files,
+                                      @UserSession UserSessionDTO userSessionDTO) {
+        return checkpointFileService.uploadCheckpointFiles(files, userSessionDTO.getUserId());
     }
 
     @GetMapping(value = "/list")
     @ApiResponseBody
-    public List<CheckpointDTO> getCheckpoints(@RequestParam("problemCode") String problemCode) {
+    public List<CheckpointManageListDTO> getCheckpoints(@RequestParam("problemCode") String problemCode) {
         return checkpointManageService.getCheckpoints(problemCode);
     }
 }

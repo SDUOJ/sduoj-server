@@ -61,6 +61,8 @@ public class ProblemManageListDTO extends BaseDTO {
 
     private Integer checkpointNum;
 
+    private List<Long> judgeTemplates;
+
     // ------------------------------------------
 
     private List<TagDTO> tagDTOList;

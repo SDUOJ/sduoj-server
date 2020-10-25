@@ -11,7 +11,7 @@
 package cn.edu.sdu.qd.oj.checkpoint.controller;
 
 import cn.edu.sdu.qd.oj.checkpoint.api.CheckpointApi;
-import cn.edu.sdu.qd.oj.checkpoint.dto.CheckpointDTO;
+import cn.edu.sdu.qd.oj.checkpoint.dto.CheckpointManageListDTO;
 import cn.edu.sdu.qd.oj.checkpoint.service.CheckpointManageService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.RestController;
@@ -26,7 +26,7 @@ public class CheckpointInternalController implements CheckpointApi {
     private CheckpointManageService checkpointManageService;
 
     @Override
-    public List<CheckpointDTO> queryCheckpointListByProblemId(Long problemId) {
+    public List<CheckpointManageListDTO> queryCheckpointListByProblemId(Long problemId) {
         return checkpointManageService.getCheckpoints(problemId);
     }
 }

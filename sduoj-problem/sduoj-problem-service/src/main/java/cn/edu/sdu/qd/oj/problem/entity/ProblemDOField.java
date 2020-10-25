@@ -34,4 +34,5 @@ public class ProblemDOField {
     public static final String CHECKPOINT_NUM = "p_checkpoint_num";
     public static final String CHECKPOINTS = "p_checkpoints";
     public static final String JUDGE_TEMPLATES = "p_judge_templates";
+    public static final String CHECKPOINT_CASES = "p_checkpoint_cases";
 }

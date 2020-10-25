@@ -10,13 +10,16 @@
 
 package cn.edu.sdu.qd.oj.common.converter;
 
+import cn.edu.sdu.qd.oj.common.enums.ApiExceptionEnum;
+import cn.edu.sdu.qd.oj.common.util.AssertUtils;
+import io.netty.buffer.ByteBuf;
+import io.netty.buffer.Unpooled;
 import org.apache.commons.lang3.StringUtils;
+import org.assertj.core.util.Lists;
 import org.springframework.util.CollectionUtils;
 
-import java.util.Arrays;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
+import java.nio.ByteBuffer;
+import java.util.*;
 import java.util.stream.Collectors;
 
 /**
@@ -36,11 +39,21 @@ public class BaseConvertUtils {
     }
 
     public static String listToString(List<String> list) {
-        return CollectionUtils.isEmpty(list) ? null : StringUtils.join(list, ',');
+        return collectionToString(list);
     }
 
     public static String setToString(Set<String> list) {
-        return CollectionUtils.isEmpty(list) ? null : StringUtils.join(list, ',');
+        return collectionToString(list);
+    }
+
+    private static String collectionToString(Collection<String> collection) {
+        if (CollectionUtils.isEmpty(collection)) {
+            return null;
+        }
+
+        AssertUtils.isTrue(collection.stream().allMatch(o -> StringUtils.containsNone(o, ',')), ApiExceptionEnum.PARAMETER_ERROR,
+                "字段中不能包含 , ");
+        return StringUtils.join(collection, ',');
     }
 
     public static Map<String, String> stringToMap(String str) {
@@ -48,6 +61,34 @@ public class BaseConvertUtils {
     }
 
     public static String mapToString(Map<String, String> map) {
-        return CollectionUtils.isEmpty(map) ? null : StringUtils.join(map.entrySet().stream().map(entry -> entry.getKey() + ":" + entry.getValue()).collect(Collectors.toList()), ";");
+        if (CollectionUtils.isEmpty(map)) {
+            return null;
+        }
+        AssertUtils.isTrue(map.entrySet().stream().allMatch(o ->
+            StringUtils.containsNone(o.getKey(), ';', ':') && StringUtils.containsNone(o.getValue(), ';', ':')
+        ), ApiExceptionEnum.PARAMETER_ERROR, "字段中不能包含 ';', ':' ");
+        return StringUtils.join(map.entrySet().stream().map(entry -> entry.getKey() + ":" + entry.getValue()).collect(Collectors.toList()), ";");
+    }
+
+    public static List<Long> bytesToLongList(byte[] bytes) {
+        int size = bytes != null ? bytes.length : 0;
+        if (size == 0 || size % 8 != 0) {
+            return Lists.newArrayList();
+        }
+        ByteBuffer wrap = ByteBuffer.wrap(bytes);
+        List<Long> idList = new ArrayList<>(size / 8);
+        for (int i = 0; i < size; i += 8) {
+            idList.add(wrap.getLong(i));
+        }
+        return idList;
+    }
+
+    public static byte[] longListToBytes(List<Long> longList) {
+        if (CollectionUtils.isEmpty(longList)) {
+            return null;
+        }
+        ByteBuf byteBuf = Unpooled.buffer(longList.size() * 8);
+        longList.forEach(byteBuf::writeLong);
+        return byteBuf.array();
     }
 }

@@ -27,7 +27,10 @@ import cn.edu.sdu.qd.oj.judgetemplate.dto.JudgeTemplatePageReqDTO;
 import cn.edu.sdu.qd.oj.judgetemplate.entity.JudgeTemplateDO;
 import cn.edu.sdu.qd.oj.judgetemplate.entity.JudgeTemplateManageListDO;
 import com.baomidou.mybatisplus.extension.conditions.query.LambdaQueryChainWrapper;
+import com.baomidou.mybatisplus.extension.conditions.update.LambdaUpdateChainWrapper;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
+import org.assertj.core.util.Lists;
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -68,6 +71,9 @@ public class JudgeTemplateService {
                               .or(o2 -> o2.eq(JudgeTemplateManageListDO::getIsPublic, 0)
                                           .and(o3 -> o3.eq(JudgeTemplateManageListDO::getUserId, userId))));
         }
+        Optional.of(reqDTO).map(JudgeTemplatePageReqDTO::getTitle).filter(StringUtils::isNotEmpty).ifPresent(title -> {
+            query.likeRight(JudgeTemplateManageListDO::getTitle, title);
+        });
         Page<JudgeTemplateManageListDO> pageResult = query.page(new Page<>(reqDTO.getPageNow(), reqDTO.getPageSize()));
         List<JudgeTemplateManageListDTO> judgeTemplateManageListDTOList = judgeTemplateManageListConverter.to(pageResult.getRecords());
         return new PageResult<>(pageResult.getPages(), judgeTemplateManageListDTOList);
@@ -82,11 +88,19 @@ public class JudgeTemplateService {
 
 
     public void update(JudgeTemplateDTO judgeTemplateDTO, UserSessionDTO userSessionDTO) {
-        JudgeTemplateDO judgeTemplateDO = judgeTemplateDao.getById(judgeTemplateDTO.getId());
-        AssertUtils.notNull(judgeTemplateDO, ApiExceptionEnum.JUDGETEMPLATE_NOT_FOUND);
-        AssertUtils.isTrue(userSessionDTO.userIdEquals(judgeTemplateDO.getUserId())
+        JudgeTemplateDO originalJudgeTemplateDO = judgeTemplateDao.getById(judgeTemplateDTO.getId());
+        AssertUtils.notNull(originalJudgeTemplateDO, ApiExceptionEnum.JUDGETEMPLATE_NOT_FOUND);
+        AssertUtils.isTrue(userSessionDTO.userIdEquals(originalJudgeTemplateDO.getUserId())
                 || PermissionEnum.SUPERADMIN.in(userSessionDTO), ApiExceptionEnum.USER_NOT_MATCHING);
-        AssertUtils.isTrue(judgeTemplateDao.updateById(judgeTemplateDO), ApiExceptionEnum.SERVER_BUSY);
+        // 构造更新器
+        JudgeTemplateDO judgeTemplateDO = judgeTemplateConverter.from(judgeTemplateDTO);
+        judgeTemplateDO.setVersion(originalJudgeTemplateDO.getVersion());
+        // 对 zipFileId 要更新，不能忽视null
+        LambdaUpdateChainWrapper<JudgeTemplateDO> updater = judgeTemplateDao.lambdaUpdate()
+                .eq(JudgeTemplateDO::getId, judgeTemplateDO.getId())
+                .set(JudgeTemplateDO::getZipFileId, judgeTemplateDO.getZipFileId());
+        // 更新
+        AssertUtils.isTrue(updater.update(judgeTemplateDO), ApiExceptionEnum.SERVER_BUSY);
     }
 
     public List<JudgeTemplateListDTO> listByIds(List<Long> judgeTemplateIdList) {
@@ -97,5 +111,22 @@ public class JudgeTemplateService {
                 JudgeTemplateDO::getAcceptFileExtensions
         ).in(JudgeTemplateDO::getId, judgeTemplateIdList).list();
         return judgeTemplateListConverter.to(judgeTemplateManageListDOList);
+    }
+
+    public List<JudgeTemplateManageListDTO> listByTitle(String title, UserSessionDTO userSessionDTO) {
+        LambdaQueryChainWrapper<JudgeTemplateManageListDO> query = judgeTemplateManageListDao.lambdaQuery().select(
+            JudgeTemplateManageListDO::getId,
+            JudgeTemplateManageListDO::getType,
+            JudgeTemplateManageListDO::getTitle,
+            JudgeTemplateManageListDO::getComment
+        ).likeRight(JudgeTemplateManageListDO::getTitle, title);
+        // 超级管理员能查所有的，其他只查 public 或自己的
+        if (PermissionEnum.SUPERADMIN.notIn(userSessionDTO)) {
+            Long userId = Optional.ofNullable(userSessionDTO).map(UserSessionDTO::getUserId).orElse(null);
+            query.and(o1 -> o1.eq(JudgeTemplateManageListDO::getIsPublic, 1)
+                    .or(o2 -> o2.eq(JudgeTemplateManageListDO::getIsPublic, 0)
+                            .and(o3 -> o3.eq(JudgeTemplateManageListDO::getUserId, userId))));
+        }
+        return Optional.ofNullable(judgeTemplateManageListConverter.to(query.list())).orElse(Lists.newArrayList());
     }
 }

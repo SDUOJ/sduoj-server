@@ -10,7 +10,7 @@
 
 package cn.edu.sdu.qd.oj.checkpoint.api;
 
-import cn.edu.sdu.qd.oj.checkpoint.dto.CheckpointDTO;
+import cn.edu.sdu.qd.oj.checkpoint.dto.CheckpointManageListDTO;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
@@ -22,5 +22,5 @@ public interface CheckpointApi {
     String SERVICE_NAME = "problem-service";
 
     @GetMapping(value = "/queryCheckpointListByProblemId")
-    List<CheckpointDTO> queryCheckpointListByProblemId(@RequestParam("problemId") Long problemId);
+    List<CheckpointManageListDTO> queryCheckpointListByProblemId(@RequestParam("problemId") Long problemId);
 }

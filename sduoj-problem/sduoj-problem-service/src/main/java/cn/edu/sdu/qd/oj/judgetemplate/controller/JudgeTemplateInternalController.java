@@ -12,15 +12,18 @@ package cn.edu.sdu.qd.oj.judgetemplate.controller;
 
 import cn.edu.sdu.qd.oj.judgetemplate.api.JudgeTemplateApi;
 import cn.edu.sdu.qd.oj.judgetemplate.dto.JudgeTemplateDTO;
+import cn.edu.sdu.qd.oj.judgetemplate.service.JudgeTemplateService;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.RestController;
 
 @RestController
 public class JudgeTemplateInternalController implements JudgeTemplateApi {
 
+    @Autowired
+    private JudgeTemplateService judgeTemplateService;
+
     @Override
     public JudgeTemplateDTO query(Long id) {
-        // TODO
-        return null;
+        return judgeTemplateService.query(id);
     }
-
 }

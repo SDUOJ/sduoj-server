@@ -81,4 +81,7 @@ public class ProblemManageListDO extends BaseDO {
 
     @TableField(ProblemDOField.CHECKPOINT_NUM)
     private Integer checkpointNum;
+
+    @TableField(ProblemDOField.JUDGE_TEMPLATES)
+    private String judgeTemplates;
 }

@@ -21,9 +21,15 @@ import cn.edu.sdu.qd.oj.judgetemplate.dto.JudgeTemplateDTO;
 import cn.edu.sdu.qd.oj.judgetemplate.dto.JudgeTemplateManageListDTO;
 import cn.edu.sdu.qd.oj.judgetemplate.dto.JudgeTemplatePageReqDTO;
 import cn.edu.sdu.qd.oj.judgetemplate.service.JudgeTemplateService;
+import org.apache.commons.lang3.StringUtils;
+import org.assertj.core.util.Lists;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.*;
+
+import java.util.List;
+
+import javax.validation.constraints.NotNull;
 
 @Controller
 @RequestMapping("/manage/judgetemplate")
@@ -48,7 +54,7 @@ public class JudgeTemplateManageController {
 
     @GetMapping("/page")
     @ApiResponseBody
-    public PageResult<JudgeTemplateManageListDTO> page(JudgeTemplatePageReqDTO reqDTO,
+    public PageResult<JudgeTemplateManageListDTO> page(@NotNull JudgeTemplatePageReqDTO reqDTO,
                                                        @UserSession UserSessionDTO userSessionDTO) {
         return judgeTemplateService.page(reqDTO, userSessionDTO);
     }
@@ -67,5 +73,15 @@ public class JudgeTemplateManageController {
                        @UserSession UserSessionDTO userSessionDTO) {
         judgeTemplateService.update(judgeTemplateDTO, userSessionDTO);
         return null;
+    }
+
+    @GetMapping("/listByTitle")
+    @ApiResponseBody
+    public List<JudgeTemplateManageListDTO> listByTitle(@RequestParam("title") String title,
+                                                        @UserSession UserSessionDTO userSessionDTO) {
+        if (StringUtils.isBlank(title)) {
+            return Lists.newArrayList();
+        }
+        return judgeTemplateService.listByTitle(title, userSessionDTO);
     }
 }

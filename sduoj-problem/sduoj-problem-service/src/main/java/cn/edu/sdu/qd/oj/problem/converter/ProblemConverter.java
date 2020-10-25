@@ -10,13 +10,11 @@
 
 package cn.edu.sdu.qd.oj.problem.converter;
 
-import cn.edu.sdu.qd.oj.common.converter.BaseConverter;
+import cn.edu.sdu.qd.oj.problem.dto.ProblemCaseDTO;
 import cn.edu.sdu.qd.oj.problem.dto.ProblemDTO;
-import cn.edu.sdu.qd.oj.problem.dto.ProblemDescriptionDTO;
 import cn.edu.sdu.qd.oj.problem.entity.ProblemDO;
 import cn.edu.sdu.qd.oj.problem.entity.ProblemDescriptionDO;
 import org.mapstruct.factory.Mappers;
-import org.springframework.beans.factory.annotation.Autowired;
 
 import java.util.List;
 
@@ -29,10 +27,12 @@ public interface ProblemConverter extends BaseProblemConverter<ProblemDO, Proble
 
     default ProblemDTO to(ProblemDO problemDO,
                           ProblemDescriptionDO problemDescriptionDO,
-                          List<ProblemDescriptionDO> problemDescriptionDOList) {
+                          List<ProblemDescriptionDO> problemDescriptionDOList,
+                          List<ProblemCaseDTO> problemCaseDTOList) {
         ProblemDTO problemDTO = to(problemDO);
         problemDTO.setProblemDescriptionDTO(problemDescriptionConverter.to(problemDescriptionDO));
         problemDTO.setProblemDescriptionListDTOList(problemDescriptionListConverter.to(problemDescriptionDOList));
+        problemDTO.setProblemCaseDTOList(problemCaseDTOList);
         return problemDTO;
     }
 }

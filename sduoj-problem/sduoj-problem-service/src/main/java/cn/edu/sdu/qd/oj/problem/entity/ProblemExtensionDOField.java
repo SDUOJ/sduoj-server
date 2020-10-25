@@ -20,4 +20,8 @@ public class ProblemExtensionDOField {
     public static final String PROBLEM_ID = "p_id";
     public static final String KEY = "pe_key";
     public static final String VALUE = "pe_value";
+
+    public static String problemCase() {
+        return "problemCase";
+    }
 }

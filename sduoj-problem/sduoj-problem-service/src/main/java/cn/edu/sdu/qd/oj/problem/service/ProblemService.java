@@ -20,6 +20,7 @@ import cn.edu.sdu.qd.oj.common.util.UserCacheUtils;
 import cn.edu.sdu.qd.oj.problem.converter.*;
 import cn.edu.sdu.qd.oj.problem.dao.ProblemDao;
 import cn.edu.sdu.qd.oj.problem.dao.ProblemDescriptionDao;
+import cn.edu.sdu.qd.oj.problem.dto.ProblemCaseDTO;
 import cn.edu.sdu.qd.oj.tag.converter.TagConverter;
 import cn.edu.sdu.qd.oj.tag.dao.TagDao;
 import cn.edu.sdu.qd.oj.problem.dto.ProblemListReqDTO;
@@ -50,6 +51,9 @@ public class ProblemService {
     private ProblemCommonService problemCommonService;
 
     @Autowired
+    private ProblemExtensionSerivce problemExtensionSerivce;
+
+    @Autowired
     private ProblemDao problemDao;
 
     @Autowired
@@ -74,6 +78,8 @@ public class ProblemService {
     private TagConverter tagConverter;
 
     public ProblemDTO queryByCode(String problemCode, Long descriptionId, Long userId) {
+        // TODO: cache, polish
+
         ProblemDO problemDO = problemDao.lambdaQuery().select(
                 ProblemDO.class, field -> !field.getColumn().equals(ProblemDOField.CHECKPOINTS)
         ).eq(ProblemDO::getProblemCode, problemCode).one();
@@ -117,8 +123,10 @@ public class ProblemService {
         // 按照 descriptionId 排序
         problemDescriptionDOList.sort(ProblemDescriptionDO::compareById);
 
+        // 查询 problemCase
+        List<ProblemCaseDTO> problemCaseDTOList = problemExtensionSerivce.queryProblemCase(problemDO.getProblemId());
 
-        ProblemDTO problemDTO = problemConverter.to(problemDO, problemDescriptionDO, problemDescriptionDOList);
+        ProblemDTO problemDTO = problemConverter.to(problemDO, problemDescriptionDO, problemDescriptionDOList, problemCaseDTOList);
 
         // TODO: 考虑设计一个 annotation 和 cacheUtil 关联起来，自动填充一些业务字段
         try {
@@ -241,7 +249,7 @@ public class ProblemService {
         ProblemDescriptionDO problemDescriptionDO = problemDescriptionDao.lambdaQuery()
                 .eq(ProblemDescriptionDO::getProblemId, problemDO.getProblemId())
                 .eq(ProblemDescriptionDO::getId, problemDescriptionId).one();
-        return problemConverter.to(problemDO, problemDescriptionDO, null);
+        return problemConverter.to(problemDO, problemDescriptionDO, null, null);
     }
 
     public List<Long> queryPrivateProblemIdList(Long userId) {

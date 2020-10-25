@@ -8,7 +8,7 @@
  *      https://www.gnu.org/licenses/gpl-3.0.en.html
  */
 
-package cn.edu.sdu.qd.oj.judgetemplate.dto;
+package cn.edu.sdu.qd.oj.dto;
 
 import cn.edu.sdu.qd.oj.common.entity.BaseDTO;
 import lombok.*;
@@ -18,8 +18,7 @@ import lombok.*;
 @NoArgsConstructor
 @AllArgsConstructor
 @EqualsAndHashCode(callSuper = true)
-public class JudgeTemplatePageReqDTO extends BaseDTO {
-    private int pageNow;
-    private int pageSize;
-    private String title;
+public class PlainFileDownloadDTO extends BaseDTO {
+    private Long fileId;
+    private byte[] bytes;
 }

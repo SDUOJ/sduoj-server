@@ -60,4 +60,6 @@ public class ProblemDTO extends BaseDTO {
     private List<TagDTO> tagDTOList;
 
     private List<JudgeTemplateListDTO> judgeTemplates;
+
+    private List<ProblemCaseDTO> problemCaseDTOList;
 }
