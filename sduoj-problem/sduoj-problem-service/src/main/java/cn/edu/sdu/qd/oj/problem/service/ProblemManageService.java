@@ -18,6 +18,8 @@ import cn.edu.sdu.qd.oj.common.util.*;
 import cn.edu.sdu.qd.oj.common.entity.PageResult;
 import cn.edu.sdu.qd.oj.common.enums.ApiExceptionEnum;
 import cn.edu.sdu.qd.oj.common.exception.ApiException;
+import cn.edu.sdu.qd.oj.judgetemplate.dto.JudgeTemplateListDTO;
+import cn.edu.sdu.qd.oj.judgetemplate.service.JudgeTemplateService;
 import cn.edu.sdu.qd.oj.problem.converter.*;
 import cn.edu.sdu.qd.oj.problem.dao.ProblemDao;
 import cn.edu.sdu.qd.oj.problem.dao.ProblemDescriptionDao;
@@ -35,9 +37,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
+import java.util.*;
+import java.util.function.Function;
 import java.util.stream.Collectors;
 
 /**
@@ -60,6 +61,9 @@ public class ProblemManageService {
 
     @Autowired
     private ProblemExtensionSerivce problemExtensionSerivce;
+
+    @Autowired
+    private JudgeTemplateService judgeTemplateService;
 
     @Autowired
     private ProblemDao problemDao;
@@ -159,6 +163,21 @@ public class ProblemManageService {
         ));
         // 置入 username
         problemManageListDTOlist.forEach(problemManageListDTO -> problemManageListDTO.setUsername(userCacheUtils.getUsername(problemManageListDTO.getUserId())));
+        // 查询 judgeTemplate，置入
+        List<Long> judgeTemplateIdList = problemManageListDTOlist.stream()
+                .map(ProblemManageListDTO::getJudgeTemplates)
+                .filter(Objects::nonNull)
+                .flatMap(List::stream)
+                .distinct()
+                .collect(Collectors.toList());
+        List<JudgeTemplateListDTO> judgeTemplateListDTOList = judgeTemplateService.listByIds(judgeTemplateIdList);
+        Map<Long, JudgeTemplateListDTO> judgeTemplateListDTOMap = judgeTemplateListDTOList.stream().collect(Collectors.toMap(JudgeTemplateListDTO::getId, Function.identity()));
+        problemManageListDTOlist.forEach(problemManageListDTO -> {
+            Optional.ofNullable(problemManageListDTO.getJudgeTemplates()).filter(CollectionUtils::isNotEmpty).ifPresent(ids ->
+                problemManageListDTO.setJudgeTemplateListDTOList(ids.stream().map(judgeTemplateListDTOMap::get).collect(Collectors.toList()))
+            );
+        });
+        // 包装, 返回
         return new PageResult<>(pageResult.getPages(), problemManageListDTOlist);
     }
 
@@ -172,9 +191,9 @@ public class ProblemManageService {
         ).eq(ProblemDO::getProblemCode, problem.getProblemCode()).one();
         // 特判题目权限
         AssertUtils.notNull(originalProblemDO, ApiExceptionEnum.PROBLEM_NOT_FOUND);
-        AssertUtils.isTrue(PermissionEnum.SUPERADMIN.notIn(userSessionDTO) && userSessionDTO.userIdNotEquals(originalProblemDO.getUserId()),
+        AssertUtils.isTrue(PermissionEnum.SUPERADMIN.in(userSessionDTO) || userSessionDTO.userIdEquals(originalProblemDO.getUserId()),
                 ApiExceptionEnum.USER_NOT_MATCHING);
-        problem.setProblemId(originalProblemDO.getUserId());
+        problem.setProblemId(originalProblemDO.getProblemId());
 
         // 构造更新器
         ProblemDO problemUpdateDO = problemManageConverter.from(problem);

@@ -11,6 +11,7 @@
 package cn.edu.sdu.qd.oj.problem.dto;
 
 import cn.edu.sdu.qd.oj.common.entity.BaseDTO;
+import cn.edu.sdu.qd.oj.judgetemplate.dto.JudgeTemplateListDTO;
 import cn.edu.sdu.qd.oj.tag.dto.TagDTO;
 import lombok.*;
 
@@ -68,4 +69,6 @@ public class ProblemManageListDTO extends BaseDTO {
     private List<TagDTO> tagDTOList;
 
     private String username;
+
+    private List<JudgeTemplateListDTO> judgeTemplateListDTOList;
 }

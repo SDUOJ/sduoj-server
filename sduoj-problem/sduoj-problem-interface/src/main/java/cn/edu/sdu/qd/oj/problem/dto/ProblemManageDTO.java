@@ -11,10 +11,10 @@
 package cn.edu.sdu.qd.oj.problem.dto;
 
 import cn.edu.sdu.qd.oj.common.entity.BaseDTO;
-import cn.edu.sdu.qd.oj.judgetemplate.dto.JudgeTemplateListDTO;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.*;
 
+import javax.validation.Valid;
 import javax.validation.constraints.Size;
 import java.util.Date;
 import java.util.List;
@@ -75,6 +75,7 @@ public class ProblemManageDTO extends BaseDTO {
     private Integer checkpointNum;
 
     @Size(max = 1024)
+    @Valid
     private List<ProblemCheckpointDTO> checkpoints;
 
     @Size(max = 20)

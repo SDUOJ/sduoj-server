@@ -108,6 +108,7 @@ public class JudgeTemplateService {
                 JudgeTemplateDO::getId,
                 JudgeTemplateDO::getType,
                 JudgeTemplateDO::getTitle,
+                JudgeTemplateDO::getComment,
                 JudgeTemplateDO::getAcceptFileExtensions
         ).in(JudgeTemplateDO::getId, judgeTemplateIdList).list();
         return judgeTemplateListConverter.to(judgeTemplateManageListDOList);

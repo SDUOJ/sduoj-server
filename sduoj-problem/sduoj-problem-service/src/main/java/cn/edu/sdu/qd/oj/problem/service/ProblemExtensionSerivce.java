@@ -36,11 +36,27 @@ public class ProblemExtensionSerivce {
 
 
     public void updateProblemCase(long problemId, List<ProblemCaseDTO> problemCaseDTOList) {
-        boolean succ = problemExtensionDao.lambdaUpdate()
-                .eq(ProblemExtensionDO::getProblemId, problemId)
-                .eq(ProblemExtensionDO::getExtensionKey, ProblemExtensionDOField.problemCase())
-                .set(ProblemExtensionDO::getExtensionValue, JSON.toJSONString(problemCaseDTOList)).update();
-        AssertUtils.isTrue(succ, ApiExceptionEnum.SERVER_BUSY);
+        ProblemExtensionDO originalProblemExtensionDO = problemExtensionDao.lambdaQuery().select(
+                ProblemExtensionDO::getId,
+                ProblemExtensionDO::getVersion
+        ).eq(ProblemExtensionDO::getProblemId, problemId)
+         .eq(ProblemExtensionDO::getExtensionKey, ProblemExtensionDOField.problemCase())
+         .one();
+        if (originalProblemExtensionDO == null) {
+            ProblemExtensionDO problemExtensionDO = ProblemExtensionDO.builder()
+                    .problemId(problemId)
+                    .extensionKey(ProblemExtensionDOField.problemCase())
+                    .extensionValue(JSON.toJSONString(problemCaseDTOList))
+                    .build();
+            AssertUtils.isTrue(problemExtensionDao.save(problemExtensionDO), ApiExceptionEnum.SERVER_BUSY);
+        } else {
+            ProblemExtensionDO problemExtensionDO = ProblemExtensionDO.builder()
+                    .id(originalProblemExtensionDO.getId())
+                    .version(originalProblemExtensionDO.getVersion())
+                    .extensionValue(JSON.toJSONString(problemCaseDTOList))
+                    .build();
+            AssertUtils.isTrue(problemExtensionDao.updateById(problemExtensionDO), ApiExceptionEnum.SERVER_BUSY);
+        }
     }
 
     public List<ProblemCaseDTO> queryProblemCase(long problemId) {

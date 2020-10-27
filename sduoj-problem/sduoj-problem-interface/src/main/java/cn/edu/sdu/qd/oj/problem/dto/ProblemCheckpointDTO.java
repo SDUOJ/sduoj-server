@@ -14,6 +14,8 @@ package cn.edu.sdu.qd.oj.problem.dto;
 import cn.edu.sdu.qd.oj.common.entity.BaseDTO;
 import lombok.*;
 
+import javax.validation.constraints.NotNull;
+
 @Data
 @Builder
 @NoArgsConstructor
@@ -23,7 +25,10 @@ public class ProblemCheckpointDTO extends BaseDTO {
 
     public static final int BYTE_SIZE = 12;
 
+    @NotNull(message = "检查点id不可为空")
     private Long checkpointId;
+
+    @NotNull(message = "检查点分数不可为空")
     private Integer checkpointScore;
 
 }

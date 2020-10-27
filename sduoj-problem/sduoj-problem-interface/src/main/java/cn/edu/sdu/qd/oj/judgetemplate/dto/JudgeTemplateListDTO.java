@@ -28,5 +28,7 @@ public class JudgeTemplateListDTO extends BaseDTO {
 
     private String title;
 
+    private String comment;
+
     private List<String> acceptFileExtensions;
 }

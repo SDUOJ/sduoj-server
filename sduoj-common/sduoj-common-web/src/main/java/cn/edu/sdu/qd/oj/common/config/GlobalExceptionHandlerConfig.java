@@ -61,7 +61,8 @@ public class GlobalExceptionHandlerConfig {
 
     @ExceptionHandler(ApiException.class)
     public ResponseEntity<ResponseResult> handleException(ApiException e) {
-        log.warn("{} {} {}", e.getCode(), e.getMessage(), e.getStackTrace()[0]);
+//        log.warn("{} {} {}", e.getCode(), e.getMessage(), e.getStackTrace()[0]);
+        log.warn("", e);
         return ResponseEntity.status(e.code)
                 .body(ResponseResult.fail(e.code, e.message));
     }

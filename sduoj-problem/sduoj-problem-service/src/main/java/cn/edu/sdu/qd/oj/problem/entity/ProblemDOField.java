@@ -16,8 +16,8 @@ public class ProblemDOField {
     public static final String GMT_CREATE = "p_gmt_create";
     public static final String GMT_MODIFIED = "p_gmt_modified";
     public static final String FEATURES = "p_features";
-    public static final String DELETED = "p_version";
-    public static final String VERSION = "p_is_deleted";
+    public static final String DELETED = "p_is_deleted";
+    public static final String VERSION = "p_version";
     public static final String CODE = "p_code";
     public static final String IS_PUBLIC = "p_is_public";
     public static final String USER_ID = "u_id";

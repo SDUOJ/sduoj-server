@@ -21,6 +21,7 @@ import cn.edu.sdu.qd.oj.common.util.AssertUtils;
 import cn.edu.sdu.qd.oj.common.util.SnowflakeIdWorker;
 import cn.edu.sdu.qd.oj.dto.BinaryFileUploadReqDTO;
 import cn.edu.sdu.qd.oj.dto.FileDTO;
+import com.alibaba.nacos.common.utils.Md5Utils;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.io.FilenameUtils;
 import org.assertj.core.util.Lists;
@@ -134,14 +135,15 @@ public class CheckpointFileService {
     @Transactional
     public CheckpointDTO updateCheckpointFile(String input, String output, Long userId) {
         long snowflaskId = snowflakeIdWorker.nextId();
-        String snowflaskIdString = Long.toHexString(snowflaskId);
 
         byte[] inputBytes = input.getBytes();
         byte[] outputBytes = output.getBytes();
         List<BinaryFileUploadReqDTO> uploadReqDTOList = Lists.newArrayList(
-                BinaryFileUploadReqDTO.builder().bytes(inputBytes).size((long) inputBytes.length).filename(snowflaskIdString + ".in").build(),
-                BinaryFileUploadReqDTO.builder().bytes(outputBytes).size((long) outputBytes.length).filename(snowflaskIdString + ".out").build()
+                BinaryFileUploadReqDTO.builder().bytes(inputBytes).size((long) inputBytes.length).filename(snowflaskId + ".in").build(),
+                BinaryFileUploadReqDTO.builder().bytes(outputBytes).size((long) outputBytes.length).filename(snowflaskId + ".out").build()
         );
+        String inputMd5 = Md5Utils.getMD5(inputBytes);
+        String outputMd5 = Md5Utils.getMD5(outputBytes);
 
         CheckpointDO checkpointDO = CheckpointDO.builder()
                 .checkpointId(snowflaskId)
@@ -152,9 +154,9 @@ public class CheckpointFileService {
                 .build();
         try {
             List<FileDTO> fileDTOList = filesysClient.uploadBinaryFiles(uploadReqDTOList, userId);
-            Map<String, FileDTO> fileDTOMap = fileDTOList.stream().collect(Collectors.toMap(FileDTO::getName, Function.identity()));
-            checkpointDO.setInputFileId(fileDTOMap.get(snowflaskIdString + ".in").getId());
-            checkpointDO.setOutputFileId(fileDTOMap.get(snowflaskIdString + ".out").getId());
+            Map<String, FileDTO> fileDTOMap = fileDTOList.stream().collect(Collectors.toMap(FileDTO::getMd5, Function.identity()));
+            checkpointDO.setInputFileId(fileDTOMap.get(inputMd5).getId());
+            checkpointDO.setOutputFileId(fileDTOMap.get(outputMd5).getId());
             checkpointDao.save(checkpointDO);
         } catch (Exception e) {
             log.error("{}", e);
@@ -167,8 +169,8 @@ public class CheckpointFileService {
     * @Description 读取文件系统中的 checkpoint 内容
     * @param checkpointId
     **/
-    public CheckpointDTO queryCheckpointFileContent(String checkpointId) throws IOException {
-        CheckpointDO checkpointDO = checkpointDao.getById(Long.parseLong(checkpointId, 16));
+    public CheckpointDTO queryCheckpointFileContent(Long checkpointId) throws IOException {
+        CheckpointDO checkpointDO = checkpointDao.getById(checkpointId);
 
         AssertUtils.notNull(checkpointDO, ApiExceptionEnum.FILE_NOT_EXISTS);
         AssertUtils.isTrue(!(checkpointDO.getInputSize() > 1024*1024 || checkpointDO.getOutputSize() > 1024*1024), ApiExceptionEnum.FILE_TOO_LARGE);
@@ -176,7 +178,7 @@ public class CheckpointFileService {
         // TODO: 读文件系统
 
         return CheckpointDTO.builder()
-                .checkpointId(Long.valueOf(checkpointId, 16))
+                .checkpointId(checkpointId)
                 .input(checkpointDO.getInputPreview())
                 .output(checkpointDO.getOutputPreview())
                 .build();

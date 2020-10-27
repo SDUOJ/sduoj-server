@@ -55,7 +55,7 @@ public class CheckpointManageController {
      **/
     @GetMapping("/query")
     @ApiResponseBody
-    public CheckpointDTO query(@RequestParam("checkpointId") String checkpointId) throws IOException {
+    public CheckpointDTO query(@RequestParam("checkpointId") Long checkpointId) throws IOException {
         return this.checkpointFileService.queryCheckpointFileContent(checkpointId);
     }
 

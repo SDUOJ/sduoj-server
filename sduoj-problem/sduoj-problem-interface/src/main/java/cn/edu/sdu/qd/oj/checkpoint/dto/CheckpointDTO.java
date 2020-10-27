@@ -11,10 +11,6 @@
 package cn.edu.sdu.qd.oj.checkpoint.dto;
 
 import cn.edu.sdu.qd.oj.common.entity.BaseDTO;
-import cn.edu.sdu.qd.oj.common.util.HexStringToLongDeserializer;
-import cn.edu.sdu.qd.oj.common.util.LongToHexStringSerializer;
-import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
-import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 import lombok.*;
 
 import java.util.Date;
@@ -36,8 +32,6 @@ public class CheckpointDTO extends BaseDTO {
 
     public static final int MAX_DESCRIPTION_LENGTH = 64;
 
-    @JsonSerialize(using = LongToHexStringSerializer.class)
-    @JsonDeserialize(using = HexStringToLongDeserializer.class)
     private Long checkpointId;
 
     private Date gmtCreate;

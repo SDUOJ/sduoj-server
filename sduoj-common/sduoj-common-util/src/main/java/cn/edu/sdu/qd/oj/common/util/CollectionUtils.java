@@ -10,6 +10,8 @@
 
 package cn.edu.sdu.qd.oj.common.util;
 
+import org.springframework.lang.Nullable;
+
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
@@ -17,11 +19,22 @@ import java.util.Map;
 public class CollectionUtils {
 
     public static <T> Map<T, Integer> getMapToIndex(Collection<T> collection) {
+        if (isEmpty(collection)) {
+            return new HashMap<>();
+        }
         Map<T, Integer> map = new HashMap<>(collection.size());
         int index = 0;
         for (T t : collection) {
             map.put(t, index++);
         }
         return map;
+    }
+
+    public static boolean isEmpty(@Nullable Collection<?> collection) {
+        return (collection == null || collection.isEmpty());
+    }
+
+    public static boolean isNotEmpty(@Nullable Collection<?> collection) {
+        return !isEmpty(collection);
     }
 }
