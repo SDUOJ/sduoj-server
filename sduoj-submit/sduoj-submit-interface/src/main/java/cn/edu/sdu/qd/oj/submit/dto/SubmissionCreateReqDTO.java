@@ -14,6 +14,7 @@ import cn.edu.sdu.qd.oj.common.entity.BaseDTO;
 import lombok.*;
 
 import javax.validation.constraints.NotBlank;
+import javax.validation.constraints.NotNull;
 
 @Data
 @Builder
@@ -22,7 +23,9 @@ import javax.validation.constraints.NotBlank;
 @EqualsAndHashCode(callSuper = true)
 public class SubmissionCreateReqDTO extends BaseDTO {
 
-    @NotBlank
+    @NotNull
+    private Long judgeTemplateId;
+
     private String language;
 
     @NotBlank

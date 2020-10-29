@@ -42,6 +42,8 @@ public class SubmissionJudgeDTO extends BaseDTO {
 
     private Integer version;
 
+    private Long judgeTemplateId;
+
     private String language;
 
     private Date gmtCreate;

@@ -23,7 +23,9 @@ import javax.validation.constraints.NotNull;
 @EqualsAndHashCode(callSuper = true)
 public class ContestSubmissionCreateReqDTO extends BaseDTO {
 
-    @NotBlank
+    @NotNull
+    private Long judgeTemplateId;
+
     private String language;
 
     @NotBlank

@@ -51,6 +51,9 @@ public class SubmissionListDO extends BaseDO {
     @TableField(SubmissionDOField.CONTEST_ID)
     private Long contestId;
 
+    @TableField(SubmissionDOField.JUDGE_TEMPLATE_ID)
+    private Long judgeTemplateId;
+
     @TableField(SubmissionDOField.LANGUAGE)
     private String language;
 

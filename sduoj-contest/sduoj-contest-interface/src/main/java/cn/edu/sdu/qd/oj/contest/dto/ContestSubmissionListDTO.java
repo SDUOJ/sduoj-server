@@ -42,6 +42,8 @@ public class ContestSubmissionListDTO extends BaseDTO {
 
     private String language;
 
+    private Long judgeTemplateId;
+
     private Integer judgeResult;
 
     private Integer judgeScore;
@@ -57,6 +59,8 @@ public class ContestSubmissionListDTO extends BaseDTO {
     private String problemCode;
 
     private String problemTitle;
+
+    private String judgeTemplateTitle;
 
     private String username;
 }

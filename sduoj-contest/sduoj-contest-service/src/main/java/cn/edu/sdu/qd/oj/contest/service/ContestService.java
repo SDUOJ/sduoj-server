@@ -198,6 +198,7 @@ public class ContestService {
                 .build();
         ContestProblemDTO contestProblemDTO = ContestProblemDTO.builder()
                 .languages(problemDTO.getLanguages())
+                .judgeTemplates(problemDTO.getJudgeTemplates())
                 .timeLimit(problemDTO.getTimeLimit())
                 .memoryLimit(problemDTO.getMemoryLimit())
                 .problemCode(problemDTO.getProblemCode())
@@ -246,6 +247,7 @@ public class ContestService {
         SubmissionCreateReqDTO submissionCreateReqDTO = SubmissionCreateReqDTO.builder()
                 .problemCode(problemCode)
                 .language(reqDTO.getLanguage())
+                .judgeTemplateId(reqDTO.getJudgeTemplateId())
                 .code(reqDTO.getCode())
                 .userId(reqDTO.getUserId())
                 .ipv4(reqDTO.getIpv4())
@@ -277,6 +279,7 @@ public class ContestService {
                 .orderBy(reqDTO.getOrderBy())
                 .ascending(reqDTO.getAscending())
                 .judgeResult(reqDTO.getJudgeResult())
+                .judgeTemplateId(reqDTO.getJudgeTemplateId())
                 .language(reqDTO.getLanguage())
                 .problemCode(problemCode)
                 .username(reqDTO.getUsername())

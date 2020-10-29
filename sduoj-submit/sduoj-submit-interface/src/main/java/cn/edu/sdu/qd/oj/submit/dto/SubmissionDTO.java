@@ -48,6 +48,8 @@ public class SubmissionDTO extends BaseDTO {
 
     private Long userId;
 
+    private Long judgeTemplateId;
+
     private String language;
 
     private Integer judgeResult;

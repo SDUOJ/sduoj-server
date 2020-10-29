@@ -102,6 +102,7 @@ public class SubmitService {
                 .code(submissionUpdateReqDTO.getCode())
                 .ipv4(submissionUpdateReqDTO.getIpv4())
                 .codeLength(submissionUpdateReqDTO.getCode().length())
+                .judgeTemplateId(submissionUpdateReqDTO.getJudgeTemplateId())
                 .language(submissionUpdateReqDTO.getLanguage())
                 .problemId(problemId)
                 .userId(submissionUpdateReqDTO.getUserId())
@@ -180,6 +181,7 @@ public class SubmitService {
             SubmissionDO::getProblemId,
             SubmissionDO::getUserId,
             SubmissionDO::getLanguage,
+            SubmissionDO::getJudgeTemplateId,
             SubmissionDO::getGmtCreate,
             SubmissionDO::getGmtModified,
             SubmissionDO::getIsPublic,

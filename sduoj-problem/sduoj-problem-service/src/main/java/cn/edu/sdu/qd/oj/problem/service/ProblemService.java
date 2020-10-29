@@ -249,7 +249,11 @@ public class ProblemService {
         ProblemDescriptionDO problemDescriptionDO = problemDescriptionDao.lambdaQuery()
                 .eq(ProblemDescriptionDO::getProblemId, problemDO.getProblemId())
                 .eq(ProblemDescriptionDO::getId, problemDescriptionId).one();
-        return problemConverter.to(problemDO, problemDescriptionDO, null, null);
+
+        // 查询 problemCase
+        List<ProblemCaseDTO> problemCaseDTOList = problemExtensionSerivce.queryProblemCase(problemDO.getProblemId());
+
+        return problemConverter.to(problemDO, problemDescriptionDO, null, problemCaseDTOList);
     }
 
     public List<Long> queryPrivateProblemIdList(Long userId) {

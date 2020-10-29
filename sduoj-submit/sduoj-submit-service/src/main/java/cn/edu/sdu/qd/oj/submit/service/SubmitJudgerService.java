@@ -70,6 +70,7 @@ public class SubmitJudgerService {
                 SubmissionDO::getProblemId,
                 SubmissionDO::getUserId,
                 SubmissionDO::getLanguage,
+                SubmissionDO::getJudgeTemplateId,
                 SubmissionDO::getGmtCreate,
                 SubmissionDO::getCode,
                 SubmissionDO::getCodeLength,

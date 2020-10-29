@@ -37,6 +37,9 @@ public class SubmissionJudgeDO extends BaseDO {
     @TableField(SubmissionDOField.USER_ID)
     private Long userId;
 
+    @TableField(SubmissionDOField.JUDGE_TEMPLATE_ID)
+    private Long judgeTemplateId;
+
     @TableField(SubmissionDOField.LANGUAGE)
     private String language;
 
