@@ -37,4 +37,13 @@ public enum SubmissionJudgeResult {
         }
         return this.code == code;
     }
+
+    public static SubmissionJudgeResult of(Integer code) {
+        for (SubmissionJudgeResult one : SubmissionJudgeResult.values()) {
+            if (one.equals(code)) {
+                return one;
+            }
+        }
+        return null;
+    }
 }
