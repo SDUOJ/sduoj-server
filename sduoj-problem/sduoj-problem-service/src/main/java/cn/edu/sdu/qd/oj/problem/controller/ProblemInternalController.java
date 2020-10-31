@@ -36,6 +36,26 @@ public class ProblemInternalController implements ProblemApi {
     private ProblemService problemService;
 
     @Override
+    public String problemIdToProblemTitle(long problemId) {
+        return problemService.problemIdToProblemTitle(problemId);
+    }
+
+    @Override
+    public int problemIdToProblemCheckpointNum(long problemId) {
+        return problemService.problemIdToProblemCheckpointNum(problemId);
+    }
+
+    @Override
+    public Long problemCodeToProblemId(String problemCode) {
+        return problemService.problemCodeToProblemId(problemCode);
+    }
+
+    @Override
+    public String problemIdToProblemCode(long problemId) {
+        return problemService.problemIdToProblemCode(problemId);
+    }
+
+    @Override
     public Map<Long, String> queryIdToTitleMap() throws InternalApiException {
         return problemService.queryIdToTitleMap();
     }

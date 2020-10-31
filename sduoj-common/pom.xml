@@ -17,6 +17,7 @@
         <module>sduoj-common-entity</module>
         <module>sduoj-common-util</module>
         <module>sduoj-common-web</module>
+        <module>sduoj-common-redis</module>
     </modules>
 
 </project>

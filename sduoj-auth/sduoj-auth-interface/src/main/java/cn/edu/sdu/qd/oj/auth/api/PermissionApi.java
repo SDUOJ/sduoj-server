@@ -11,9 +11,12 @@
 package cn.edu.sdu.qd.oj.auth.api;
 
 import cn.edu.sdu.qd.oj.auth.dto.PermissionDTO;
+import cn.edu.sdu.qd.oj.common.util.RedisConstants;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
+import java.util.Map;
 
 @RequestMapping("/internal/auth")
 public interface PermissionApi {
@@ -31,5 +34,14 @@ public interface PermissionApi {
     * @Description 查询所有url权限信息
     **/
     @GetMapping(value = "/listAll")
+    @Cacheable(value = RedisConstants.ALL_URL_PERMISSION)
     List<PermissionDTO> listAll();
+
+    @GetMapping(value = "/queryUrlToRolesMap")
+    @Cacheable(value = RedisConstants.URL_TO_ROLES_MAP)
+    Map<String, List<String>> queryUrlToRolesMap();
+
+    @GetMapping(value = "/urlToRoles")
+    @Cacheable(key = "#url", value = RedisConstants.URL_TO_ROLES)
+    List<String> urlToRoles(@RequestParam("url") String url);
 }

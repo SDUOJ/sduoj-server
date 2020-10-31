@@ -8,11 +8,8 @@
  *      https://www.gnu.org/licenses/gpl-3.0.en.html
  */
 
-package cn.edu.sdu.qd.oj.submit.client;
+package cn.edu.sdu.qd.oj.common.lock;
 
-import cn.edu.sdu.qd.oj.user.api.UserApi;
-import org.springframework.cloud.openfeign.FeignClient;
-
-@FeignClient(UserApi.SERVICE_NAME)
-public interface UserClient extends UserApi {
+// TODO
+public class RedisDistributedLock {
 }

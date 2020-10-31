@@ -61,12 +61,6 @@ public class SubmitService {
     private UserClient userClient;
 
     @Autowired
-    private UserCacheUtils userCacheUtils;
-
-    @Autowired
-    private ProblemCacheUtils problemCacheUtils;
-
-    @Autowired
     private SubmissionConverter submissionConverter;
 
     @Autowired
@@ -94,8 +88,9 @@ public class SubmitService {
     public Long createSubmission(SubmissionCreateReqDTO submissionUpdateReqDTO, long contestId) {
         // TODO: 校验提交语言支持、校验题目对用户权限
 
+        Long problemId = problemClient.problemCodeToProblemId(submissionUpdateReqDTO.getProblemCode());
+        AssertUtils.notNull(problemId, ApiExceptionEnum.PROBLEM_NOT_FOUND);
 
-        long problemId = problemCacheUtils.getProblemId(submissionUpdateReqDTO.getProblemCode());
         long snowflaskId = snowflakeIdWorker.nextId();
         SubmissionDO submissionDO = SubmissionDO.builder()
                 .submissionId(snowflaskId)
@@ -111,7 +106,7 @@ public class SubmitService {
         AssertUtils.isTrue(submissionDao.save(submissionDO), ApiExceptionEnum.UNKNOWN_ERROR);
         if (contestId != 0) {
             // 比赛过题
-            String problemCode = problemCacheUtils.getProblemCode(submissionDO.getProblemId());
+            String problemCode = problemClient.problemIdToProblemCode(submissionDO.getProblemId());
             String key = RedisConstants.getContestSubmission(contestId);
             if (redisUtils.hasKey(key)) {
                 redisUtils.hincr(key, RedisConstants.getContestProblemSubmit(problemCode), 1);
@@ -143,9 +138,9 @@ public class SubmitService {
                 .eq(SubmissionDO::getSubmissionId, submissionId).one();
         AssertUtils.notNull(submissionDO, ApiExceptionEnum.SUBMISSION_NOT_FOUND);
         SubmissionDTO submissionDTO = submissionConverter.to(submissionDO);
-        submissionDTO.setCheckpointNum(problemCacheUtils.getProblemCheckpointNum(submissionDTO.getProblemId()));
-        submissionDTO.setUsername(userCacheUtils.getUsername(submissionDTO.getUserId()));
-        submissionDTO.setProblemCode(problemCacheUtils.getProblemCode(submissionDTO.getProblemId()));
+        submissionDTO.setCheckpointNum(problemClient.problemIdToProblemCheckpointNum(submissionDTO.getProblemId()));
+        submissionDTO.setUsername(userClient.userIdToUsername(submissionDTO.getUserId()));
+        submissionDTO.setProblemCode(problemClient.problemIdToProblemCode(submissionDTO.getProblemId()));
         return submissionDTO;
     }
 
@@ -161,18 +156,18 @@ public class SubmitService {
                                                                UserSessionDTO userSessionDTO) throws InternalApiException {
         // 填充字段
         if (StringUtils.isNotBlank(reqDTO.getUsername())) {
-            Long userId = userClient.queryUserId(reqDTO.getUsername());
+            Long userId = userClient.usernameToUserId(reqDTO.getUsername());
             if (userId == null) {
                 return new PageResult<>();
             }
             reqDTO.setUserId(userId);
         }
         if (StringUtils.isNotBlank(reqDTO.getProblemCode())) {
-            try {
-                reqDTO.setProblemId(problemCacheUtils.getProblemId(reqDTO.getProblemCode()));
-            } catch (Exception e) {
+            Long problemId = problemClient.problemCodeToProblemId(reqDTO.getProblemCode());
+            if (problemId == null) {
                 return new PageResult<>();
             }
+            reqDTO.setProblemId(problemId);
         }
 
         // 构建查询列
@@ -226,7 +221,7 @@ public class SubmitService {
             query.eq(SubmissionDO::getProblemId, problemId);
         });
         Optional.of(reqDTO).map(SubmissionListReqDTO::getProblemCodeList).ifPresent(problemCodeList -> {
-            List<Long> problemIdList = problemCodeList.stream().map(problemCacheUtils::getProblemId).collect(Collectors.toList());
+            List<Long> problemIdList = problemCodeList.stream().map(problemClient::problemCodeToProblemId).collect(Collectors.toList());
             query.in(SubmissionDO::getProblemId, problemIdList);
         });
 
@@ -244,20 +239,20 @@ public class SubmitService {
         if (StringUtils.isNotBlank(reqDTO.getProblemCode())) {
             submissionListDTOList.forEach(submissionListDTO -> submissionListDTO.setProblemCode(reqDTO.getProblemCode()));
         } else {
-            submissionListDTOList.forEach(submissionListDTO -> submissionListDTO.setProblemCode(problemCacheUtils.getProblemCode(submissionListDTO.getProblemId())));
+            submissionListDTOList.forEach(submissionListDTO -> submissionListDTO.setProblemCode(problemClient.problemIdToProblemCode(submissionListDTO.getProblemId())));
         }
         // 置 username
         if (reqDTO.getUserId() != null) {
             submissionListDTOList.forEach(submissionListDTO -> submissionListDTO.setUsername(reqDTO.getUsername()));
         } else {
-            submissionListDTOList.forEach(submissionListDTO -> submissionListDTO.setUsername(userCacheUtils.getUsername(submissionListDTO.getUserId())));
+            submissionListDTOList.forEach(submissionListDTO -> submissionListDTO.setUsername(userClient.userIdToUsername(submissionListDTO.getUserId())));
         }
         // 置题目标题
         if (reqDTO.getProblemId() != null) {
-            String problemTitle = problemCacheUtils.getProblemTitle(reqDTO.getProblemId());
+            String problemTitle = problemClient.problemIdToProblemTitle(reqDTO.getProblemId());
             submissionListDTOList.forEach(submissionListDTO -> submissionListDTO.setProblemTitle(problemTitle));
         } else {
-            submissionListDTOList.forEach(submissionListDTO -> submissionListDTO.setProblemTitle(problemCacheUtils.getProblemTitle(submissionListDTO.getProblemId())));
+            submissionListDTOList.forEach(submissionListDTO -> submissionListDTO.setProblemTitle(problemClient.problemIdToProblemTitle(submissionListDTO.getProblemId())));
         }
 
         return new PageResult<>(pageResult.getPages(), submissionListDTOList);
@@ -273,7 +268,7 @@ public class SubmitService {
                 SubmissionDO::getJudgeResult
         ).eq(SubmissionDO::getContestId, contestId).list();
         List<SubmissionResultDTO> submissionResultDTOList = submissionResultConverter.to(list);
-        submissionResultDTOList.forEach(o -> o.setProblemCode(problemCacheUtils.getProblemCode(o.getProblemId())));
+        submissionResultDTOList.forEach(o -> o.setProblemCode(problemClient.problemIdToProblemCode(o.getProblemId())));
         return submissionResultDTOList;
     }
 
@@ -289,7 +284,7 @@ public class SubmitService {
                 .eq(SubmissionDO::getJudgeResult, SubmissionJudgeResult.AC.code)
                 .groupBy(SubmissionDO::getProblemId)
                 .list();
-        List<String> problemCodeList = submissionDOList.stream().map(SubmissionDO::getProblemId).map(problemCacheUtils::getProblemCode).collect(Collectors.toList());
+        List<String> problemCodeList = submissionDOList.stream().map(SubmissionDO::getProblemId).map(problemClient::problemIdToProblemCode).collect(Collectors.toList());
         boolean succ = redisUtils.sSetAndTime(key, RedisConstants.ACPROBLEM_EXPIRE, problemCodeList.toArray()) == problemCodeList.size();
         if (!succ) {
            log.error("addACProblem Error! {} {}", contestId, userId);
@@ -307,7 +302,7 @@ public class SubmitService {
             long acceptNum = submissionList.stream().filter(s -> SubmissionJudgeResult.AC.code == s.getJudgeResult()).count();
             problemListDTOList.add(ProblemListDTO.builder()
                     .problemId(problemId)
-                    .problemCode(problemCacheUtils.getProblemCode(problemId))
+                    .problemCode(problemClient.problemIdToProblemCode(problemId))
                     .acceptNum((int) acceptNum)
                     .submitNum(submissionList.size())
                     .build());

@@ -15,9 +15,7 @@ import cn.edu.sdu.qd.oj.common.entity.UserSessionDTO;
 import cn.edu.sdu.qd.oj.common.enums.ApiExceptionEnum;
 import cn.edu.sdu.qd.oj.common.exception.ApiException;
 import cn.edu.sdu.qd.oj.common.exception.InternalApiException;
-import cn.edu.sdu.qd.oj.common.util.*;
 import cn.edu.sdu.qd.oj.common.util.AssertUtils;
-import cn.edu.sdu.qd.oj.common.util.ProblemCacheUtils;
 import cn.edu.sdu.qd.oj.common.util.RedisConstants;
 import cn.edu.sdu.qd.oj.common.util.RedisUtils;
 import cn.edu.sdu.qd.oj.contest.client.ProblemClient;
@@ -75,12 +73,6 @@ public class ContestService {
 
     @Autowired
     private UserClient userClient;
-
-    @Autowired
-    private ProblemCacheUtils problemCacheUtils;
-
-    @Autowired
-    private UserCacheUtils userCacheUtils;
 
     @Autowired
     private RedisUtils redisUtils;
@@ -323,7 +315,7 @@ public class ContestService {
         List<ContestProblemListDTO> contestProblemListDTOList = ContestConvertUtils.problemsTo(contestDO.getProblems());
         Map<Long, Integer> problemIdToProblemIndexMap = new HashMap<>(contestProblemListDTOList.size());
         for (int i = 0, n = contestProblemListDTOList.size(); i < n; i++) {
-            problemIdToProblemIndexMap.put(problemCacheUtils.getProblemId(contestProblemListDTOList.get(i).getProblemCode()), i + 1);
+            problemIdToProblemIndexMap.put(problemClient.problemCodeToProblemId(contestProblemListDTOList.get(i).getProblemCode()), i + 1);
         }
 
         // problemId、problemCode 脱敏
@@ -342,19 +334,10 @@ public class ContestService {
         // 查比赛
         ContestDO contestDO = queryContestAndValidate(contestId, userSessionDTO.getUserId());
 
-        // 先查缓存的 rank
-        String cacheKey = RedisConstants.getContestRank(contestId);
-        if (redisUtils.hasKey(cacheKey)) {
-            List<ContestRankDTO> o = (List<ContestRankDTO>) redisUtils.get(cacheKey);
-            if (o != null) {
-                return o;
-            }
-        }
-
         List<ContestProblemListDTO> contestProblemListDTOList = ContestConvertUtils.problemsTo(contestDO.getProblems());
         Map<Long, Integer> problemIdToProblemIndexMap = new HashMap<>(contestProblemListDTOList.size());
         for (int i = 0, n = contestProblemListDTOList.size(); i < n; i++) {
-            problemIdToProblemIndexMap.put(problemCacheUtils.getProblemId(contestProblemListDTOList.get(i).getProblemCode()), i + 1);
+            problemIdToProblemIndexMap.put(problemClient.problemCodeToProblemId(contestProblemListDTOList.get(i).getProblemCode()), i + 1);
         }
 
         // 比赛 featureMap
@@ -378,16 +361,13 @@ public class ContestService {
 
 
         // 置入 username 数据
-        contestRankDTOList.forEach(o -> o.setUsername(userCacheUtils.getUsername(o.getUserId())));
+        contestRankDTOList.forEach(o -> o.setUsername(userClient.userIdToUsername(o.getUserId())));
 
         // 比赛中时需要进行 submissions 转 problemResults
         if (contestDO.getGmtEnd().after(new Date())) {
             ContestTypeEnum contestType = ContestTypeEnum.of(featureMap.get("mode"));
             contestRankDTOList.forEach(o -> o.computeProblemResults(contestType));
         }
-
-        // 存缓存
-        redisUtils.set(cacheKey, contestRankDTOList, RedisConstants.CONTEST_RANK_EXPIRE);
 
         return contestRankDTOList;
     }

@@ -53,8 +53,13 @@ public class UserInternalController implements UserApi {
     }
 
     @Override
-    public Long queryUserId(String username) throws InternalApiException {
+    public Long usernameToUserId(String username) {
         return this.userService.queryUserId(username);
+    }
+
+    @Override
+    public String userIdToUsername(Long userId) {
+        return this.userService.queryUsername(userId);
     }
 
     @Override

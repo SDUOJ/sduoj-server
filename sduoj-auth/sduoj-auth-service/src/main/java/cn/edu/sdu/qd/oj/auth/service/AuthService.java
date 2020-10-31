@@ -14,6 +14,7 @@ import cn.edu.sdu.qd.oj.auth.converter.PermissionConverter;
 import cn.edu.sdu.qd.oj.auth.dao.PermissionDao;
 import cn.edu.sdu.qd.oj.auth.dto.PermissionDTO;
 import cn.edu.sdu.qd.oj.auth.entity.PermissionDO;
+import cn.edu.sdu.qd.oj.common.converter.BaseConvertUtils;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -51,5 +52,10 @@ public class AuthService {
     public List<PermissionDTO> listAll() {
         List<PermissionDO> permissionDOList = permissionDao.list();
         return permissionConverter.to(permissionDOList);
+    }
+
+    public List<String> urlToRoles(String url) {
+        PermissionDO permissionDO = permissionDao.lambdaQuery().select(PermissionDO::getRoles).eq(PermissionDO::getUrl, url).one();
+        return BaseConvertUtils.stringToList(permissionDO.getRoles());
     }
 }

@@ -11,10 +11,10 @@
 package cn.edu.sdu.qd.oj.judgetemplate.converter;
 
 import cn.edu.sdu.qd.oj.common.util.SpringContextUtils;
-import cn.edu.sdu.qd.oj.common.util.UserCacheUtils;
+import cn.edu.sdu.qd.oj.problem.client.UserClient;
 
 public class JudgeTemplateConverterUtils {
     public static String userIdToUsername(Long userId) {
-        return SpringContextUtils.getBean(UserCacheUtils.class).getUsername(userId);
+        return SpringContextUtils.getBean(UserClient.class).userIdToUsername(userId);
     }
 }

@@ -17,11 +17,13 @@ import cn.edu.sdu.qd.oj.common.entity.UserSessionDTO;
 import cn.edu.sdu.qd.oj.common.enums.ApiExceptionEnum;
 import cn.edu.sdu.qd.oj.common.exception.ApiException;
 import cn.edu.sdu.qd.oj.common.exception.InternalApiException;
+import cn.edu.sdu.qd.oj.contest.cache.ContestCacheTypeManager;
 import cn.edu.sdu.qd.oj.contest.dto.*;
 import cn.edu.sdu.qd.oj.contest.service.ContestService;
 import cn.edu.sdu.qd.oj.submit.dto.SubmissionDTO;
 import org.apache.commons.lang.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.*;
 
@@ -138,6 +140,7 @@ public class ContestController {
 
     @GetMapping("/rank")
     @ApiResponseBody
+    @Cacheable(value = ContestCacheTypeManager.RANK, key = "#contestId")
     public List<ContestRankDTO> queryRank(@RequestParam("contestId") long contestId,
                                           @UserSession UserSessionDTO userSessionDTO) throws InternalApiException {
         return contestService.queryRank(contestId, userSessionDTO);

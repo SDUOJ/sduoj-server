@@ -17,6 +17,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.RestController;
 
 import java.util.List;
+import java.util.Map;
+import java.util.stream.Collectors;
 
 @RestController
 public class AuthInternalController implements PermissionApi {
@@ -34,5 +36,16 @@ public class AuthInternalController implements PermissionApi {
     @Override
     public List<PermissionDTO> listAll() {
         return authService.listAll();
+    }
+
+    @Override
+    public Map<String, List<String>> queryUrlToRolesMap() {
+        List<PermissionDTO> permissionDTOList = listAll();
+        return permissionDTOList.stream().collect(Collectors.toMap(PermissionDTO::getUrl, PermissionDTO::getRoles, (k1, k2) -> k1));
+    }
+
+    @Override
+    public List<String> urlToRoles(String url) {
+        return authService.urlToRoles(url);
     }
 }

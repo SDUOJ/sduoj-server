@@ -11,8 +11,10 @@
 package cn.edu.sdu.qd.oj.problem.api;
 
 import cn.edu.sdu.qd.oj.common.exception.InternalApiException;
+import cn.edu.sdu.qd.oj.common.util.RedisConstants;
 import cn.edu.sdu.qd.oj.problem.dto.ProblemDTO;
 import cn.edu.sdu.qd.oj.problem.dto.ProblemJudgerDTO;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -29,6 +31,24 @@ import java.util.Map;
 @RequestMapping("/internal/problem")
 public interface ProblemApi {
     String SERVICE_NAME = "problem-service";
+
+    @GetMapping("/problemIdToProblemTitle")
+    @Cacheable(key = "#problemId", value = RedisConstants.PROBLEM_ID_TO_PROBLEM_TITLE)
+    String problemIdToProblemTitle(@RequestParam("problemId") long problemId);
+
+    @GetMapping("/problemIdToProblemCheckpointNum")
+    @Cacheable(key = "#problemId", value = RedisConstants.PROBLEM_ID_TO_PROBLEM_CHECKPOINT_NUM)
+    int problemIdToProblemCheckpointNum(@RequestParam("problemId") long problemId);
+
+    @GetMapping("/problemCodeToProblemId")
+    @Cacheable(key = "#problemCode", value = RedisConstants.PROBLEM_CODE_TO_PROBLEM_ID)
+    Long problemCodeToProblemId(@RequestParam("problemCode") String problemCode);
+
+    @GetMapping("/problemIdToProblemCode")
+    @Cacheable(key = "#problemId", value = RedisConstants.PROBLEM_ID_TO_PROBLEM_CODE)
+    String problemIdToProblemCode(@RequestParam("problemId") long problemId);
+
+
 
     @GetMapping("/queryIdToTitleMap")
     Map<Long, String> queryIdToTitleMap() throws InternalApiException;

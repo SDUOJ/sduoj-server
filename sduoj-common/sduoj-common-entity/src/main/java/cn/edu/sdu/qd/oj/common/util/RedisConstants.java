@@ -19,19 +19,23 @@ package cn.edu.sdu.qd.oj.common.util;
  **/
 
 public class RedisConstants {
-    public static final String REDIS_KEY_FOR_PROBLEM_ID_TO_TITLE = "hash_problemIdToTitle";
-    public static final String REDIS_KEY_FOR_PROBLEM_ID_TO_PROBLEM_CODE = "hash_problemIdToProblemCode";
-    public static final String REDIS_KEY_FOR_PROBLEM_ID_TO_CHECKPOINTNUM = "hash_problemIdToCheckpointNum";
-    public static final String REDIS_KEY_FOR_PROBLEM_CODE_TO_PROBLEM_ID = "hash_problemCodeToProblemId";
 
-    public static final String REDIS_KEY_FOR_USER_ID_TO_USERNAME = "hash_userIdToUsername";
-    public static final String REDIS_KEY_FOR_USERNAME_TO_ID = "hash_usernameToUserId";
+    public static final String ALL_URL_PERMISSION = "AllUrlPermission";
+    public static final String URL_TO_ROLES_MAP = "UrlToRolesMap";
+    public static final String URL_TO_ROLES = "urlToRoles";
+
+    public static final String USER_ID_TO_USERNAME = "UserIdToUsername";
+    public static final String USERNAME_TO_USERID = "UsernameToUserId";
+    public static final String USER_ID_TO_ROLES = "UserIdToRoles";
+
+    public static final String PROBLEM_ID_TO_PROBLEM_TITLE = "problemIdToProblemTitle";
+    public static final String PROBLEM_ID_TO_PROBLEM_CHECKPOINT_NUM = "problemIdToProblemCheckpointNum";
+    public static final String PROBLEM_CODE_TO_PROBLEM_ID = "problemCodeToProblemId";
+    public static final String PROBLEM_ID_TO_PROBLEM_CODE = "problemIdToProblemCode";
 
     public static final int CAPTCHA_EXPIRE = 60 * 5;
     public static final int ACPROBLEM_EXPIRE = 60 * 60 * 5;
     public static final int CONTEST_SUBMISSION_NUM_EXPIRE = 60 * 60 * 5;
-
-    public static final int CONTEST_RANK_EXPIRE = 15;
 
     // ------------- 验证码 ----------------------
     public static String getCaptchaKey(String uuid) {

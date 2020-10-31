@@ -10,13 +10,12 @@
 
 package cn.edu.sdu.qd.oj.gateway.filter;
 
-import cn.edu.sdu.qd.oj.auth.dto.PermissionDTO;
+import cn.edu.sdu.qd.oj.auth.enums.PermissionEnum;
 import cn.edu.sdu.qd.oj.gateway.client.PermissionClient;
 import cn.edu.sdu.qd.oj.gateway.client.UserClient;
 import cn.edu.sdu.qd.oj.gateway.config.FilterProperties;
 import cn.edu.sdu.qd.oj.common.entity.UserSessionDTO;
 import com.alibaba.fastjson.JSON;
-import com.google.common.collect.Lists;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
@@ -38,7 +37,6 @@ import reactor.core.publisher.Mono;
 
 import java.lang.reflect.Field;
 import java.util.*;
-import java.util.stream.Collectors;
 
 /**
  * @ClassName LoginFilter
@@ -86,19 +84,20 @@ public class LoginFilter implements GlobalFilter, Ordered {
             return returnNoPermission(exchange, "鉴权失败，无 session");
         }
 
-
         // 鉴权
         if (userSessionDTO != null) {
+
+            List<String> urlRoles = permissionClient.urlToRoles(requestUrl.replace("/api", ""));
+
             List<String> roles = userClient.queryRolesById(userSessionDTO.getUserId());
-            // TODO: 缓存权限表
-            Map<String, List<String>> urlToRolesMap = permissionClient.listAll().stream().collect(Collectors.toMap(PermissionDTO::getUrl, PermissionDTO::getRoles, (k1, k2) -> k1));
-            List<String> urlRoles = urlToRolesMap.get(requestUrl.replace("/api", ""));
-            // TODO: 魔法值解决
-            if (!urlRoles.contains("all") &&
-                (roles != null && urlRoles != null && Collections.disjoint(roles, urlRoles))) {
+
+            if (urlRoles == null || roles == null ||
+                (!urlRoles.contains(PermissionEnum.ALL.name) && Collections.disjoint(roles, urlRoles))) {
                 log.warn("have not permission {} {}", userSessionDTO, requestUrl);
                 return returnNoPermission(exchange, String.format("This User has no permission on '%s'", requestUrl));
             }
+
+
             // 装饰器 修改 getHeaders 方法
             ServerHttpRequestDecorator decorator = new ServerHttpRequestDecorator(exchange.getRequest()) {
                 @Override

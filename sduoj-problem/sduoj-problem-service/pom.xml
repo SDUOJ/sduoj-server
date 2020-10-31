@@ -39,6 +39,11 @@
             <artifactId>sduoj-filesys-interface</artifactId>
             <version>1.0.0-SNAPSHOT</version>
         </dependency>
+        <dependency>
+            <groupId>cn.edu.sdu.qd.oj.common</groupId>
+            <artifactId>sduoj-common-redis</artifactId>
+            <version>1.0.0-SNAPSHOT</version>
+        </dependency>
 
         <!-- 三方依赖 -->
 

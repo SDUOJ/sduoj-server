@@ -12,7 +12,7 @@ package cn.edu.sdu.qd.oj.contest.converter;
 
 import cn.edu.sdu.qd.oj.common.converter.BaseConvertUtils;
 import cn.edu.sdu.qd.oj.common.util.SpringContextUtils;
-import cn.edu.sdu.qd.oj.common.util.UserCacheUtils;
+import cn.edu.sdu.qd.oj.contest.client.UserClient;
 import cn.edu.sdu.qd.oj.contest.dto.ContestProblemListDTO;
 import cn.edu.sdu.qd.oj.contest.dto.ContestProblemManageListDTO;
 import com.alibaba.fastjson.JSON;
@@ -36,7 +36,7 @@ import java.util.stream.Collectors;
 public class ContestConvertUtils extends BaseConvertUtils {
 
     public static String userIdToUsername(Long userId) {
-        return SpringContextUtils.getBean(UserCacheUtils.class).getUsername(userId);
+        return SpringContextUtils.getBean(UserClient.class).userIdToUsername(userId);
     }
 
     public static List<ContestProblemListDTO> problemsTo(String problems) {
@@ -118,8 +118,8 @@ public class ContestConvertUtils extends BaseConvertUtils {
 
     public static List<String> participantsTo(byte[] participants) {
         List<Long> participantUserIdList = participantsToUserIdList(participants);
-        UserCacheUtils userCacheUtils = SpringContextUtils.getBean(UserCacheUtils.class);
-        return participantUserIdList.stream().map(userCacheUtils::getUsername).collect(Collectors.toList());
+        UserClient userClient = SpringContextUtils.getBean(UserClient.class);
+        return participantUserIdList.stream().map(userClient::userIdToUsername).collect(Collectors.toList());
     }
 
     public static List<Long> participantsToUserIdList(byte[] participants) {
@@ -136,9 +136,9 @@ public class ContestConvertUtils extends BaseConvertUtils {
 
 
     public static byte[] participantsFrom(List<String> participantUsernameList) {
-        UserCacheUtils userCacheUtils = SpringContextUtils.getBean(UserCacheUtils.class);
+        UserClient userClient = SpringContextUtils.getBean(UserClient.class);
         List<Long> participantUserIdList = participantUsernameList.stream()
-                .map(userCacheUtils::getUserIdWithoutException)
+                .map(userClient::usernameToUserId)
                 .filter(Objects::nonNull)
                 .collect(Collectors.toList());
         return participantsFromUserIdList(participantUserIdList);

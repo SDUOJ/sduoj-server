@@ -11,13 +11,10 @@
 package cn.edu.sdu.qd.oj.submit.service;
 
 import cn.edu.sdu.qd.oj.common.enums.ApiExceptionEnum;
-import cn.edu.sdu.qd.oj.common.exception.ApiException;
 import cn.edu.sdu.qd.oj.common.util.AssertUtils;
-import cn.edu.sdu.qd.oj.common.util.ProblemCacheUtils;
 import cn.edu.sdu.qd.oj.common.util.RedisConstants;
 import cn.edu.sdu.qd.oj.common.util.RedisUtils;
-import cn.edu.sdu.qd.oj.submit.client.UserClient;
-import cn.edu.sdu.qd.oj.submit.converter.SubmissionConverter;
+import cn.edu.sdu.qd.oj.submit.client.ProblemClient;
 import cn.edu.sdu.qd.oj.submit.converter.SubmissionJudgeConverter;
 import cn.edu.sdu.qd.oj.submit.converter.SubmissionUpdateConverter;
 import cn.edu.sdu.qd.oj.submit.dao.SubmissionDao;
@@ -26,7 +23,6 @@ import cn.edu.sdu.qd.oj.submit.entity.SubmissionDO;
 import cn.edu.sdu.qd.oj.submit.dto.SubmissionJudgeDTO;
 import cn.edu.sdu.qd.oj.submit.enums.SubmissionJudgeResult;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -50,16 +46,10 @@ public class SubmitJudgerService {
     private SubmissionJudgeConverter submissionJudgeConverter;
 
     @Autowired
-    private SubmissionConverter submissionConverter;
-
-    @Autowired
     private SubmissionUpdateConverter submissionUpdateConverter;
 
     @Autowired
-    private UserClient userClient;
-
-    @Autowired
-    private ProblemCacheUtils problemCacheUtils;
+    private ProblemClient problemClient;
 
     @Autowired
     private RedisUtils redisUtils;
@@ -95,7 +85,7 @@ public class SubmitJudgerService {
         ).eq(SubmissionDO::getSubmissionId, reqDTO.getSubmissionId()).one();
         if (SubmissionJudgeResult.AC.equals(submissionDO.getJudgeResult())) {
             String key;
-            String problemCode = problemCacheUtils.getProblemCode(submissionDO.getProblemId());
+            String problemCode = problemClient.problemIdToProblemCode(submissionDO.getProblemId());
             // 用户过题
             key = RedisConstants.getUserACProblem(submissionDO.getContestId(), submissionDO.getUserId());
             if (redisUtils.hasKey(key)) {

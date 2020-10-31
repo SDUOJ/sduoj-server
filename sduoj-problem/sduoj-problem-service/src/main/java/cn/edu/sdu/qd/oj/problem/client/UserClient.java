@@ -8,7 +8,7 @@
  *      https://www.gnu.org/licenses/gpl-3.0.en.html
  */
 
-package cn.edu.sdu.qd.oj.submit.client;
+package cn.edu.sdu.qd.oj.problem.client;
 
 import cn.edu.sdu.qd.oj.user.api.UserApi;
 import org.springframework.cloud.openfeign.FeignClient;

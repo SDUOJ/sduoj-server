@@ -20,6 +20,7 @@ import cn.edu.sdu.qd.oj.common.enums.ApiExceptionEnum;
 import cn.edu.sdu.qd.oj.common.exception.ApiException;
 import cn.edu.sdu.qd.oj.judgetemplate.dto.JudgeTemplateListDTO;
 import cn.edu.sdu.qd.oj.judgetemplate.service.JudgeTemplateService;
+import cn.edu.sdu.qd.oj.problem.client.UserClient;
 import cn.edu.sdu.qd.oj.problem.converter.*;
 import cn.edu.sdu.qd.oj.problem.dao.ProblemDao;
 import cn.edu.sdu.qd.oj.problem.dao.ProblemDescriptionDao;
@@ -57,6 +58,9 @@ public class ProblemManageService {
     private ProblemCommonService problemCommonService;
 
     @Autowired
+    private ProblemService problemService;
+
+    @Autowired
     private CheckpointManageService checkpointManageService;
 
     @Autowired
@@ -78,9 +82,6 @@ public class ProblemManageService {
     private RedisUtils redisUtils;
 
     @Autowired
-    private UserCacheUtils userCacheUtils;
-
-    @Autowired
     private ProblemManageConverter problemManageConverter;
 
     @Autowired
@@ -93,13 +94,13 @@ public class ProblemManageService {
     private ProblemDescriptionListConverter problemDescriptionListConverter;
 
     @Autowired
-    private ProblemCacheUtils problemCacheUtils;
+    private UserClient userClient;
 
     public ProblemManageDTO queryByCode(String problemCode) {
         ProblemDO problemManageDO = problemDao.lambdaQuery().eq(ProblemDO::getProblemCode, problemCode).one();
         AssertUtils.notNull(problemManageDO, ApiExceptionEnum.PROBLEM_NOT_FOUND);
         ProblemManageDTO problemManageDTO = problemManageConverter.to(problemManageDO);
-        problemManageDTO.setUsername(userCacheUtils.getUsername(problemManageDO.getUserId()));
+        problemManageDTO.setUsername(userClient.userIdToUsername(problemManageDO.getUserId()));
         return problemManageDTO;
     }
 
@@ -117,10 +118,6 @@ public class ProblemManageService {
                 .update()) {
             throw new ApiException(ApiExceptionEnum.UNKNOWN_ERROR);
         }
-        // 更新缓存
-        redisUtils.hset(RedisConstants.REDIS_KEY_FOR_PROBLEM_ID_TO_TITLE,
-                String.valueOf(problem.getProblemId()),
-                problem.getProblemTitle());
         return problemDO.getProblemCode();
     }
 
@@ -162,7 +159,7 @@ public class ProblemManageService {
                 problemCommonService.getTagIdListByFeatureMap(o.getFeatures()).stream().map(tagIdToDTOMap::get).collect(Collectors.toList())
         ));
         // 置入 username
-        problemManageListDTOlist.forEach(problemManageListDTO -> problemManageListDTO.setUsername(userCacheUtils.getUsername(problemManageListDTO.getUserId())));
+        problemManageListDTOlist.forEach(problemManageListDTO -> problemManageListDTO.setUsername(userClient.userIdToUsername(problemManageListDTO.getUserId())));
         // 查询 judgeTemplate，置入
         List<Long> judgeTemplateIdList = problemManageListDTOlist.stream()
                 .map(ProblemManageListDTO::getJudgeTemplates)
@@ -207,16 +204,6 @@ public class ProblemManageService {
         if (problemUpdateDO.getCheckpointCases() != null) {
             updateCheckpointCase(problem);
         }
-        // 刷新缓存
-        if (problemUpdateDO.getProblemTitle() != null) {
-            redisUtils.hset(RedisConstants.REDIS_KEY_FOR_PROBLEM_ID_TO_TITLE,
-                    String.valueOf(problem.getProblemId()),
-                    problem.getProblemTitle());
-        }
-        if (problemUpdateDO.getCheckpointNum() != null) {
-            redisUtils.hset(RedisConstants.REDIS_KEY_FOR_PROBLEM_ID_TO_CHECKPOINTNUM,
-                    String.valueOf(problemCacheUtils.getProblemId(problemUpdateDO.getProblemCode())), problemUpdateDO.getCheckpointNum());
-        }
     }
 
     private void updateCheckpointCase(ProblemManageDTO problem) {
@@ -229,7 +216,7 @@ public class ProblemManageService {
     }
 
     public long createDescription(ProblemDescriptionDTO problemDescriptionDTO) {
-        problemDescriptionDTO.setProblemId(problemCacheUtils.getProblemId(problemDescriptionDTO.getProblemCode()));
+        problemDescriptionDTO.setProblemId(problemService.problemCodeToProblemId(problemDescriptionDTO.getProblemCode()));
 
         ProblemDescriptionDO problemDescriptionDO = problemDescriptionConverter.from(problemDescriptionDTO);
         AssertUtils.isTrue(problemDescriptionDao.save(problemDescriptionDO), ApiExceptionEnum.UNKNOWN_ERROR);
@@ -258,7 +245,7 @@ public class ProblemManageService {
     }
 
     public List<ProblemDescriptionListDTO> queryDescriptionList(String problemCode, UserSessionDTO userSessionDTO) {
-        long problemId = problemCacheUtils.getProblemId(problemCode);
+        long problemId = problemService.problemCodeToProblemId(problemCode);
         LambdaQueryChainWrapper<ProblemDescriptionDO> query = problemDescriptionDao.lambdaQuery().select(
                 ProblemDescriptionDO::getId,
                 ProblemDescriptionDO::getProblemId,
@@ -277,7 +264,7 @@ public class ProblemManageService {
         List<ProblemDescriptionListDTO> problemDescriptionDTOList = problemDescriptionListConverter.to(problemDescriptionDOList);
         problemDescriptionDTOList.forEach(o -> {
             o.setProblemCode(problemCode);
-            o.setUsername(userCacheUtils.getUsername(o.getUserId()));
+            o.setUsername(userClient.userIdToUsername(o.getUserId()));
         });
         return problemDescriptionDTOList;
     }

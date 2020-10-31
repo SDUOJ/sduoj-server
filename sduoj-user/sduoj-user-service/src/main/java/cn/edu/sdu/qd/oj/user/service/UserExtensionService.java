@@ -12,9 +12,7 @@ package cn.edu.sdu.qd.oj.user.service;
 
 import cn.edu.sdu.qd.oj.common.converter.BaseConvertUtils;
 import cn.edu.sdu.qd.oj.common.enums.ApiExceptionEnum;
-import cn.edu.sdu.qd.oj.common.exception.ApiException;
 import cn.edu.sdu.qd.oj.common.util.AssertUtils;
-import cn.edu.sdu.qd.oj.common.util.ProblemCacheUtils;
 import cn.edu.sdu.qd.oj.user.dao.UserExtensionDao;
 import cn.edu.sdu.qd.oj.user.entity.UserExtensionDO;
 import cn.edu.sdu.qd.oj.user.entity.UserExtensionDOField;

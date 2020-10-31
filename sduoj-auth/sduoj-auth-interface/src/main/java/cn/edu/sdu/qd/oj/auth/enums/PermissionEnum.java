@@ -18,9 +18,12 @@ import java.util.List;
 @AllArgsConstructor
 public enum PermissionEnum {
 
+    ALL("all"), // URL 专用
+
     SUPERADMIN("superadmin"),
     ADMIN("admin"),
     USER("user"),
+
     ;
 
     public String name;

@@ -14,9 +14,8 @@ import cn.edu.sdu.qd.oj.common.util.AssertUtils;
 import cn.edu.sdu.qd.oj.common.util.RedisConstants;
 import cn.edu.sdu.qd.oj.common.entity.PageResult;
 import cn.edu.sdu.qd.oj.common.enums.ApiExceptionEnum;
-import cn.edu.sdu.qd.oj.common.exception.ApiException;
 import cn.edu.sdu.qd.oj.common.util.RedisUtils;
-import cn.edu.sdu.qd.oj.common.util.UserCacheUtils;
+import cn.edu.sdu.qd.oj.problem.client.UserClient;
 import cn.edu.sdu.qd.oj.problem.converter.*;
 import cn.edu.sdu.qd.oj.problem.dao.ProblemDao;
 import cn.edu.sdu.qd.oj.problem.dao.ProblemDescriptionDao;
@@ -66,9 +65,6 @@ public class ProblemService {
     private RedisUtils redisUtils;
 
     @Autowired
-    private UserCacheUtils userCacheUtils;
-
-    @Autowired
     private ProblemConverter problemConverter;
 
     @Autowired
@@ -76,6 +72,9 @@ public class ProblemService {
 
     @Autowired
     private TagConverter tagConverter;
+
+    @Autowired
+    private UserClient userClient;
 
     public ProblemDTO queryByCode(String problemCode, Long descriptionId, Long userId) {
         // TODO: cache, polish
@@ -93,9 +92,9 @@ public class ProblemService {
                 .one();
         // 过滤掉非公开且非默认且非自己的题面
         if (problemDescriptionDO != null &&
-            problemDescriptionDO.getIsPublic() == 0 &&
-            !problemDescriptionDO.getId().equals(problemDO.getDefaultDescriptionId()) &&
-            !problemDescriptionDO.getUserId().equals(userId)) {
+                problemDescriptionDO.getIsPublic() == 0 &&
+                !problemDescriptionDO.getId().equals(problemDO.getDefaultDescriptionId()) &&
+                !problemDescriptionDO.getUserId().equals(userId)) {
             problemDescriptionDO = null;
         }
 
@@ -133,7 +132,7 @@ public class ProblemService {
             problemDTO.getProblemDescriptionDTO().setProblemCode(problemCode);
             problemDTO.getProblemDescriptionListDTOList().forEach(o -> {
                 o.setProblemCode(problemCode);
-                o.setUsername(userCacheUtils.getUsername(o.getUserId()));
+                o.setUsername(userClient.userIdToUsername(o.getUserId()));
             });
         } catch (Exception ignore) {
         }
@@ -160,8 +159,8 @@ public class ProblemService {
                 ProblemDO::getSubmitNum,
                 ProblemDO::getAcceptNum
         ).and(o1 -> o1.eq(ProblemDO::getIsPublic, 1)
-                      .or(o2 -> o2.eq(ProblemDO::getIsPublic, 0)
-                                  .and(o3 -> o3.eq(ProblemDO::getUserId, userId))));
+                .or(o2 -> o2.eq(ProblemDO::getIsPublic, 0)
+                        .and(o3 -> o3.eq(ProblemDO::getUserId, userId))));
         Optional.ofNullable(reqDTO.getOrderBy()).filter(StringUtils::isNotBlank).ifPresent(orderBy -> {
             switch (orderBy) {
                 case "acceptNum":
@@ -182,7 +181,7 @@ public class ProblemService {
         Map<Long, TagDTO> tagIdToDTOMap = problemCommonService.getTagDTOMapByProblemDOList(pageResult.getRecords());
         // 置入 tagDTOList
         problemListDTOList.forEach(o -> o.setTagDTOList(
-            problemCommonService.getTagIdListByFeatureMap(o.getFeatures()).stream().map(tagIdToDTOMap::get).collect(Collectors.toList())
+                problemCommonService.getTagIdListByFeatureMap(o.getFeatures()).stream().map(tagIdToDTOMap::get).collect(Collectors.toList())
         ));
         return new PageResult<>(pageResult.getPages(), Optional.ofNullable(problemListDTOList).orElse(Lists.newArrayList()));
     }
@@ -216,24 +215,6 @@ public class ProblemService {
         return problemDOList.stream().collect(Collectors.toMap(ProblemDO::getProblemId, ProblemDO::getProblemTitle, (k1, k2) -> k1));
     }
 
-    @PostConstruct
-    private void initRedisProblemHash() {
-        List<ProblemDO> problemDOList = problemDao.lambdaQuery().select(
-                ProblemDO::getProblemCode,
-                ProblemDO::getProblemId,
-                ProblemDO::getProblemTitle,
-                ProblemDO::getCheckpointNum
-        ).list();
-        Map<String, Object> problemIdToTitle = problemDOList.stream().collect(Collectors.toMap(problemDO -> problemDO.getProblemId().toString(), ProblemDO::getProblemTitle, (k1, k2) -> k1));
-        redisUtils.hmset(RedisConstants.REDIS_KEY_FOR_PROBLEM_ID_TO_TITLE, problemIdToTitle);
-        Map<String, Object> problemIdToCheckpointNum = problemDOList.stream().collect(Collectors.toMap(problemDO -> problemDO.getProblemId().toString(), ProblemDO::getCheckpointNum, (k1, k2) -> k1));
-        redisUtils.hmset(RedisConstants.REDIS_KEY_FOR_PROBLEM_ID_TO_CHECKPOINTNUM, problemIdToCheckpointNum);
-        Map<String, Object> problemCodeToProblemId = problemDOList.stream().collect(Collectors.toMap(ProblemDO::getProblemCode, ProblemDO::getProblemId, (k1, k2) -> k1));
-        redisUtils.hmset(RedisConstants.REDIS_KEY_FOR_PROBLEM_CODE_TO_PROBLEM_ID, problemCodeToProblemId);
-        Map<String, Object> problemIdToProblemCode = problemDOList.stream().collect(Collectors.toMap(problemDO -> problemDO.getProblemId().toString(), ProblemDO::getProblemCode, (k1, k2) -> k1));
-        redisUtils.hmset(RedisConstants.REDIS_KEY_FOR_PROBLEM_ID_TO_PROBLEM_CODE, problemIdToProblemCode);
-    }
-
     public boolean validateProblemCodeList(List<String> problemCodeList) {
         return problemCodeList.size() == problemDao.lambdaQuery().in(ProblemDO::getProblemCode, problemCodeList).count();
     }
@@ -259,9 +240,41 @@ public class ProblemService {
     public List<Long> queryPrivateProblemIdList(Long userId) {
         LambdaQueryChainWrapper<ProblemDO> query = problemDao.lambdaQuery();
         query.select(ProblemDO::getProblemId)
-            .and(o1 -> o1.eq(ProblemDO::getIsPublic, 0)
-                         .and(o3 -> o3.ne(ProblemDO::getUserId, userId)));
+                .and(o1 -> o1.eq(ProblemDO::getIsPublic, 0)
+                        .and(o3 -> o3.ne(ProblemDO::getUserId, userId)));
         List<ProblemDO> problemDOList = query.list();
         return problemDOList.stream().map(ProblemDO::getProblemId).collect(Collectors.toList());
+    }
+
+    public String problemIdToProblemTitle(long problemId) {
+        return Optional.ofNullable(problemDao.lambdaQuery()
+                .select(ProblemDO::getProblemId, ProblemDO::getProblemTitle)
+                .eq(ProblemDO::getProblemId, problemId)
+                .one()
+        ).map(ProblemDO::getProblemTitle).orElse(null);
+    }
+
+    public int problemIdToProblemCheckpointNum(long problemId) {
+        return Optional.ofNullable(problemDao.lambdaQuery()
+                .select(ProblemDO::getProblemId, ProblemDO::getCheckpointNum)
+                .eq(ProblemDO::getProblemId, problemId)
+                .one()
+        ).map(ProblemDO::getCheckpointNum).orElse(0);
+    }
+
+    public Long problemCodeToProblemId(String problemCode) {
+        return Optional.ofNullable(problemDao.lambdaQuery()
+                .select(ProblemDO::getProblemId)
+                .eq(ProblemDO::getProblemCode, problemCode)
+                .one()
+        ).map(ProblemDO::getProblemId).orElse(null);
+    }
+
+    public String problemIdToProblemCode(long problemId) {
+        return Optional.ofNullable(problemDao.lambdaQuery()
+                .select(ProblemDO::getProblemCode)
+                .eq(ProblemDO::getProblemId, problemId)
+                .one()
+        ).map(ProblemDO::getProblemCode).orElse(null);
     }
 }

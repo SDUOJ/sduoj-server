@@ -151,14 +151,6 @@ public class UserService {
 
         sendVerificationEmail(userDTO.getUsername(), userDTO.getEmail());
 
-        // 更新缓存
-        redisUtils.hset(RedisConstants.REDIS_KEY_FOR_USER_ID_TO_USERNAME,
-                String.valueOf(userDO.getUserId()), userDO.getUsername());
-    }
-
-    public Long queryUserId(String username) {
-        UserDO userDO = userDao.lambdaQuery().eq(UserDO::getUsername, username).select(UserDO::getUserId).one();
-        return Optional.ofNullable(userDO).map(UserDO::getUserId).orElse(null);
     }
 
     public Map<Long, String> queryIdToUsernameMap() {
@@ -169,18 +161,6 @@ public class UserService {
     public List<String> queryRolesById(Long userId) {
         UserDO userDO = userDao.lambdaQuery().select(UserDO::getRoles).eq(UserDO::getUserId, userId).one();
         return Optional.ofNullable(userDO).map(userConverter::to).map(UserDTO::getRoles).orElse(null);
-    }
-
-    @PostConstruct
-    public void initRedisUserHash() {
-        List<UserDO> userDOList = userDao.lambdaQuery().select(
-                UserDO::getUserId, 
-                UserDO::getUsername
-        ).list();
-        Map<String, Object> map1 = userDOList.stream().collect(Collectors.toMap(userDo -> userDo.getUserId().toString(), UserDO::getUsername, (k1, k2) -> k1));
-        redisUtils.hmset(RedisConstants.REDIS_KEY_FOR_USER_ID_TO_USERNAME, map1);
-        Map<String, Object> map2 = userDOList.stream().collect(Collectors.toMap(UserDO::getUsername, UserDO::getUserId, (k1, k2) -> k1));
-        redisUtils.hmset(RedisConstants.REDIS_KEY_FOR_USERNAME_TO_ID, map2);
     }
 
     public void emailVerify(String token) {
@@ -287,5 +267,19 @@ public class UserService {
             redisUtils.set(RedisConstants.getEmailVerificationKey(uuid), userDO.getUsername(), userServiceProperties.getVerificationExpire());
             emailUtil.sendResetEmailMail(userDO.getUsername(), reqDTO.getNewEmail(), uuid);
         }
+    }
+
+
+
+    public Long queryUserId(String username) {
+        return Optional.ofNullable(userDao.lambdaQuery().eq(UserDO::getUsername, username).select(UserDO::getUserId).one())
+                .map(UserDO::getUserId)
+                .orElse(null);
+    }
+
+    public String queryUsername(Long userId) {
+        return Optional.ofNullable(userDao.lambdaQuery().select(UserDO::getUserId, UserDO::getUsername).eq(UserDO::getUserId, userId).one())
+                .map(UserDO::getUsername)
+                .orElse(null);
     }
 }

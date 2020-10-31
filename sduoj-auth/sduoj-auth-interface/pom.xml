@@ -26,13 +26,11 @@
             <groupId>org.springframework</groupId>
             <artifactId>spring-web</artifactId>
         </dependency>
-        <!-- 一方依赖 -->
         <dependency>
-            <groupId>cn.edu.sdu.qd.oj.common</groupId>
-            <artifactId>sduoj-common-util</artifactId>
-            <version>1.0.0-SNAPSHOT</version>
-            <scope>compile</scope>
+            <groupId>org.springframework</groupId>
+            <artifactId>spring-context</artifactId>
         </dependency>
+        <!-- 一方依赖 -->
         <dependency>
             <groupId>cn.edu.sdu.qd.oj.common</groupId>
             <artifactId>sduoj-common-entity</artifactId>

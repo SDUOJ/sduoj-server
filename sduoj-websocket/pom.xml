@@ -42,13 +42,13 @@
         <!-- 一方依赖 -->
         <dependency>
             <groupId>cn.edu.sdu.qd.oj.common</groupId>
-            <artifactId>sduoj-common-util</artifactId>
+            <artifactId>sduoj-common-redis</artifactId>
             <version>1.0.0-SNAPSHOT</version>
             <exclusions>
                 <!-- instead by redis-reactive -->
                 <exclusion>
-                    <artifactId>spring-boot-starter-data-redis</artifactId>
                     <groupId>org.springframework.boot</groupId>
+                    <artifactId>spring-boot-starter-data-redis</artifactId>
                 </exclusion>
             </exclusions>
         </dependency>
