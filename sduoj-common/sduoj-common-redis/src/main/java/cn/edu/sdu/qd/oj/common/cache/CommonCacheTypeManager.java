@@ -32,7 +32,10 @@ public class CommonCacheTypeManager extends AbstractCacheTypeManager {
                 new CacheType(RedisConstants.PROBLEM_ID_TO_PROBLEM_TITLE, 60),
                 new CacheType(RedisConstants.PROBLEM_ID_TO_PROBLEM_CHECKPOINT_NUM, 60),
                 new CacheType(RedisConstants.PROBLEM_CODE_TO_PROBLEM_ID, 60 * 5),
-                new CacheType(RedisConstants.PROBLEM_ID_TO_PROBLEM_CODE, 60 * 5)
+                new CacheType(RedisConstants.PROBLEM_ID_TO_PROBLEM_CODE, 60 * 5),
+
+                new CacheType(RedisConstants.JUDGE_TEMPLATE_ID_TO_TITLE, 60 * 5),
+                new CacheType(RedisConstants.JUDGE_TEMPLATE_ID_TO_TYPE, 60 * 5)
 
                 );
     }

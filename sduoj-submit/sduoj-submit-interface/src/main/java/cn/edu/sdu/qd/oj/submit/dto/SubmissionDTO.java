@@ -50,6 +50,8 @@ public class SubmissionDTO extends BaseDTO {
 
     private Long judgeTemplateId;
 
+    private Long zipFileId;
+
     private String language;
 
     private Integer judgeResult;
@@ -66,7 +68,7 @@ public class SubmissionDTO extends BaseDTO {
 
     private String code;
 
-    private List<List<Integer>> checkpointResults; // [ [judgeResult, usedTime, usedMemory], ... ]
+    private List<EachCheckpointResult> checkpointResults;
 
     // -----------------------
 
@@ -75,4 +77,10 @@ public class SubmissionDTO extends BaseDTO {
     private String username;
 
     private String problemCode;
+
+    private String problemTitle;
+
+    private String judgeTemplateTitle;
+
+    private Integer judgeTemplateType;
 }

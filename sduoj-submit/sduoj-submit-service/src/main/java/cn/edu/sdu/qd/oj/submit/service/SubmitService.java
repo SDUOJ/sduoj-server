@@ -17,6 +17,7 @@ import cn.edu.sdu.qd.oj.common.exception.ApiException;
 import cn.edu.sdu.qd.oj.common.exception.InternalApiException;
 import cn.edu.sdu.qd.oj.common.util.*;
 import cn.edu.sdu.qd.oj.problem.dto.ProblemListDTO;
+import cn.edu.sdu.qd.oj.submit.client.JudgeTemplateClient;
 import cn.edu.sdu.qd.oj.submit.client.ProblemClient;
 import cn.edu.sdu.qd.oj.submit.client.UserClient;
 import cn.edu.sdu.qd.oj.submit.converter.SubmissionConverter;
@@ -78,6 +79,10 @@ public class SubmitService {
     @Autowired
     private ProblemClient problemClient;
 
+    @Autowired
+    private JudgeTemplateClient judgeTemplateClient;
+
+
     /**
     * @Description 提交返回提交id
     * @param submissionUpdateReqDTO
@@ -114,11 +119,18 @@ public class SubmitService {
         }
 
         try {
-            // TODO: 魔法值解决
-            Map<String, Object> msg = new HashMap<>();
-            msg.put("event", "submissionCreated");
-            msg.put("submissionId", Long.toHexString(submissionDO.getSubmissionId()));
-            this.rabbitTemplate.convertAndSend("", "judge_queue", msg);
+            SubmissionMessageDTO messageDTO = SubmissionMessageDTO.builder()
+                    .code(submissionDO.getCode())
+                    .codeLength(submissionDO.getCodeLength())
+                    .gmtCreate(submissionDO.getGmtCreate())
+                    .judgeTemplateId(submissionDO.getJudgeTemplateId())
+                    .zipFileId(submissionDO.getZipFileId())
+                    .submissionId(submissionDO.getSubmissionId())
+                    .problemId(submissionDO.getProblemId())
+                    .version(submissionDO.getVersion())
+                    .userId(submissionDO.getUserId())
+                    .build();
+            this.rabbitTemplate.convertAndSend("", "judge_queue", messageDTO);
         } catch (Exception e) {
             log.error("[submit] submissionCreate MQ send error", e);
             throw new ApiException(ApiExceptionEnum.UNKNOWN_ERROR);
@@ -135,12 +147,16 @@ public class SubmitService {
     public SubmissionDTO queryById(long submissionId, long contestId) {
         SubmissionDO submissionDO = submissionDao.lambdaQuery()
                 .eq(SubmissionDO::getContestId, contestId)
-                .eq(SubmissionDO::getSubmissionId, submissionId).one();
+                .eq(SubmissionDO::getSubmissionId, submissionId)
+                .one();
         AssertUtils.notNull(submissionDO, ApiExceptionEnum.SUBMISSION_NOT_FOUND);
         SubmissionDTO submissionDTO = submissionConverter.to(submissionDO);
         submissionDTO.setCheckpointNum(problemClient.problemIdToProblemCheckpointNum(submissionDTO.getProblemId()));
         submissionDTO.setUsername(userClient.userIdToUsername(submissionDTO.getUserId()));
         submissionDTO.setProblemCode(problemClient.problemIdToProblemCode(submissionDTO.getProblemId()));
+        submissionDTO.setJudgeTemplateTitle(judgeTemplateClient.idToTitle(submissionDTO.getJudgeTemplateId()));
+        submissionDTO.setJudgeTemplateType(judgeTemplateClient.idToType(submissionDTO.getJudgeTemplateId()));
+        submissionDTO.setProblemTitle(problemClient.problemIdToProblemTitle(submissionDTO.getProblemId()));
         return submissionDTO;
     }
 
@@ -254,6 +270,10 @@ public class SubmitService {
         } else {
             submissionListDTOList.forEach(submissionListDTO -> submissionListDTO.setProblemTitle(problemClient.problemIdToProblemTitle(submissionListDTO.getProblemId())));
         }
+        // 置 judgeTemplateTitle
+        submissionListDTOList.forEach(submissionListDTO ->
+            submissionListDTO.setJudgeTemplateTitle(judgeTemplateClient.idToTitle(submissionListDTO.getJudgeTemplateId())
+        ));
 
         return new PageResult<>(pageResult.getPages(), submissionListDTOList);
     }

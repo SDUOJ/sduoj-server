@@ -23,7 +23,7 @@ public class JudgeTemplateDOField {
     public static final String TYPE = "jt_type";
     public static final String TITLE = "jt_title";
     public static final String SHELL_SCRIPT = "jt_shell_script";
-    public static final String ZIP_FILE_ID = "jt_zip_file_id";
+    public static final String ZIP_FILE_ID = "f_id";
     public static final String ACCEPT_FILE_EXTENSIONS = "jt_accept_file_extensions";
     public static final String REMOTE_OJ = "jt_remote_oj";
     public static final String REMOTE_PARAMETERS = "jt_remote_parameters";

@@ -230,4 +230,11 @@ public class LocalFileService implements FileService {
         FileDO fileDO = fileDao.lambdaQuery().eq(FileDO::getMd5, md5).one();
         return fileConverter.to(fileDO);
     }
+
+    @Override
+    public byte[] downloadFile(long id) throws IOException {
+        FileSystemResource file = new FileSystemResource(Paths.get(fileSystemProperties.getBaseDir(), String.valueOf(id)).toString());
+        AssertUtils.isTrue(file.exists(), ApiExceptionEnum.FILE_NOT_EXISTS);
+        return StreamUtils.copyToByteArray(file.getInputStream());
+    }
 }

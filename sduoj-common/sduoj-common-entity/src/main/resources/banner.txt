@@ -1,0 +1,13 @@
+
+  ______   _______   __    __   ______      _____
+ /      \ |       \ |  \  |  \ /      \    |     \
+|  $$$$$$\| $$$$$$$\| $$  | $$|  $$$$$$\    \$$$$$
+| $$___\$$| $$  | $$| $$  | $$| $$  | $$      | $$
+ \$$    \ | $$  | $$| $$  | $$| $$  | $$ __   | $$
+ _\$$$$$$\| $$  | $$| $$  | $$| $$  | $$|  \  | $$
+|  \__| $$| $$__/ $$| $$__/ $$| $$__/ $$| $$__| $$
+ \$$    $$| $$    $$ \$$    $$ \$$    $$ \$$    $$
+  \$$$$$$  \$$$$$$$   \$$$$$$   \$$$$$$   \$$$$$$
+
+ :: ${AnsiColor.RED}S${AnsiColor.DEFAULT}han${AnsiColor.RED}d${AnsiColor.DEFAULT}ong ${AnsiColor.RED}U${AnsiColor.DEFAULT}niversity ${AnsiColor.RED}O${AnsiColor.DEFAULT}nline ${AnsiColor.RED}J${AnsiColor.DEFAULT}udge :: ${AnsiColor.GREEN} (v1.0.0) ${AnsiColor.DEFAULT}
+

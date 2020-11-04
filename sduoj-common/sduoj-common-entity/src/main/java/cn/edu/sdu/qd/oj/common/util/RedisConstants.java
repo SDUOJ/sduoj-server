@@ -20,18 +20,21 @@ package cn.edu.sdu.qd.oj.common.util;
 
 public class RedisConstants {
 
-    public static final String ALL_URL_PERMISSION = "AllUrlPermission";
-    public static final String URL_TO_ROLES_MAP = "UrlToRolesMap";
+    public static final String ALL_URL_PERMISSION = "allUrlPermission";
+    public static final String URL_TO_ROLES_MAP = "urlToRolesMap";
     public static final String URL_TO_ROLES = "urlToRoles";
 
-    public static final String USER_ID_TO_USERNAME = "UserIdToUsername";
-    public static final String USERNAME_TO_USERID = "UsernameToUserId";
-    public static final String USER_ID_TO_ROLES = "UserIdToRoles";
+    public static final String USER_ID_TO_USERNAME = "userIdToUsername";
+    public static final String USERNAME_TO_USERID = "usernameToUserId";
+    public static final String USER_ID_TO_ROLES = "userIdToRoles";
 
     public static final String PROBLEM_ID_TO_PROBLEM_TITLE = "problemIdToProblemTitle";
     public static final String PROBLEM_ID_TO_PROBLEM_CHECKPOINT_NUM = "problemIdToProblemCheckpointNum";
     public static final String PROBLEM_CODE_TO_PROBLEM_ID = "problemCodeToProblemId";
     public static final String PROBLEM_ID_TO_PROBLEM_CODE = "problemIdToProblemCode";
+
+    public static final String JUDGE_TEMPLATE_ID_TO_TITLE = "judgeTemplateIdToTitle";
+    public static final String JUDGE_TEMPLATE_ID_TO_TYPE = "judgeTemplateIdToType";
 
     public static final int CAPTCHA_EXPIRE = 60 * 5;
     public static final int ACPROBLEM_EXPIRE = 60 * 60 * 5;

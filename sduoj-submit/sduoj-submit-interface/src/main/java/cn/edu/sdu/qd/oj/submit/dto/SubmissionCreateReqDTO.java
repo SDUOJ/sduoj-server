@@ -28,8 +28,9 @@ public class SubmissionCreateReqDTO extends BaseDTO {
 
     private String language;
 
-    @NotBlank
     private String code;
+
+    private Long zipFileId;
 
     @NotBlank
     private String problemCode;

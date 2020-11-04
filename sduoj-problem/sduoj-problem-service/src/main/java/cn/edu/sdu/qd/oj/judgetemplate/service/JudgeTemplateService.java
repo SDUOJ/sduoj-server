@@ -130,4 +130,20 @@ public class JudgeTemplateService {
         }
         return Optional.ofNullable(judgeTemplateManageListConverter.to(query.list())).orElse(Lists.newArrayList());
     }
+
+    public String idToTitle(Long id) {
+        return Optional.ofNullable(judgeTemplateDao.lambdaQuery()
+                .select(JudgeTemplateDO::getId, JudgeTemplateDO::getTitle)
+                .eq(JudgeTemplateDO::getId, id)
+                .one())
+            .map(JudgeTemplateDO::getTitle).orElse(null);
+    }
+
+    public Integer idToType(Long id) {
+        return Optional.ofNullable(judgeTemplateDao.lambdaQuery()
+                .select(JudgeTemplateDO::getId, JudgeTemplateDO::getType)
+                .eq(JudgeTemplateDO::getId, id)
+                .one())
+                .map(JudgeTemplateDO::getType).orElse(null);
+    }
 }

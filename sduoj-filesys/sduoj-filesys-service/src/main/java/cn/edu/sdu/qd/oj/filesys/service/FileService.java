@@ -10,13 +10,13 @@
 
 package cn.edu.sdu.qd.oj.filesys.service;
 
-import cn.edu.sdu.qd.oj.common.entity.UserSessionDTO;
 import cn.edu.sdu.qd.oj.dto.BinaryFileUploadReqDTO;
 import cn.edu.sdu.qd.oj.dto.FileDTO;
 import cn.edu.sdu.qd.oj.dto.FileDownloadReqDTO;
 import cn.edu.sdu.qd.oj.dto.PlainFileDownloadDTO;
 import org.springframework.web.multipart.MultipartFile;
 
+import java.io.IOException;
 import java.util.List;
 import java.util.zip.ZipOutputStream;
 
@@ -35,4 +35,6 @@ public interface FileService {
     List<PlainFileDownloadDTO> plainFileDownload(Long sizeLimit, List<PlainFileDownloadDTO> reqDTOList);
 
     FileDTO queryByMd5(String md5);
+
+    byte[] downloadFile(long id) throws IOException;
 }

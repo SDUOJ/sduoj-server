@@ -11,8 +11,6 @@
 package cn.edu.sdu.qd.oj.submit.dto;
 
 import cn.edu.sdu.qd.oj.common.entity.BaseDTO;
-import cn.edu.sdu.qd.oj.common.util.HexStringToLongDeserializer;
-import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import lombok.*;
 
 import javax.validation.constraints.NotNull;
@@ -26,7 +24,6 @@ import java.util.List;
 public class SubmissionUpdateReqDTO extends BaseDTO {
 
     @NotNull
-    @JsonDeserialize(using = HexStringToLongDeserializer.class)
     private Long submissionId;
 
     private Long judgerId;
@@ -46,5 +43,5 @@ public class SubmissionUpdateReqDTO extends BaseDTO {
     private String judgeLog;
 
     @NotNull
-    private List<List<Integer>> checkpointResults;
+    private List<EachCheckpointResult> checkpointResults;
 }

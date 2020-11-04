@@ -23,6 +23,16 @@ public class JudgeTemplateInternalController implements JudgeTemplateApi {
     private JudgeTemplateService judgeTemplateService;
 
     @Override
+    public String idToTitle(Long id) {
+        return judgeTemplateService.idToTitle(id);
+    }
+
+    @Override
+    public Integer idToType(Long id) {
+        return judgeTemplateService.idToType(id);
+    }
+
+    @Override
     public JudgeTemplateDTO query(Long id) {
         return judgeTemplateService.query(id);
     }

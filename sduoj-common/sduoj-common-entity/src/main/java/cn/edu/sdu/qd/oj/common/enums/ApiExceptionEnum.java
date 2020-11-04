@@ -44,6 +44,7 @@ public enum ApiExceptionEnum {
     JUDGETEMPLATE_NOT_FOUND(400, "评测模板未找到"),
 
     SUBMISSION_NOT_FOUND(400, "提交未找到"),
+    SUBMISSION_PARAM_ERROR(400, "提交的代码和文件仅允许一个不空"),
 
     USER_NOT_MATCHING(403, "用户权限不足"),
 
@@ -70,6 +71,7 @@ public enum ApiExceptionEnum {
     CONTEST_NOT_BEGIN(400, "比赛未开始"),
     CONTEST_HAD_PARTICIPATED(400, "请不要重复参加比赛"),
     CONTEST_PASSWORD_NOT_MATCHING(400, "比赛密码错误"),
+    CONTEST_TIME_ERROR(400, "比赛时间必须满足: 当前时间<开始时间<结束时间"),
 
     ;
 

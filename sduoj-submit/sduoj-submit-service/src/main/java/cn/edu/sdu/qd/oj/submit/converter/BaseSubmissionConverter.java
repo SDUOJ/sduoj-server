@@ -11,6 +11,8 @@
 package cn.edu.sdu.qd.oj.submit.converter;
 
 import cn.edu.sdu.qd.oj.common.converter.BaseConverter;
+import cn.edu.sdu.qd.oj.common.util.CollectionUtils;
+import cn.edu.sdu.qd.oj.submit.dto.EachCheckpointResult;
 import io.netty.buffer.ByteBuf;
 import io.netty.buffer.Unpooled;
 import org.assertj.core.util.Lists;
@@ -22,24 +24,26 @@ import java.util.List;
 @org.mapstruct.MapperConfig
 public interface BaseSubmissionConverter<S, T> extends BaseConverter<S, T> {
 
-    default List<List<Integer>> checkpointResultsTo(byte[] bytes) {
+    default List<EachCheckpointResult> checkpointResultsTo(byte[] bytes) {
         int size = bytes != null ? bytes.length : 0;
-        if (size == 0 || size % (3*4) != 0) {
+        if (size == 0 || size % (4*4) != 0) {
             return Lists.newArrayList();
         }
         ByteBuffer wrap = ByteBuffer.wrap(bytes);
-        List<List<Integer>> checkpointResults = new ArrayList<>(size / (3*4));
-        for (int i = 0; i < size; i += 12) {
-            checkpointResults.add(Lists.newArrayList(wrap.getInt(i), wrap.getInt(i+4), wrap.getInt(i+8)));
+        List<EachCheckpointResult> checkpointResults = new ArrayList<>(size / (4*4));
+        for (int i = 0; i < size; i += 16) {
+            checkpointResults.add(new EachCheckpointResult(
+                    wrap.getInt(i), wrap.getInt(i+4), wrap.getInt(i+8), wrap.getInt(i+12))
+            );
         }
         return checkpointResults;
     }
 
-    default byte[] checkpointResultsFrom(List<List<Integer>> checkpointResults) {
-        if (checkpointResults.stream().anyMatch(o -> o.size() != 3)) {
+    default byte[] checkpointResultsFrom(List<EachCheckpointResult> checkpointResults) {
+        if (CollectionUtils.isEmpty(checkpointResults) || checkpointResults.stream().anyMatch(o -> o.size() != 4)) {
             return null;
         }
-        ByteBuf byteBuf = Unpooled.buffer(checkpointResults.size() * 12);
+        ByteBuf byteBuf = Unpooled.buffer(checkpointResults.size() * 16);
         checkpointResults.forEach(o -> o.forEach(byteBuf::writeInt));
         return byteBuf.array();
     }

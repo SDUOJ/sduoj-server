@@ -15,15 +15,19 @@ import cn.edu.sdu.qd.oj.common.annotation.UserSession;
 import cn.edu.sdu.qd.oj.common.entity.ApiResponseBody;
 import cn.edu.sdu.qd.oj.common.entity.PageResult;
 import cn.edu.sdu.qd.oj.common.entity.UserSessionDTO;
+import cn.edu.sdu.qd.oj.common.enums.ApiExceptionEnum;
+import cn.edu.sdu.qd.oj.common.util.AssertUtils;
 import cn.edu.sdu.qd.oj.submit.dto.*;
 import cn.edu.sdu.qd.oj.submit.service.SubmitService;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.*;
 
 import javax.validation.Valid;
 import java.util.List;
+import java.util.Objects;
 import java.util.Optional;
 
 /**
@@ -47,8 +51,12 @@ public class SubmitController {
     public String createSubmission(@RequestBody @Valid SubmissionCreateReqDTO reqDTO,
                                    @RequestHeader("X-FORWARDED-FOR") String ipv4,
                                    @UserSession UserSessionDTO userSessionDTO) {
+        // 特判 代码或文件 仅一个不空
+        AssertUtils.isTrue(StringUtils.isNotBlank(reqDTO.getCode()) || Objects.nonNull(reqDTO.getZipFileId()), ApiExceptionEnum.SUBMISSION_PARAM_ERROR);
+        // 置入参
         reqDTO.setIpv4(ipv4);
         reqDTO.setUserId(userSessionDTO.getUserId());
+
         return Long.toHexString(this.submitService.createSubmission(reqDTO, 0));
     }
 

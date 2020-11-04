@@ -17,6 +17,7 @@ import cn.edu.sdu.qd.oj.dto.PlainFileDownloadDTO;
 import org.springframework.core.io.Resource;
 import org.springframework.web.bind.annotation.*;
 
+import java.io.IOException;
 import java.util.List;
 
 /**
@@ -32,6 +33,9 @@ public interface FilesysApi {
     @PostMapping(value = "/uploadBinaryFiles", consumes = "application/json")
     List<FileDTO> uploadBinaryFiles(@RequestBody List<BinaryFileUploadReqDTO> reqDTOList,
                                     @RequestParam("userId") long userId);
+
+    @GetMapping(value = "/download", headers = "content-type=application/json")
+    Resource download(@RequestParam("id") long id) throws IOException;
 
     @PostMapping(value = "/zipDownload", headers = "content-type=application/json")
     Resource download(@RequestBody List<FileDownloadReqDTO> reqDTOList);

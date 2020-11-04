@@ -32,8 +32,6 @@ import java.util.Date;
 @EqualsAndHashCode(callSuper = true)
 public class SubmissionJudgeDTO extends BaseDTO {
 
-    @JsonSerialize(using = LongToHexStringSerializer.class)
-    @JsonDeserialize(using = HexStringToLongDeserializer.class)
     private Long submissionId;
 
     private Long problemId;
@@ -43,6 +41,8 @@ public class SubmissionJudgeDTO extends BaseDTO {
     private Integer version;
 
     private Long judgeTemplateId;
+
+    private Long zipFileId;
 
     private String language;
 

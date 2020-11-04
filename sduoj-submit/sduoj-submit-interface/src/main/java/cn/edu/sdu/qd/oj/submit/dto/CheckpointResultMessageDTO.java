@@ -15,28 +15,38 @@ import java.util.ArrayList;
 /**
 * @Description 动态评测结果mq传输体
 **/
-public class SubmissionResultMessageDTO extends ArrayList<Object> {
+public class CheckpointResultMessageDTO extends ArrayList<Object> {
 
-    // submissionId, index, judgeScore， judgeResult,  usedTime, usedMemory,
+    // [submissionId, checkpointIndex, judgeScore， judgeResult,  usedTime, usedMemory]
 
     public static final int INDEX_SUBMISSION_ID = 0;
     public static final int INDEX_CHECKPOINT_INDEX = 1;
-    public static final int INDEX_JUDGE_SCORE = 2;
-    public static final int INDEX_JUDGE_RESULT = 3;
+    public static final int INDEX_JUDGE_RESULT = 2;
+    public static final int INDEX_JUDGE_SCORE = 3;
     public static final int INDEX_USED_TIME = 4;
     public static final int INDEX_USED_MEMORY = 5;
 
-    public SubmissionResultMessageDTO() {
+    public EachCheckpointResult toEachCheckpointResult() {
+        return new EachCheckpointResult(getJudgeResult(), getJudgeScore(), getUsedTime(), getUsedMemory());
+    }
+
+    public CheckpointResultMessageDTO() {
         super();
     }
 
-    public SubmissionResultMessageDTO(Long submissionId, Integer checkpointIndex, Integer judgeResult,
+    public CheckpointResultMessageDTO(Long submissionId, Integer flag) {
+        super(2);
+        add(INDEX_SUBMISSION_ID, submissionId);
+        add(flag);
+    }
+
+    public CheckpointResultMessageDTO(Long submissionId, Integer checkpointIndex, Integer judgeResult,
                                       Integer judgeScore, Integer usedTime, Integer usedMemory) {
         super(6);
         super.add(INDEX_SUBMISSION_ID, submissionId);
         super.add(INDEX_CHECKPOINT_INDEX, checkpointIndex);
-        super.add(INDEX_JUDGE_SCORE, judgeResult);
-        super.add(INDEX_JUDGE_RESULT, judgeScore);
+        super.add(INDEX_JUDGE_RESULT, judgeResult);
+        super.add(INDEX_JUDGE_SCORE, judgeScore);
         super.add(INDEX_USED_TIME, usedTime);
         super.add(INDEX_USED_MEMORY, usedMemory);
     }

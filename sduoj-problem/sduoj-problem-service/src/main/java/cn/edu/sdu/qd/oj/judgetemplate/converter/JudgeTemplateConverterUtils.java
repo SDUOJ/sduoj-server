@@ -15,6 +15,9 @@ import cn.edu.sdu.qd.oj.problem.client.UserClient;
 
 public class JudgeTemplateConverterUtils {
     public static String userIdToUsername(Long userId) {
+        if (userId == null) {
+            return null;
+        }
         return SpringContextUtils.getBean(UserClient.class).userIdToUsername(userId);
     }
 }

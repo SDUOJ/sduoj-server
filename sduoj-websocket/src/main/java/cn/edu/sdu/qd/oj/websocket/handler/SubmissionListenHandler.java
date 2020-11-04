@@ -11,6 +11,7 @@
 package cn.edu.sdu.qd.oj.websocket.handler;
 
 import cn.edu.sdu.qd.oj.common.util.RedisUtils;
+import cn.edu.sdu.qd.oj.submit.dto.CheckpointResultMessageDTO;
 import cn.edu.sdu.qd.oj.websocket.constant.SubmissionBizContant;
 import com.alibaba.fastjson.JSONObject;
 import lombok.extern.slf4j.Slf4j;
@@ -20,8 +21,6 @@ import org.springframework.amqp.rabbit.annotation.QueueBinding;
 import org.springframework.amqp.rabbit.annotation.RabbitListener;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
-
-import java.util.List;
 
 /**
  * @ClassName SubmissionListener
@@ -44,12 +43,12 @@ public class SubmissionListenHandler {
             ignoreDeclarationExceptions = "true"),
             key = {"submission.checkpoint.push"})
     )
-    public void pushSubmissionResult(List list) {
-        log.info("rabbitMQ: {}", list);
-        String submissionId = (String) list.get(0);
-        list.remove(0);
-        redisUtils.lSet(SubmissionBizContant.getRedisSubmissionKey(submissionId), JSONObject.toJSONString(list),
-                SubmissionBizContant.REDIS_SUBMISSION_RESULT_EXPIRE);
-        redisUtils.publish(SubmissionBizContant.getRedisChannelKey(submissionId), JSONObject.toJSONString(list));
+    public void pushSubmissionResult(CheckpointResultMessageDTO messageDTO) {
+        log.info("rabbitMQ: {}", messageDTO);
+        String submissionIdHex = Long.toHexString(messageDTO.getSubmissionId());
+        messageDTO.remove(CheckpointResultMessageDTO.INDEX_SUBMISSION_ID);
+        String msg = JSONObject.toJSONString(messageDTO);
+        redisUtils.lSet(SubmissionBizContant.getRedisSubmissionKey(submissionIdHex), msg, SubmissionBizContant.REDIS_SUBMISSION_RESULT_EXPIRE);
+        redisUtils.publish(SubmissionBizContant.getRedisChannelKey(submissionIdHex), msg);
     }
 }

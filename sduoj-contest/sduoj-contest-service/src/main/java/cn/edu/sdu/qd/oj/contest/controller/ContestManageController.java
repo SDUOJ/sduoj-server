@@ -26,6 +26,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.*;
 
+import javax.validation.Valid;
+import java.util.Date;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -45,10 +47,14 @@ public class ContestManageController {
 
     @PostMapping("/create")
     @ApiResponseBody
-    public Long create(@RequestBody ContestCreateReqDTO reqDTO,
+    public Long create(@RequestBody @Valid ContestCreateReqDTO reqDTO,
                        @RequestHeader("authorization-userId") Long userId) {
         // 增补
         reqDTO.setUserId(userId);
+
+        // 校验 当前时间<开始时间<结束时间
+        AssertUtils.isTrue(reqDTO.getGmtStart().after(new Date()), ApiExceptionEnum.CONTEST_TIME_ERROR);
+        AssertUtils.isTrue(reqDTO.getGmtStart().before(reqDTO.getGmtEnd()), ApiExceptionEnum.CONTEST_TIME_ERROR);
 
         // 校验 problemCode
         try {
@@ -92,8 +98,12 @@ public class ContestManageController {
 
     @PostMapping("/update")
     @ApiResponseBody
-    public Void update(@RequestBody ContestDTO reqDTO,
+    public Void update(@RequestBody @Valid ContestDTO reqDTO,
                        @UserSession UserSessionDTO userSessionDTO) {
+        // 校验 当前时间<开始时间<结束时间
+        AssertUtils.isTrue(reqDTO.getGmtStart().after(new Date()), ApiExceptionEnum.CONTEST_TIME_ERROR);
+        AssertUtils.isTrue(reqDTO.getGmtStart().before(reqDTO.getGmtEnd()), ApiExceptionEnum.CONTEST_TIME_ERROR);
+
         contestManageService.update(reqDTO, userSessionDTO);
         return null;
     }

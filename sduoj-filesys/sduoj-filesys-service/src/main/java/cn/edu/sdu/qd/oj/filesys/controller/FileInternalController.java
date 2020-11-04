@@ -22,6 +22,7 @@ import org.springframework.core.io.ByteArrayResource;
 import org.springframework.core.io.Resource;
 import org.springframework.web.bind.annotation.RestController;
 
+import java.io.IOException;
 import java.util.List;
 
 @RestController
@@ -33,6 +34,11 @@ public class FileInternalController implements FilesysApi {
     @Override
     public List<FileDTO> uploadBinaryFiles(List<BinaryFileUploadReqDTO> reqDTOList, long userId) {
         return fileService.uploadBinaryFiles(reqDTOList, userId);
+    }
+
+    @Override
+    public Resource download(long id) throws IOException {
+        return new ByteArrayResource(fileService.downloadFile(id));
     }
 
     @Override

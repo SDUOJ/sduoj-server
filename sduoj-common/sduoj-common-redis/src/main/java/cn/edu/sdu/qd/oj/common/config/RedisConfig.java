@@ -105,7 +105,6 @@ public class RedisConfig {
 
     private RedisCacheConfiguration getDefaultConf() {
         return RedisCacheConfiguration.defaultCacheConfig()
-                .disableCachingNullValues()
                 .computePrefixWith(cacheName -> "cache".concat(":").concat(cacheName).concat(":"))
                 .serializeKeysWith(RedisSerializationContext.SerializationPair.fromSerializer(redisKeySerializer()))
                 .serializeValuesWith(RedisSerializationContext.SerializationPair.fromSerializer(redisValueSerializer()))
