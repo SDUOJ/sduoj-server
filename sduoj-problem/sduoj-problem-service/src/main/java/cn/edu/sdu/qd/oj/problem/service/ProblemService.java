@@ -39,7 +39,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.util.CollectionUtils;
 
-import javax.annotation.PostConstruct;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -236,6 +235,19 @@ public class ProblemService {
 
         return problemConverter.to(problemDO, problemDescriptionDO, null, problemCaseDTOList);
     }
+
+    public void incProblemAcceptNumber(long problemId) {
+        // TODO: 提交数递增
+        ProblemDO problemDO = problemDao.lambdaQuery().select(
+                ProblemDO::getProblemId,
+                ProblemDO::getVersion,
+                ProblemDO::getAcceptNum
+        ).eq(ProblemDO::getProblemId, problemId).one();
+        problemDO.setAcceptNum(problemDO.getAcceptNum() + 1);
+        AssertUtils.isTrue(problemDao.updateById(problemDO), ApiExceptionEnum.SERVER_BUSY);
+    }
+
+
 
     public List<Long> queryPrivateProblemIdList(Long userId) {
         LambdaQueryChainWrapper<ProblemDO> query = problemDao.lambdaQuery();

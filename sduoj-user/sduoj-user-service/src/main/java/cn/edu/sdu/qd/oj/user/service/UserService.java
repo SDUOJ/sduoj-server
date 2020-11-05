@@ -10,6 +10,7 @@
 
 package cn.edu.sdu.qd.oj.user.service;
 
+import cn.edu.sdu.qd.oj.auth.enums.PermissionEnum;
 import cn.edu.sdu.qd.oj.common.entity.UserSessionDTO;
 import cn.edu.sdu.qd.oj.common.util.AssertUtils;
 import cn.edu.sdu.qd.oj.common.util.RedisConstants;
@@ -37,7 +38,6 @@ import org.springframework.dao.DuplicateKeyException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import javax.annotation.PostConstruct;
 import javax.mail.MessagingException;
 import javax.validation.constraints.NotNull;
 import java.util.List;
@@ -167,7 +167,11 @@ public class UserService {
         String username = Optional.ofNullable(redisUtils.get(RedisConstants.getEmailVerificationKey(token))).map(o -> (String) o).orElse(null);
         AssertUtils.notNull(username, ApiExceptionEnum.TOKEN_EXPIRE);
         // 单字段更新，不需要先查后改，不需要乐观锁
-        AssertUtils.isTrue(userDao.lambdaUpdate().eq(UserDO::getUsername, username).set(UserDO::getEmailVerified, 1).update(), ApiExceptionEnum.UNKNOWN_ERROR);
+        AssertUtils.isTrue(userDao.lambdaUpdate()
+                    .eq(UserDO::getUsername, username)
+                    .set(UserDO::getEmailVerified, 1)
+                    .set(UserDO::getRoles, PermissionEnum.USER.name)
+                    .update(), ApiExceptionEnum.UNKNOWN_ERROR);
     }
 
     public UserDTO queryByUserId(Long userId) {

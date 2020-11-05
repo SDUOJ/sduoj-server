@@ -27,11 +27,11 @@ import cn.edu.sdu.qd.oj.submit.dao.SubmissionDao;
 import cn.edu.sdu.qd.oj.submit.dto.*;
 import cn.edu.sdu.qd.oj.submit.entity.SubmissionDO;
 import cn.edu.sdu.qd.oj.submit.enums.SubmissionJudgeResult;
+import cn.edu.sdu.qd.oj.submit.util.RabbitSender;
 import com.baomidou.mybatisplus.extension.conditions.query.LambdaQueryChainWrapper;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
-import org.springframework.amqp.rabbit.core.RabbitTemplate;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -56,9 +56,6 @@ public class SubmitService {
     private SubmissionDao submissionDao;
 
     @Autowired
-    private RabbitTemplate rabbitTemplate;
-
-    @Autowired
     private UserClient userClient;
 
     @Autowired
@@ -81,6 +78,9 @@ public class SubmitService {
 
     @Autowired
     private JudgeTemplateClient judgeTemplateClient;
+
+    @Autowired
+    private RabbitSender rabbitSender;
 
 
     /**
@@ -117,22 +117,20 @@ public class SubmitService {
                 redisUtils.hincr(key, RedisConstants.getContestProblemSubmit(problemCode), 1);
             }
         }
-
-        try {
-            SubmissionMessageDTO messageDTO = SubmissionMessageDTO.builder()
-                    .code(submissionDO.getCode())
-                    .codeLength(submissionDO.getCodeLength())
-                    .gmtCreate(submissionDO.getGmtCreate())
-                    .judgeTemplateId(submissionDO.getJudgeTemplateId())
-                    .zipFileId(submissionDO.getZipFileId())
-                    .submissionId(submissionDO.getSubmissionId())
-                    .problemId(submissionDO.getProblemId())
-                    .version(submissionDO.getVersion())
-                    .userId(submissionDO.getUserId())
-                    .build();
-            this.rabbitTemplate.convertAndSend("", "judge_queue", messageDTO);
-        } catch (Exception e) {
-            log.error("[submit] submissionCreate MQ send error", e);
+        // 发送评测请求
+        SubmissionMessageDTO messageDTO = SubmissionMessageDTO.builder()
+                .code(submissionDO.getCode())
+                .codeLength(submissionDO.getCodeLength())
+                .gmtCreate(submissionDO.getGmtCreate())
+                .judgeTemplateId(submissionDO.getJudgeTemplateId())
+                .zipFileId(submissionDO.getZipFileId())
+                .submissionId(submissionDO.getSubmissionId())
+                .problemId(submissionDO.getProblemId())
+                .version(submissionDO.getVersion())
+                .userId(submissionDO.getUserId())
+                .build();
+        if (!rabbitSender.sendJudgeRequest(messageDTO)) {
+            log.error("[submit] submissionCreate MQ send error {}", messageDTO.getSubmissionId());
             throw new ApiException(ApiExceptionEnum.UNKNOWN_ERROR);
         }
         return submissionDO.getSubmissionId();

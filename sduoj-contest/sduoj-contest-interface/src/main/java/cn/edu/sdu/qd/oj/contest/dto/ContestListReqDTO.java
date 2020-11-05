@@ -23,6 +23,5 @@ public class ContestListReqDTO extends BaseDTO {
     private int pageSize;
     private String orderBy;
     private Boolean ascending = false;
-
-
+    private String mode;
 }

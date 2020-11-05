@@ -18,10 +18,12 @@ import cn.edu.sdu.qd.oj.submit.client.ProblemClient;
 import cn.edu.sdu.qd.oj.submit.converter.SubmissionJudgeConverter;
 import cn.edu.sdu.qd.oj.submit.converter.SubmissionUpdateConverter;
 import cn.edu.sdu.qd.oj.submit.dao.SubmissionDao;
+import cn.edu.sdu.qd.oj.submit.dto.SubmissionResultDTO;
 import cn.edu.sdu.qd.oj.submit.dto.SubmissionUpdateReqDTO;
 import cn.edu.sdu.qd.oj.submit.entity.SubmissionDO;
 import cn.edu.sdu.qd.oj.submit.dto.SubmissionJudgeDTO;
 import cn.edu.sdu.qd.oj.submit.enums.SubmissionJudgeResult;
+import cn.edu.sdu.qd.oj.submit.util.RabbitSender;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -54,6 +56,9 @@ public class SubmitJudgerService {
     @Autowired
     private RedisUtils redisUtils;
 
+    @Autowired
+    private RabbitSender rabbitSender;
+
     public SubmissionJudgeDTO query(long submissionId) {
         SubmissionDO submissionJudgeDO = submissionDao.lambdaQuery().select(
                 SubmissionDO::getSubmissionId,
@@ -79,9 +84,11 @@ public class SubmitJudgerService {
         // 查出 user、problem、contest 信息，同步推送过题消息
         submissionDO = submissionDao.lambdaQuery().select(
                 SubmissionDO::getSubmissionId,
+                SubmissionDO::getGmtCreate,
                 SubmissionDO::getUserId,
                 SubmissionDO::getContestId,
                 SubmissionDO::getProblemId,
+                SubmissionDO::getJudgeScore,
                 SubmissionDO::getJudgeResult
         ).eq(SubmissionDO::getSubmissionId, reqDTO.getSubmissionId()).one();
         if (SubmissionJudgeResult.AC.equals(submissionDO.getJudgeResult())) {
@@ -97,6 +104,17 @@ public class SubmitJudgerService {
             if (redisUtils.hasKey(key)) {
                 redisUtils.hincr(key, RedisConstants.getContestProblemAccept(problemCode), 1);
             }
+            // 过题消息
+            SubmissionResultDTO submissionResultDTO = SubmissionResultDTO.builder()
+                    .submissionId(submissionDO.getSubmissionId())
+                    .gmtCreate(submissionDO.getGmtCreate())
+                    .judgeScore(submissionDO.getJudgeScore())
+                    .problemId(submissionDO.getProblemId())
+                    .problemCode(problemCode)
+                    .userId(submissionDO.getUserId())
+                    .judgeResult(submissionDO.getJudgeResult())
+                    .build();
+            rabbitSender.sendACMessage(submissionResultDTO);
         }
     }
 }

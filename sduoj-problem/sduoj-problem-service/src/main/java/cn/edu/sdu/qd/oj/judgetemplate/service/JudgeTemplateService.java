@@ -15,6 +15,7 @@ import cn.edu.sdu.qd.oj.common.entity.PageResult;
 import cn.edu.sdu.qd.oj.common.entity.UserSessionDTO;
 import cn.edu.sdu.qd.oj.common.enums.ApiExceptionEnum;
 import cn.edu.sdu.qd.oj.common.util.AssertUtils;
+import cn.edu.sdu.qd.oj.common.util.CollectionUtils;
 import cn.edu.sdu.qd.oj.judgetemplate.converter.JudgeTemplateConverter;
 import cn.edu.sdu.qd.oj.judgetemplate.converter.JudgeTemplateListConverter;
 import cn.edu.sdu.qd.oj.judgetemplate.converter.JudgeTemplateManageListConverter;
@@ -104,6 +105,9 @@ public class JudgeTemplateService {
     }
 
     public List<JudgeTemplateListDTO> listByIds(List<Long> judgeTemplateIdList) {
+        if (CollectionUtils.isEmpty(judgeTemplateIdList)) {
+            return Lists.newArrayList();
+        }
         List<JudgeTemplateDO> judgeTemplateManageListDOList = judgeTemplateDao.lambdaQuery().select(
                 JudgeTemplateDO::getId,
                 JudgeTemplateDO::getType,

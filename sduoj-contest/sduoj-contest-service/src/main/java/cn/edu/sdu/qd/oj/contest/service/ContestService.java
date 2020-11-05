@@ -38,8 +38,10 @@ import cn.edu.sdu.qd.oj.submit.dto.SubmissionCreateReqDTO;
 import cn.edu.sdu.qd.oj.submit.dto.SubmissionDTO;
 import cn.edu.sdu.qd.oj.submit.dto.SubmissionListDTO;
 import cn.edu.sdu.qd.oj.submit.dto.SubmissionListReqDTO;
+import com.baomidou.mybatisplus.extension.conditions.query.LambdaQueryChainWrapper;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.google.common.collect.Maps;
+import org.apache.commons.lang3.StringUtils;
 import org.assertj.core.util.Lists;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -159,9 +161,15 @@ public class ContestService {
     }
 
     public PageResult<ContestListDTO> page(ContestListReqDTO reqDTO) {
-        Page<ContestListDO> pageResult = contestListDao.lambdaQuery()
-                .orderByDesc(ContestListDO::getGmtStart)
-                .page(new Page<>(reqDTO.getPageNow(), reqDTO.getPageSize()));
+        LambdaQueryChainWrapper<ContestListDO> query = contestListDao.lambdaQuery()
+                .orderByDesc(ContestListDO::getGmtStart);
+
+        // TODO: 修改掉临时的暴力 feature 匹配
+        Optional.ofNullable(reqDTO).map(ContestListReqDTO::getMode).filter(StringUtils::isNotBlank).ifPresent(mode -> {
+            query.like(ContestListDO::getFeatures, "mode:" + mode);
+        });
+
+        Page<ContestListDO> pageResult = query.page(new Page<>(reqDTO.getPageNow(), reqDTO.getPageSize()));
         return new PageResult<>(pageResult.getPages(), contestListConverter.to(pageResult.getRecords()));
     }
 
