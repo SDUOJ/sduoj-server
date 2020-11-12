@@ -81,7 +81,8 @@ public class UserController {
     @PostMapping("/sendVerificationEmail")
     @ApiResponseBody
     public String verificationEmailSend(@RequestBody Map<String, String> json) throws MessagingException {
-        verifyCaptcha(json.get("captchaId"), json.get("captcha"));
+        // TODO: 前端重新发验证邮件需要输验证码
+//        verifyCaptcha(json.get("captchaId"), json.get("captcha"));
 
         String username = json.get("username");
         return this.userService.sendVerificationEmail(username);

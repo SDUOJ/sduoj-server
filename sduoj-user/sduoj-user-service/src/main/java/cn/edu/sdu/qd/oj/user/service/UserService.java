@@ -258,7 +258,7 @@ public class UserService {
 
         // 更改邮箱逻辑
         if (StringUtils.isNotBlank(reqDTO.getNewEmail())) {
-            AssertUtils.isTrue(isExistEmail(reqDTO.getNewEmail()), ApiExceptionEnum.EMAIL_EXIST);
+            AssertUtils.isTrue(!isExistEmail(reqDTO.getNewEmail()), ApiExceptionEnum.EMAIL_EXIST);
             updateDTO.setEmail(reqDTO.getNewEmail());
             updateDTO.setEmailVerified(0);
         }
