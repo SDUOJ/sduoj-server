@@ -21,6 +21,7 @@ import cn.edu.sdu.qd.oj.common.util.AssertUtils;
 import cn.edu.sdu.qd.oj.common.util.SnowflakeIdWorker;
 import cn.edu.sdu.qd.oj.dto.BinaryFileUploadReqDTO;
 import cn.edu.sdu.qd.oj.dto.FileDTO;
+import cn.edu.sdu.qd.oj.dto.PlainFileDownloadDTO;
 import com.alibaba.nacos.common.utils.Md5Utils;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.io.FilenameUtils;
@@ -173,14 +174,18 @@ public class CheckpointFileService {
         CheckpointDO checkpointDO = checkpointDao.getById(checkpointId);
 
         AssertUtils.notNull(checkpointDO, ApiExceptionEnum.FILE_NOT_EXISTS);
-        AssertUtils.isTrue(!(checkpointDO.getInputSize() > 1024*1024 || checkpointDO.getOutputSize() > 1024*1024), ApiExceptionEnum.FILE_TOO_LARGE);
+        AssertUtils.isTrue(!(checkpointDO.getInputSize() > 1024 * 1024 || checkpointDO.getOutputSize() > 1024 * 1024), ApiExceptionEnum.FILE_TOO_LARGE);
 
-        // TODO: 读文件系统
+        List<PlainFileDownloadDTO> downloadDTOList = filesysClient.plainFileDownload(1024 * 1024L,
+                Lists.newArrayList(PlainFileDownloadDTO.builder().fileId(checkpointDO.getInputFileId()).build(),
+                        PlainFileDownloadDTO.builder().fileId(checkpointDO.getOutputFileId()).build())
+        );
+        AssertUtils.isTrue(downloadDTOList != null && downloadDTOList.size() == 2, ApiExceptionEnum.SERVER_BUSY);
 
         return CheckpointDTO.builder()
                 .checkpointId(checkpointId)
-                .input(checkpointDO.getInputPreview())
-                .output(checkpointDO.getOutputPreview())
+                .input(new String(downloadDTOList.get(0).getBytes()))
+                .output(new String(downloadDTOList.get(1).getBytes()))
                 .build();
     }
 
