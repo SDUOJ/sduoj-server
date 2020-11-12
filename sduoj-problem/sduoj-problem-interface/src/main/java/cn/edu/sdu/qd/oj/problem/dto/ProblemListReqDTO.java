@@ -22,7 +22,7 @@ public class ProblemListReqDTO extends BaseDTO {
     // TODO: 改名，实现一个底层的 pageReqDTO 来继承
     private int pageNow;
     private int pageSize;
-    private String orderBy;
+    private String sortBy;
     private Boolean ascending = false;
     private String remoteOj;
 }

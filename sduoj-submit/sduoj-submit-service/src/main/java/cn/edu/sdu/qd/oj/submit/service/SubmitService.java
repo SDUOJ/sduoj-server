@@ -203,9 +203,9 @@ public class SubmitService {
         ).eq(SubmissionDO::getContestId, contestId);
 
         // 排序字段
-        String orderBy = reqDTO.getOrderBy();
-        if (orderBy != null) {
-            switch (reqDTO.getOrderBy()) {
+        String sortBy = reqDTO.getSortBy();
+        if (StringUtils.isNotBlank(sortBy)) {
+            switch (sortBy) {
                 case "usedTime":
                     query.orderBy(true, reqDTO.getAscending(), SubmissionDO::getUsedTime);
                     break;

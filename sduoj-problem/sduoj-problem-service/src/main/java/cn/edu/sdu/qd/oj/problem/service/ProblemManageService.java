@@ -31,6 +31,7 @@ import cn.edu.sdu.qd.oj.problem.entity.ProblemDescriptionDO;
 import cn.edu.sdu.qd.oj.problem.entity.ProblemManageListDO;
 import cn.edu.sdu.qd.oj.tag.dto.TagDTO;
 import com.baomidou.mybatisplus.extension.conditions.query.LambdaQueryChainWrapper;
+import com.baomidou.mybatisplus.extension.conditions.update.LambdaUpdateChainWrapper;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
@@ -132,7 +133,7 @@ public class ProblemManageService {
                                           .and(o3 -> o3.eq(ProblemManageListDO::getUserId, userId))));
         }
         // 置排序条件
-        Optional.ofNullable(reqDTO.getOrderBy()).filter(StringUtils::isNotBlank).ifPresent(orderBy -> {
+        Optional.ofNullable(reqDTO.getSortBy()).filter(StringUtils::isNotBlank).ifPresent(orderBy -> {
             switch (orderBy) {
                 case "acceptNum":
                     query.orderBy(true, reqDTO.getAscending(), ProblemManageListDO::getAcceptNum);
@@ -225,10 +226,12 @@ public class ProblemManageService {
 
     public void updateDescription(ProblemDescriptionDTO problemDescriptionDTO) {
         ProblemDescriptionDO problemDescriptionDO = problemDescriptionConverter.from(problemDescriptionDTO);
-        problemDescriptionDao.lambdaUpdate()
-                .eq(ProblemDescriptionDO::getId, problemDescriptionDO.getId())
-                .eq(ProblemDescriptionDO::getUserId, problemDescriptionDO.getUserId())
-                .update(problemDescriptionDO);
+        LambdaUpdateChainWrapper<ProblemDescriptionDO> updater = problemDescriptionDao.lambdaUpdate()
+                .eq(ProblemDescriptionDO::getId, problemDescriptionDO.getId());
+        Optional.of(problemDescriptionDO).map(ProblemDescriptionDO::getUserId).ifPresent(userId -> {
+            updater.eq(ProblemDescriptionDO::getUserId, userId);
+        });
+        AssertUtils.isTrue(updater.update(problemDescriptionDO), ApiExceptionEnum.UNKNOWN_ERROR);
     }
 
     public ProblemDescriptionDTO queryDescription(long id, UserSessionDTO userSessionDTO) {
@@ -248,6 +251,7 @@ public class ProblemManageService {
         long problemId = problemService.problemCodeToProblemId(problemCode);
         LambdaQueryChainWrapper<ProblemDescriptionDO> query = problemDescriptionDao.lambdaQuery().select(
                 ProblemDescriptionDO::getId,
+                ProblemDescriptionDO::getIsPublic,
                 ProblemDescriptionDO::getProblemId,
                 ProblemDescriptionDO::getVoteNum,
                 ProblemDescriptionDO::getUserId,

@@ -23,7 +23,7 @@ import java.util.List;
 public class SubmissionListReqDTO extends BaseDTO {
     private int pageNow;
     private int pageSize;
-    private String orderBy;
+    private String sortBy;
     private Boolean ascending = false;
 
     private String username;

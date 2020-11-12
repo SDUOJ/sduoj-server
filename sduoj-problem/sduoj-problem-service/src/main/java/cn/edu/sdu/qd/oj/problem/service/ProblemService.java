@@ -11,7 +11,6 @@
 package cn.edu.sdu.qd.oj.problem.service;
 
 import cn.edu.sdu.qd.oj.common.util.AssertUtils;
-import cn.edu.sdu.qd.oj.common.util.RedisConstants;
 import cn.edu.sdu.qd.oj.common.entity.PageResult;
 import cn.edu.sdu.qd.oj.common.enums.ApiExceptionEnum;
 import cn.edu.sdu.qd.oj.common.util.RedisUtils;
@@ -160,8 +159,8 @@ public class ProblemService {
         ).and(o1 -> o1.eq(ProblemDO::getIsPublic, 1)
                 .or(o2 -> o2.eq(ProblemDO::getIsPublic, 0)
                         .and(o3 -> o3.eq(ProblemDO::getUserId, userId))));
-        Optional.ofNullable(reqDTO.getOrderBy()).filter(StringUtils::isNotBlank).ifPresent(orderBy -> {
-            switch (orderBy) {
+        Optional.ofNullable(reqDTO.getSortBy()).filter(StringUtils::isNotBlank).ifPresent(sortBy -> {
+            switch (sortBy) {
                 case "acceptNum":
                     query.orderBy(true, reqDTO.getAscending(), ProblemDO::getAcceptNum);
                     break;

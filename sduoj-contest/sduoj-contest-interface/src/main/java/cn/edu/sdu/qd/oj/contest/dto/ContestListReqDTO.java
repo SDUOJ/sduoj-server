@@ -21,7 +21,7 @@ import lombok.*;
 public class ContestListReqDTO extends BaseDTO {
     private int pageNow;
     private int pageSize;
-    private String orderBy;
+    private String sortBy;
     private Boolean ascending = false;
     private String mode;
 }

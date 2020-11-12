@@ -12,6 +12,7 @@ package cn.edu.sdu.qd.oj.contest.dto;
 
 import cn.edu.sdu.qd.oj.common.entity.BaseDTO;
 import cn.edu.sdu.qd.oj.judgetemplate.dto.JudgeTemplateListDTO;
+import cn.edu.sdu.qd.oj.problem.dto.ProblemCaseDTO;
 import lombok.*;
 
 import java.util.List;
@@ -45,4 +46,6 @@ public class ContestProblemDTO extends BaseDTO {
     // ------------------------------------------
 
     private ContestProblemDescriptionDTO problemDescriptionDTO;
+
+    private List<ProblemCaseDTO> problemCaseDTOList;
 }
