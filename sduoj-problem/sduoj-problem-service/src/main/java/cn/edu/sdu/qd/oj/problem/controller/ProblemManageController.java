@@ -99,9 +99,12 @@ public class ProblemManageController {
     @PostMapping("/updateDescription")
     @ApiResponseBody
     public Void updateDescription(@RequestBody @NotNull ProblemDescriptionDTO problemDescriptionDTO,
-                                  @RequestHeader("authorization-userId") Long userId) {
+                                  @UserSession UserSessionDTO userSessionDTO) {
         AssertUtils.notNull(problemDescriptionDTO.getId(), ApiExceptionEnum.PARAMETER_ERROR);
-        problemDescriptionDTO.setUserId(userId);
+        // 超级管理员一定可以改
+        if (PermissionEnum.SUPERADMIN.notIn(userSessionDTO)) {
+            problemDescriptionDTO.setUserId(userSessionDTO.getUserId());
+        }
         problemManageService.updateDescription(problemDescriptionDTO);
         return null;
     }
