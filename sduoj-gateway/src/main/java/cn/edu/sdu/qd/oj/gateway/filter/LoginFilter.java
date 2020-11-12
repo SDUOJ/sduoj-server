@@ -81,7 +81,7 @@ public class LoginFilter implements GlobalFilter, Ordered {
                                     .orElse(null);
         // 无 session，非 allowUrl
         if (userSessionDTO == null && !isAllowPath(requestUrl)) {
-            return returnNoPermission(exchange, "鉴权失败，无 session");
+            return returnNoPermission(exchange, " 你的账号没有该权限或未登录! ");
         }
 
         // 鉴权
