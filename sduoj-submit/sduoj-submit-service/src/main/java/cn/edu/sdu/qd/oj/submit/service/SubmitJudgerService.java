@@ -59,7 +59,10 @@ public class SubmitJudgerService {
     @Autowired
     private RabbitSender rabbitSender;
 
-    public SubmissionJudgeDTO query(long submissionId) {
+    /**
+    * @return cn.edu.sdu.qd.oj.submit.dto.SubmissionJudgeDTO     Nullable
+    **/
+    public SubmissionJudgeDTO query(long submissionId, int version) {
         SubmissionDO submissionJudgeDO = submissionDao.lambdaQuery().select(
                 SubmissionDO::getSubmissionId,
                 SubmissionDO::getProblemId,
@@ -71,8 +74,18 @@ public class SubmitJudgerService {
                 SubmissionDO::getCode,
                 SubmissionDO::getCodeLength,
                 SubmissionDO::getVersion
-        ).eq(SubmissionDO::getSubmissionId, submissionId).one();
-        AssertUtils.notNull(submissionJudgeDO, ApiExceptionEnum.SUBMISSION_NOT_FOUND);
+        ).eq(SubmissionDO::getSubmissionId, submissionId)
+         .eq(SubmissionDO::getVersion, version)
+         .one();
+        if (submissionJudgeDO != null) {
+            boolean succ = submissionDao.lambdaUpdate()
+                    .set(SubmissionDO::getJudgeResult, SubmissionJudgeResult.JUDGING.code)
+                    .eq(SubmissionDO::getSubmissionId, submissionId)
+                    .update();
+            if (!succ) {
+                return null;
+            }
+        }
         return submissionJudgeConverter.to(submissionJudgeDO);
     }
 

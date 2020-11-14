@@ -13,8 +13,6 @@ package cn.edu.sdu.qd.oj.submit.dto;
 import cn.edu.sdu.qd.oj.common.entity.BaseDTO;
 import lombok.*;
 
-import java.util.Date;
-
 /**
  * @Author zhangt2333
  * @Date 2020/3/14 18:59
@@ -29,19 +27,5 @@ public class SubmissionMessageDTO extends BaseDTO {
 
     private Long submissionId;
 
-    private Long problemId;
-
-    private Long userId;
-
     private Integer version;
-
-    private Date gmtCreate;
-
-    private String code;
-
-    private Integer codeLength;
-
-    private Long judgeTemplateId;
-
-    private Long zipFileId;
 }

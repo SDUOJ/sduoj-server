@@ -11,12 +11,13 @@
 package cn.edu.sdu.qd.oj.submit.controller;
 
 import cn.edu.sdu.qd.oj.common.entity.ApiResponseBody;
-import cn.edu.sdu.qd.oj.submit.dto.SubmissionJudgeDTO;
 import cn.edu.sdu.qd.oj.submit.dto.SubmissionUpdateReqDTO;
 import cn.edu.sdu.qd.oj.submit.service.SubmitJudgerService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.*;
+
+import javax.validation.Valid;
 
 /**
  * @ClassName SubmitJudgerController
@@ -25,7 +26,7 @@ import org.springframework.web.bind.annotation.*;
  * @Date 2020/4/3 21:48
  * @Version V1.0
  **/
-
+// TODO: controller 待处理
 @Controller
 @RequestMapping("/judger/submit")
 public class SubmitJudgerController {
@@ -34,16 +35,16 @@ public class SubmitJudgerController {
     private SubmitJudgerService submitJudgerService;
 
 
-    @GetMapping("/query")
-    @ApiResponseBody
-    public SubmissionJudgeDTO query(@RequestParam("submissionId") String submissionIdHex) {
-        long submissionId = Long.valueOf(submissionIdHex, 16);
-        return this.submitJudgerService.query(submissionId);
-    }
+//    @GetMapping("/query")
+//    @ApiResponseBody
+//    public SubmissionJudgeDTO query(@RequestParam("submissionId") String submissionIdHex) {
+//        long submissionId = Long.valueOf(submissionIdHex, 16);
+//        return this.submitJudgerService.query(submissionId, version);
+//    }
 
     @PostMapping("/update")
     @ApiResponseBody
-    public Void update(@RequestBody SubmissionUpdateReqDTO reqDTO,
+    public Void update(@RequestBody @Valid SubmissionUpdateReqDTO reqDTO,
                        @RequestHeader("authorization-userId") Long userId) {
         reqDTO.setJudgerId(userId);
         this.submitJudgerService.updateSubmission(reqDTO);

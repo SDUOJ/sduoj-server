@@ -13,7 +13,6 @@ package cn.edu.sdu.qd.oj.submit.service;
 import cn.edu.sdu.qd.oj.common.entity.PageResult;
 import cn.edu.sdu.qd.oj.common.entity.UserSessionDTO;
 import cn.edu.sdu.qd.oj.common.enums.ApiExceptionEnum;
-import cn.edu.sdu.qd.oj.common.exception.ApiException;
 import cn.edu.sdu.qd.oj.common.exception.InternalApiException;
 import cn.edu.sdu.qd.oj.common.util.*;
 import cn.edu.sdu.qd.oj.problem.dto.ProblemListDTO;
@@ -21,6 +20,7 @@ import cn.edu.sdu.qd.oj.submit.client.JudgeTemplateClient;
 import cn.edu.sdu.qd.oj.submit.client.ProblemClient;
 import cn.edu.sdu.qd.oj.submit.client.UserClient;
 import cn.edu.sdu.qd.oj.submit.converter.SubmissionConverter;
+import cn.edu.sdu.qd.oj.submit.converter.SubmissionConverterUtils;
 import cn.edu.sdu.qd.oj.submit.converter.SubmissionListConverter;
 import cn.edu.sdu.qd.oj.submit.converter.SubmissionResultConverter;
 import cn.edu.sdu.qd.oj.submit.dao.SubmissionDao;
@@ -34,7 +34,6 @@ import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.CollectionUtils;
 
 import java.util.*;
@@ -85,28 +84,28 @@ public class SubmitService {
 
     /**
     * @Description 提交返回提交id
-    * @param submissionUpdateReqDTO
+    * @param reqDTO
     * @param contestId 0代表非比赛提交
     * @return java.lang.Long
     **/
-    @Transactional
-    public Long createSubmission(SubmissionCreateReqDTO submissionUpdateReqDTO, long contestId) {
+    public Long createSubmission(SubmissionCreateReqDTO reqDTO, long contestId) {
         // TODO: 校验提交语言支持、校验题目对用户权限
 
-        Long problemId = problemClient.problemCodeToProblemId(submissionUpdateReqDTO.getProblemCode());
+        Long problemId = problemClient.problemCodeToProblemId(reqDTO.getProblemCode());
         AssertUtils.notNull(problemId, ApiExceptionEnum.PROBLEM_NOT_FOUND);
 
         long snowflaskId = snowflakeIdWorker.nextId();
         SubmissionDO submissionDO = SubmissionDO.builder()
                 .submissionId(snowflaskId)
-                .code(submissionUpdateReqDTO.getCode())
-                .ipv4(submissionUpdateReqDTO.getIpv4())
-                .codeLength(submissionUpdateReqDTO.getCode().length())
-                .judgeTemplateId(submissionUpdateReqDTO.getJudgeTemplateId())
-                .language(submissionUpdateReqDTO.getLanguage())
+                .code(reqDTO.getCode())
+                .ipv4(reqDTO.getIpv4())
+                .codeLength(reqDTO.getCode().length())
+                .judgeTemplateId(reqDTO.getJudgeTemplateId())
+                .language(reqDTO.getLanguage())
                 .problemId(problemId)
-                .userId(submissionUpdateReqDTO.getUserId())
+                .userId(reqDTO.getUserId())
                 .contestId(contestId)
+                .version(0)
                 .build();
         AssertUtils.isTrue(submissionDao.save(submissionDO), ApiExceptionEnum.UNKNOWN_ERROR);
         if (contestId != 0) {
@@ -118,20 +117,8 @@ public class SubmitService {
             }
         }
         // 发送评测请求
-        SubmissionMessageDTO messageDTO = SubmissionMessageDTO.builder()
-                .code(submissionDO.getCode())
-                .codeLength(submissionDO.getCodeLength())
-                .gmtCreate(submissionDO.getGmtCreate())
-                .judgeTemplateId(submissionDO.getJudgeTemplateId())
-                .zipFileId(submissionDO.getZipFileId())
-                .submissionId(submissionDO.getSubmissionId())
-                .problemId(submissionDO.getProblemId())
-                .version(submissionDO.getVersion())
-                .userId(submissionDO.getUserId())
-                .build();
-        if (!rabbitSender.sendJudgeRequest(messageDTO)) {
-            log.error("[submit] submissionCreate MQ send error {}", messageDTO.getSubmissionId());
-            throw new ApiException(ApiExceptionEnum.UNKNOWN_ERROR);
+        if (!rabbitSender.sendJudgeRequest(SubmissionConverterUtils.toSubmissionMessageDTO(submissionDO))) {
+            log.error("[submit] submissionCreate MQ send error {}", submissionDO.getSubmissionId());
         }
         return submissionDO.getSubmissionId();
     }
@@ -326,5 +313,41 @@ public class SubmitService {
                     .build());
         });
         return problemListDTOList;
+    }
+
+    public void rejudge(List<Long> submissionIdList) {
+        log.info("rejudge submissions: {}", submissionIdList);
+        // 查询需要重测提交
+        List<SubmissionDO> submissionDOList = submissionDao.lambdaQuery().select(
+                SubmissionDO::getSubmissionId,
+                SubmissionDO::getVersion
+        ).in(SubmissionDO::getJudgeResult, SubmissionJudgeResult.CAN_REJUDGE_RESULT_CODE)
+         .in(SubmissionDO::getSubmissionId, submissionIdList).list();
+
+        submissionDOList.forEach(this::rejudgeOneSubmission);
+    }
+
+    public void rejudgeOneSubmission(SubmissionDO submissionDO) {
+        // 乐观锁字段+=1
+        submissionDO.setVersion(submissionDO.getVersion() + 1);
+        // 更新为待评测
+        submissionDao.lambdaUpdate()
+                .set(SubmissionDO::getVersion, submissionDO.getVersion())
+                .set(SubmissionDO::getJudgeResult, SubmissionJudgeResult.PD.code)
+                .set(SubmissionDO::getCheckpointResults, null)
+                .set(SubmissionDO::getJudgeLog, null)
+                .set(SubmissionDO::getUsedTime, 0)
+                .set(SubmissionDO::getUsedMemory, 0)
+                .set(SubmissionDO::getJudgeScore, 0)
+                .set(SubmissionDO::getValid, 1)
+                .eq(SubmissionDO::getSubmissionId, submissionDO.getSubmissionId())
+                .update();
+        // 构造消息体
+        SubmissionMessageDTO messageDTO = SubmissionConverterUtils.toSubmissionMessageDTO(submissionDO);
+        // 发送消息
+        if (!rabbitSender.sendJudgeRequest(messageDTO)) {
+            log.error("[submit] submissionCreate MQ send error {}", messageDTO.getSubmissionId());
+            // 该行仍然在 pending，需要定时任务或手动将 mq 重发
+        }
     }
 }

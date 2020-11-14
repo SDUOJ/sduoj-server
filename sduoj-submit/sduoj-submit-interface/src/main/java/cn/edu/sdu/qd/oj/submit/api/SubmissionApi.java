@@ -20,6 +20,7 @@ import cn.edu.sdu.qd.oj.submit.dto.SubmissionListDTO;
 import cn.edu.sdu.qd.oj.submit.dto.SubmissionListReqDTO;
 import org.springframework.web.bind.annotation.*;
 
+import javax.validation.Valid;
 import java.util.List;
 
 @RequestMapping("/internal/submit")
@@ -37,7 +38,7 @@ public interface SubmissionApi {
     PageResult<SubmissionListDTO> page(@RequestParam("contestId") long contestId,
                                        @RequestBody SubmissionListReqDTO reqDTO) throws InternalApiException;
 
-    @PostMapping(value = "/listResult", consumes = "application/json")
+    @PostMapping("/listResult")
     List<SubmissionResultDTO> listResult(@RequestParam("contestId") long contestId) throws InternalApiException;
 
     @GetMapping("query")
@@ -58,5 +59,12 @@ public interface SubmissionApi {
     List<ProblemListDTO> queryContestSubmitAndAccept(@RequestParam("contestId") long contestId);
 
     @PostMapping("/update")
-    void update(@RequestBody SubmissionUpdateReqDTO reqDTO) throws InternalApiException;
+    void update(@RequestBody @Valid SubmissionUpdateReqDTO reqDTO) throws InternalApiException;
+
+    /**
+    * @Description 查询指定版本的 submissionId，不存在则返回 null
+    **/
+    @GetMapping("/querySubmissionJudgeDTO")
+    SubmissionJudgeDTO querySubmissionJudgeDTO(@RequestParam("submissionId") long submissionId,
+                                               @RequestParam("version") int version);
 }

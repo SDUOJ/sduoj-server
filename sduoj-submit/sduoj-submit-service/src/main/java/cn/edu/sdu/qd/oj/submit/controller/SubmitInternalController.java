@@ -65,4 +65,9 @@ public class SubmitInternalController implements SubmissionApi {
     public void update(SubmissionUpdateReqDTO reqDTO) throws InternalApiException {
         this.submitJudgerService.updateSubmission(reqDTO);
     }
+
+    @Override
+    public SubmissionJudgeDTO querySubmissionJudgeDTO(long submissionId, int version) {
+        return this.submitJudgerService.query(submissionId, version);
+    }
 }

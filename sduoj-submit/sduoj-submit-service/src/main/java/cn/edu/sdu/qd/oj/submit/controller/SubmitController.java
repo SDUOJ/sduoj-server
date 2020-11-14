@@ -26,9 +26,12 @@ import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.*;
 
 import javax.validation.Valid;
+import javax.validation.constraints.NotNull;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 /**
  * @ClassName SubmitController
@@ -92,5 +95,15 @@ public class SubmitController {
     @ApiResponseBody
     public List<String> queryACProblem(@UserSession UserSessionDTO userSessionDTO) {
         return this.submitService.queryACProblem(userSessionDTO.getUserId(), 0);
+    }
+
+    @PostMapping("/rejudge")
+    @ApiResponseBody
+    public Void rejudge(@RequestBody @NotNull String[] submissionIdHexs,
+                        @UserSession UserSessionDTO userSessionDTO) {
+        AssertUtils.isTrue(PermissionEnum.ADMIN.in(userSessionDTO), ApiExceptionEnum.USER_NOT_MATCHING);
+        List<Long> submissionIdList = Arrays.stream(submissionIdHexs).map(hex -> Long.valueOf(hex, 16)).collect(Collectors.toList());
+        submitService.rejudge(submissionIdList);
+        return null;
     }
 }

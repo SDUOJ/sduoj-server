@@ -29,6 +29,9 @@ public class SubmissionUpdateReqDTO extends BaseDTO {
     private Long judgerId;
 
     @NotNull
+    private Integer version;
+
+    @NotNull
     private Integer judgeResult;
 
     @NotNull
@@ -42,6 +45,5 @@ public class SubmissionUpdateReqDTO extends BaseDTO {
 
     private String judgeLog;
 
-    @NotNull
     private List<EachCheckpointResult> checkpointResults;
 }
