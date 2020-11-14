@@ -30,9 +30,11 @@ import cn.edu.sdu.qd.oj.submit.enums.SubmissionJudgeResult;
 import cn.edu.sdu.qd.oj.submit.util.RabbitSender;
 import com.baomidou.mybatisplus.extension.conditions.query.LambdaQueryChainWrapper;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
+import com.google.common.collect.Lists;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 import org.springframework.util.CollectionUtils;
 
@@ -315,6 +317,23 @@ public class SubmitService {
         return problemListDTOList;
     }
 
+
+    public static final long REJUDGE_RATE = 5L * 60 * 1000; // 5min
+    /**
+    * @Description 定时重测一些消息丢失的 submission
+    **/
+    @Scheduled(fixedRate = REJUDGE_RATE)
+    public void rejudgeAbnormalSubmission() {
+        log.info("rejudge abnormal submissions");
+        // 查询需要重测提交
+        List<SubmissionDO> submissionDOList = submissionDao.lambdaQuery().select(
+                SubmissionDO::getSubmissionId,
+                SubmissionDO::getVersion
+        ).in(SubmissionDO::getJudgeResult, Lists.newArrayList(SubmissionJudgeResult.PD, SubmissionJudgeResult.JUDGING, SubmissionJudgeResult.END))
+         .le(SubmissionDO::getGmtCreate, new Date(System.currentTimeMillis() - REJUDGE_RATE)).list();
+        submissionDOList.forEach(this::rejudgeOneSubmission);
+    }
+
     public void rejudge(List<Long> submissionIdList) {
         log.info("rejudge submissions: {}", submissionIdList);
         // 查询需要重测提交
@@ -342,11 +361,10 @@ public class SubmitService {
                 .set(SubmissionDO::getValid, 1)
                 .eq(SubmissionDO::getSubmissionId, submissionDO.getSubmissionId())
                 .update();
-        // 构造消息体
-        SubmissionMessageDTO messageDTO = SubmissionConverterUtils.toSubmissionMessageDTO(submissionDO);
         // 发送消息
-        if (!rabbitSender.sendJudgeRequest(messageDTO)) {
-            log.error("[submit] submissionCreate MQ send error {}", messageDTO.getSubmissionId());
+        log.info("[submit] submissionCreate MQ send {}", submissionDO.getSubmissionId());
+        if (!rabbitSender.sendJudgeRequest(SubmissionConverterUtils.toSubmissionMessageDTO(submissionDO))) {
+            log.error("[submit] submissionCreate MQ send error {}", submissionDO.getSubmissionId());
             // 该行仍然在 pending，需要定时任务或手动将 mq 重发
         }
     }
