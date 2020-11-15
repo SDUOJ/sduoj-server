@@ -72,4 +72,6 @@ public class SubmissionListDTO extends BaseDTO {
     private String judgeTemplateTitle;
 
     private String username;
+
+    private Integer checkpointNum;
 }

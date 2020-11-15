@@ -257,10 +257,11 @@ public class SubmitService {
         } else {
             submissionListDTOList.forEach(submissionListDTO -> submissionListDTO.setProblemTitle(problemClient.problemIdToProblemTitle(submissionListDTO.getProblemId())));
         }
-        // 置 judgeTemplateTitle
-        submissionListDTOList.forEach(submissionListDTO ->
-            submissionListDTO.setJudgeTemplateTitle(judgeTemplateClient.idToTitle(submissionListDTO.getJudgeTemplateId())
-        ));
+        // 置 judgeTemplateTitle、checkpointNum
+        submissionListDTOList.forEach(submissionListDTO -> {
+            submissionListDTO.setJudgeTemplateTitle(judgeTemplateClient.idToTitle(submissionListDTO.getJudgeTemplateId()));
+            submissionListDTO.setCheckpointNum(problemClient.problemIdToProblemCheckpointNum(submissionListDTO.getProblemId()));
+        });
 
         return new PageResult<>(pageResult.getPages(), submissionListDTOList);
     }
@@ -329,7 +330,7 @@ public class SubmitService {
         List<SubmissionDO> submissionDOList = submissionDao.lambdaQuery().select(
                 SubmissionDO::getSubmissionId,
                 SubmissionDO::getVersion
-        ).in(SubmissionDO::getJudgeResult, Lists.newArrayList(SubmissionJudgeResult.PD, SubmissionJudgeResult.JUDGING, SubmissionJudgeResult.END))
+        ).in(SubmissionDO::getJudgeResult, Lists.newArrayList(SubmissionJudgeResult.PD, SubmissionJudgeResult.JUDGING))
          .le(SubmissionDO::getGmtCreate, new Date(System.currentTimeMillis() - REJUDGE_RATE)).list();
         submissionDOList.forEach(this::rejudgeOneSubmission);
     }

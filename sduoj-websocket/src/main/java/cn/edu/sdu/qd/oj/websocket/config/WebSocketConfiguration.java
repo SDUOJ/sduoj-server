@@ -28,7 +28,12 @@ public class WebSocketConfiguration {
 	}
  
 	@Bean
-	public ConcurrentHashMap<String, ConcurrentHashMap<String, WebSocketSender>> senderMap() {
+	public ConcurrentHashMap<String, ConcurrentHashMap<String, WebSocketSender>> submissionIdToSenderMap() {
+		return new ConcurrentHashMap<>();
+	}
+
+	@Bean
+	public ConcurrentHashMap<String, WebSocketSender> senderMap() {
 		return new ConcurrentHashMap<>();
 	}
  

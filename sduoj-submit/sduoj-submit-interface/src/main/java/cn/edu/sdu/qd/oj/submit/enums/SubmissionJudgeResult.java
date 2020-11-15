@@ -12,7 +12,6 @@ package cn.edu.sdu.qd.oj.submit.enums;
 
 import lombok.AllArgsConstructor;
 
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 

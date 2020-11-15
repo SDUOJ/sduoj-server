@@ -17,17 +17,32 @@ import org.springframework.web.reactive.socket.WebSocketMessage;
 import org.springframework.web.reactive.socket.WebSocketSession;
 import reactor.core.publisher.FluxSink;
 
+import java.util.Set;
+import java.util.concurrent.CopyOnWriteArraySet;
+
 
 @Data
 @EqualsAndHashCode
 @AllArgsConstructor
 public class WebSocketSender {
 
-    private String uuid;
+    private String id;
     private WebSocketSession session;
     private FluxSink<WebSocketMessage> sink;
 
+    private Set<String> listeningIdSet = new CopyOnWriteArraySet<>();
+
+    public WebSocketSender(WebSocketSession session, FluxSink<WebSocketMessage> sink) {
+        this.session = session;
+        this.id = session.getId();
+        this.sink = sink;
+    }
+
     public void sendData(String data) {
         sink.next(session.textMessage(data));
+    }
+
+    public boolean addListening(String id) {
+        return listeningIdSet.add(id);
     }
 }

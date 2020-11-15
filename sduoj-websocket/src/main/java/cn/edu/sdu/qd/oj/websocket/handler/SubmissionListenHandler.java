@@ -47,12 +47,13 @@ public class SubmissionListenHandler {
     public void pushSubmissionResult(CheckpointResultMessageDTO messageDTO) {
         log.info("rabbitMQ: {}", messageDTO);
         String submissionIdHex = Long.toHexString(messageDTO.getSubmissionId());
-        messageDTO.remove(CheckpointResultMessageDTO.INDEX_SUBMISSION_ID);
+        messageDTO.set(CheckpointResultMessageDTO.INDEX_SUBMISSION_ID, submissionIdHex);
+
         String msg = JSONObject.toJSONString(messageDTO);
 
         // 如果是评测结束标志，则清空
         try {
-            if (SubmissionJudgeResult.END.code == (Integer) messageDTO.get(0)) {
+            if (SubmissionJudgeResult.END.code == (Integer) messageDTO.get(1)) {
                 redisUtils.del(SubmissionBizContant.getRedisSubmissionKey(submissionIdHex));
             } else {
                 redisUtils.lSet(SubmissionBizContant.getRedisSubmissionKey(submissionIdHex), msg, SubmissionBizContant.REDIS_SUBMISSION_RESULT_EXPIRE);

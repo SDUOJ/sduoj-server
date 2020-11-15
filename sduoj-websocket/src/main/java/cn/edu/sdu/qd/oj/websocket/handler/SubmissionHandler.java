@@ -14,6 +14,8 @@ import cn.edu.sdu.qd.oj.common.util.RedisUtils;
 import cn.edu.sdu.qd.oj.websocket.annotation.WebSocketMapping;
 import cn.edu.sdu.qd.oj.websocket.constant.SubmissionBizContant;
 import cn.edu.sdu.qd.oj.websocket.entity.WebSocketSender;
+import com.alibaba.fastjson.JSON;
+import com.alibaba.fastjson.TypeReference;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
@@ -23,18 +25,24 @@ import org.springframework.web.reactive.socket.WebSocketSession;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
+import javax.annotation.Resource;
 import java.net.InetSocketAddress;
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 
 
-@WebSocketMapping("/submission")
 @Component
 @Slf4j
+@WebSocketMapping("/submission")
 public class SubmissionHandler implements WebSocketHandler {
 
-    @Autowired
-    private ConcurrentHashMap<String, ConcurrentHashMap<String, WebSocketSender>> senderMap;
+    public static final int MAX_LISTENING = 100;
+
+    @Resource
+    private ConcurrentHashMap<String, ConcurrentHashMap<String, WebSocketSender>> submissionIdToSenderMap;
+
+    @Resource
+    private ConcurrentHashMap<String, WebSocketSender> senderMap;
 
     @Autowired
     private RedisUtils redisUtils;
@@ -43,37 +51,57 @@ public class SubmissionHandler implements WebSocketHandler {
     public Mono<Void> handle(WebSocketSession session) {
         HandshakeInfo handshakeInfo = session.getHandshakeInfo();
         InetSocketAddress remoteAddress = handshakeInfo.getRemoteAddress();
-        String params = handshakeInfo.getUri().getQuery();
-        Map<String, String> paramMap = decodeParamMap(params);
 
-        String submissionId = paramMap.get("id");
+        log.info("[submission] id: {}  from: {}", remoteAddress, session.getId());
 
-        log.info("submission sub: {} from {}", submissionId, remoteAddress);
-
-        String uuid = UUID.randomUUID().toString();
+        Mono<Void> output = session.send(Flux.create(sink -> {
+            WebSocketSender sender = new WebSocketSender(session, sink);
+            senderMap.put(sender.getId(), sender);
+        })).then();
 
         Mono<Void> input = session.receive()
 //                .doOnSubscribe(conn -> {
 //                })
-//                .doOnNext(msg -> {
-//                })
+                .doOnNext(msg -> {
+                    WebSocketSender sender = senderMap.get(session.getId());
+                    int size = sender.getListeningIdSet().size();
+                    // 限制最多监听 submission 数
+                    if (size >= MAX_LISTENING) {
+                        return;
+                    }
+                    String messageText = msg.getPayloadAsText();
+                    log.info("[submission] id: {} text: {}", sender.getId(), messageText);
+                    List<String> submissionIdHex = JSON.parseObject(messageText, new TypeReference<List<String>>() {});
+                    for (String idHex : submissionIdHex) {
+                        if (sender.addListening(idHex)) {
+                            addNewWebSocketSender(idHex, sender);
+                            if (++size >= MAX_LISTENING) {
+                                return;
+                            }
+                        }
+                    }
+                })
                 .doOnComplete(() -> {
-                    Optional.ofNullable(senderMap.get(submissionId)).ifPresent(map -> map.remove(uuid));
+                    WebSocketSender sender = senderMap.get(session.getId());
+                    sender.getListeningIdSet().forEach(submissionId ->
+                        Optional.ofNullable(submissionIdToSenderMap.get(submissionId)).ifPresent(map -> map.remove(session.getId()))
+                    );
                 })
                 .doOnCancel(() -> {
-                    Optional.ofNullable(senderMap.get(submissionId)).ifPresent(map -> map.remove(uuid));
+                    WebSocketSender sender = senderMap.get(session.getId());
+                    sender.getListeningIdSet().forEach(submissionId ->
+                        Optional.ofNullable(submissionIdToSenderMap.get(submissionId)).ifPresent(map -> map.remove(session.getId()))
+                    );
                 })
                 .then();
-
-        Mono<Void> output = session.send(Flux.create(sink -> addNewWebSocketSender(submissionId, new WebSocketSender(uuid, session, sink))));
 
         return Mono.zip(input, output).then();
     }
 
 
     private void addNewWebSocketSender(String submissionId, WebSocketSender webSocketSender) {
-        Map<String, WebSocketSender> webSocketSenders = senderMap.computeIfAbsent(submissionId, k -> new ConcurrentHashMap<>());
-        webSocketSenders.put(webSocketSender.getUuid(), webSocketSender);
+        Map<String, WebSocketSender> webSocketSenders = submissionIdToSenderMap.computeIfAbsent(submissionId, k -> new ConcurrentHashMap<>());
+        webSocketSenders.put(webSocketSender.getId(), webSocketSender);
         List<Object> submissionResults = redisUtils.lGetAll(SubmissionBizContant.getRedisSubmissionKey(submissionId));
         log.info("get submissionResults from redis {} {}", submissionId, submissionResults);
         if (submissionResults != null) {
