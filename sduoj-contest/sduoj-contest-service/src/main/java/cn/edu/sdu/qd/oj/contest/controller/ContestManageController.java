@@ -101,7 +101,6 @@ public class ContestManageController {
     public Void update(@RequestBody @Valid ContestDTO reqDTO,
                        @UserSession UserSessionDTO userSessionDTO) {
         // 校验 当前时间<开始时间<结束时间
-        AssertUtils.isTrue(reqDTO.getGmtStart().after(new Date()), ApiExceptionEnum.CONTEST_TIME_ERROR);
         AssertUtils.isTrue(reqDTO.getGmtStart().before(reqDTO.getGmtEnd()), ApiExceptionEnum.CONTEST_TIME_ERROR);
 
         contestManageService.update(reqDTO, userSessionDTO);

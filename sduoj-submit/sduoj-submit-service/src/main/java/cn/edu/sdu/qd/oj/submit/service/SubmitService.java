@@ -330,7 +330,7 @@ public class SubmitService {
         List<SubmissionDO> submissionDOList = submissionDao.lambdaQuery().select(
                 SubmissionDO::getSubmissionId,
                 SubmissionDO::getVersion
-        ).in(SubmissionDO::getJudgeResult, Lists.newArrayList(SubmissionJudgeResult.PD, SubmissionJudgeResult.JUDGING))
+        ).in(SubmissionDO::getJudgeResult, Lists.newArrayList(SubmissionJudgeResult.PD.code, SubmissionJudgeResult.JUDGING.code))
          .le(SubmissionDO::getGmtCreate, new Date(System.currentTimeMillis() - REJUDGE_RATE)).list();
         submissionDOList.forEach(this::rejudgeOneSubmission);
     }
