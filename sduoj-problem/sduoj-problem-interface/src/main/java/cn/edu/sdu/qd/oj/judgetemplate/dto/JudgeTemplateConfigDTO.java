@@ -121,20 +121,21 @@ public class JudgeTemplateConfigDTO extends BaseDTO {
         @AllArgsConstructor
         @EqualsAndHashCode(callSuper = true)
         public static class Run extends BaseDTO {
-            @NotNull(message = "run commands must not be null")
-            private String[] commands;
+            @NotNull
+            @NotBlank(message = "run command must not be null")
+            private String command;
             private String seccompRule;
             private Integer maxCpuTimeFactor;
             private Integer maxRealTimeFactor;
             private Integer maxMemoryFactor;
             private String[] envs;
 
-            public String[] getCommands() {
-                return commands;
+            public String getCommand() {
+                return command;
             }
 
-            public void setCommands(String[] commands) {
-                this.commands = commands;
+            public void setCommand(String command) {
+                this.command = command;
             }
 
             public String getSeccompRule() {

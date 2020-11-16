@@ -10,11 +10,11 @@
 
 package cn.edu.sdu.qd.oj.filesys.service.impl;
 
-import cn.edu.sdu.qd.oj.common.entity.UserSessionDTO;
 import cn.edu.sdu.qd.oj.common.enums.ApiExceptionEnum;
 import cn.edu.sdu.qd.oj.common.exception.ApiException;
 import cn.edu.sdu.qd.oj.common.util.AssertUtils;
 import cn.edu.sdu.qd.oj.common.util.CodecUtils;
+import cn.edu.sdu.qd.oj.common.util.CollectionUtils;
 import cn.edu.sdu.qd.oj.common.util.SnowflakeIdWorker;
 import cn.edu.sdu.qd.oj.dto.BinaryFileUploadReqDTO;
 import cn.edu.sdu.qd.oj.dto.FileDTO;
@@ -188,7 +188,9 @@ public class LocalFileService implements FileService {
                 fileDOMap.put(fileDO.getMd5(), fileDO);
             }
         }
-        AssertUtils.isTrue(fileDao.saveBatch(newFileDOList), ApiExceptionEnum.SERVER_BUSY);
+        if (CollectionUtils.isNotEmpty(newFileDOList)) {
+            AssertUtils.isTrue(fileDao.saveBatch(newFileDOList), ApiExceptionEnum.SERVER_BUSY);
+        }
 
         int i = 0;
         try {

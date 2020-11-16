@@ -70,7 +70,7 @@ public class CheckpointManageController {
                                 @UserSession UserSessionDTO userSessionDTO) {
         String input = json.get("input");
         String output = json.get("output");
-        AssertUtils.isTrue(StringUtils.isNotBlank(input) && StringUtils.isNotBlank(output), ApiExceptionEnum.CONTENT_IS_BLANK);
+        AssertUtils.isTrue(StringUtils.isNotBlank(input) || StringUtils.isNotBlank(output), ApiExceptionEnum.CONTENT_IS_BLANK);
         return checkpointFileService.updateCheckpointFile(input, output, userSessionDTO.getUserId());
     }
 
