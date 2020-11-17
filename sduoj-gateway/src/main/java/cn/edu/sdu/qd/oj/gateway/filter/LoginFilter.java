@@ -16,6 +16,7 @@ import cn.edu.sdu.qd.oj.gateway.client.UserClient;
 import cn.edu.sdu.qd.oj.gateway.config.FilterProperties;
 import cn.edu.sdu.qd.oj.common.entity.UserSessionDTO;
 import com.alibaba.fastjson.JSON;
+import com.google.common.collect.Lists;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
@@ -87,12 +88,10 @@ public class LoginFilter implements GlobalFilter, Ordered {
         // 鉴权
         if (userSessionDTO != null) {
 
-            List<String> urlRoles = permissionClient.urlToRoles(requestUrl.replace("/api", ""));
+            List<String> urlRoles = Optional.ofNullable(permissionClient.urlToRoles(requestUrl.replace("/api", ""))).orElse(Lists.newArrayList());
+            List<String> roles = Optional.ofNullable(userClient.queryRolesById(userSessionDTO.getUserId())).orElse(Lists.newArrayList());
 
-            List<String> roles = userClient.queryRolesById(userSessionDTO.getUserId());
-
-            if (urlRoles == null || roles == null ||
-                (!urlRoles.contains(PermissionEnum.ALL.name) && Collections.disjoint(roles, urlRoles))) {
+            if (!urlRoles.contains(PermissionEnum.ALL.name) && Collections.disjoint(roles, urlRoles)) {
                 log.warn("have not permission {} {}", userSessionDTO, requestUrl);
                 return returnNoPermission(exchange, String.format("This User has no permission on '%s'", requestUrl));
             }
