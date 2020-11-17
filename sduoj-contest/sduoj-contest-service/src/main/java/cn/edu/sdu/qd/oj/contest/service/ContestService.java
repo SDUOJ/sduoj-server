@@ -111,7 +111,7 @@ public class ContestService {
             });
         } else {
             Map<String, ProblemListDTO> problemCodeToProblemListDTOMap = submissionClient.queryContestSubmitAndAccept(contestId)
-                    .stream().collect(Collectors.toMap(ProblemListDTO::getProblemCode, Function.identity()));
+                    .stream().collect(Collectors.toMap(ProblemListDTO::getProblemCode, Function.identity(), (k1, k2) -> k1));
             contestDTO.getProblems().forEach(p -> {
                 Optional.ofNullable(problemCodeToProblemListDTOMap.get(p.getProblemCode())).ifPresent(m -> {
                     p.setAcceptNum(m.getAcceptNum());

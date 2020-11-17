@@ -35,6 +35,7 @@ import com.baomidou.mybatisplus.extension.conditions.update.LambdaUpdateChainWra
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
+import org.assertj.core.util.Lists;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -169,7 +170,7 @@ public class ProblemManageService {
                 .distinct()
                 .collect(Collectors.toList());
         List<JudgeTemplateListDTO> judgeTemplateListDTOList = judgeTemplateService.listByIds(judgeTemplateIdList);
-        Map<Long, JudgeTemplateListDTO> judgeTemplateListDTOMap = judgeTemplateListDTOList.stream().collect(Collectors.toMap(JudgeTemplateListDTO::getId, Function.identity()));
+        Map<Long, JudgeTemplateListDTO> judgeTemplateListDTOMap = judgeTemplateListDTOList.stream().collect(Collectors.toMap(JudgeTemplateListDTO::getId, Function.identity(), (k1, k2) -> k1));
         problemManageListDTOlist.forEach(problemManageListDTO -> {
             Optional.ofNullable(problemManageListDTO.getJudgeTemplates()).filter(CollectionUtils::isNotEmpty).ifPresent(ids ->
                 problemManageListDTO.setJudgeTemplateListDTOList(ids.stream().map(judgeTemplateListDTOMap::get).collect(Collectors.toList()))
@@ -201,14 +202,24 @@ public class ProblemManageService {
 
         // 更新题目
         AssertUtils.isTrue(problemDao.updateById(problemUpdateDO), ApiExceptionEnum.UNKNOWN_ERROR);
-        // 更新 checkpointCase
-        if (problemUpdateDO.getCheckpointCases() != null) {
+        // 如果传的 caseList 不为 null，则更新 checkpointCase (增量更新和全量更新区别开)
+        if (problem.getCheckpointCases() != null) {
+            if (problemUpdateDO.getCheckpointCases() == null) {
+                problemDao.lambdaUpdate()
+                        .set(ProblemDO::getCheckpointCases, null)
+                        .eq(ProblemDO::getProblemId, originalProblemDO.getProblemId())
+                        .update();
+            }
             updateCheckpointCase(problem);
         }
     }
 
     private void updateCheckpointCase(ProblemManageDTO problem) {
         List<Long> checkpointCases = problem.getCheckpointCases();
+        if (CollectionUtils.isEmpty(checkpointCases)) {
+            problemExtensionSerivce.updateProblemCase(problem.getProblemId(), Lists.newArrayList());
+            return;
+        }
         List<CheckpointDTO> checkpointDTOList = checkpointManageService.listByIdList(checkpointCases);
         List<ProblemCaseDTO> problemCaseDTOList = checkpointDTOList.stream()
                 .map(o -> ProblemCaseDTO.builder().input(o.getInputPreview()).output(o.getOutputPreview()).build())

@@ -91,7 +91,7 @@ public class CheckpointFileService {
             }
 
             List<FileDTO> fileDTOList = filesysClient.uploadBinaryFiles(uploadReqDTOList, userId);
-            Map<String, FileDTO> fileDTOMap = fileDTOList.stream().collect(Collectors.toMap(FileDTO::getName, Function.identity()));
+            Map<String, FileDTO> fileDTOMap = fileDTOList.stream().collect(Collectors.toMap(FileDTO::getName, Function.identity(), (k1, k2) -> k1));
 
             // 整理成 checkpointDO 存在本微服务数据库
             for (MultipartFile input : files) {
@@ -155,7 +155,7 @@ public class CheckpointFileService {
                 .build();
         try {
             List<FileDTO> fileDTOList = filesysClient.uploadBinaryFiles(uploadReqDTOList, userId);
-            Map<String, FileDTO> fileDTOMap = fileDTOList.stream().collect(Collectors.toMap(FileDTO::getMd5, Function.identity()));
+            Map<String, FileDTO> fileDTOMap = fileDTOList.stream().collect(Collectors.toMap(FileDTO::getMd5, Function.identity(), (k1, k2) -> k1));
             checkpointDO.setInputFileId(fileDTOMap.get(inputMd5).getId());
             checkpointDO.setOutputFileId(fileDTOMap.get(outputMd5).getId());
             checkpointDao.save(checkpointDO);

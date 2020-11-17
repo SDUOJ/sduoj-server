@@ -170,7 +170,7 @@ public class LocalFileService implements FileService {
             return fileConverter.to(fileDOList);
         }
 
-        Map<String, FileDO> fileDOMap = fileDOList.stream().collect(Collectors.toMap(FileDO::getMd5, Function.identity()));
+        Map<String, FileDO> fileDOMap = fileDOList.stream().collect(Collectors.toMap(FileDO::getMd5, Function.identity(), (k1, k2) -> k1));
 
         List<FileDO> newFileDOList = new ArrayList<>();
         for (int i = 0, n = reqDTOList.size(); i < n; i++) {

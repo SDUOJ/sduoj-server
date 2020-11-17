@@ -77,7 +77,7 @@ public class CheckpointManageService {
         checkpointDTOList.sort(Comparator.comparing(o -> idToIndex.get(o.getCheckpointId())));
         // 填补数据 checkpointScore
         Map<Long, ProblemCheckpointDTO> problemCheckpointDTOMap = problemCheckpointDTOList.stream()
-                .collect(Collectors.toMap(ProblemCheckpointDTO::getCheckpointId, Function.identity()));
+                .collect(Collectors.toMap(ProblemCheckpointDTO::getCheckpointId, Function.identity(), (k1, k2) -> k1));
         checkpointDTOList.forEach(o -> {
             o.setCheckpointScore(problemCheckpointDTOMap.get(o.getCheckpointId()).getCheckpointScore());
         });
@@ -122,7 +122,7 @@ public class CheckpointManageService {
         });
         // TODO: 魔法值解决
         List<PlainFileDownloadDTO> checkpointDownloadRespList = filesysClient.plainFileDownload(1024L, downloadDTOList);
-        Map<Long, byte[]> fileIdToBytes = checkpointDownloadRespList.stream().collect(Collectors.toMap(PlainFileDownloadDTO::getFileId, PlainFileDownloadDTO::getBytes));
+        Map<Long, byte[]> fileIdToBytes = checkpointDownloadRespList.stream().collect(Collectors.toMap(PlainFileDownloadDTO::getFileId, PlainFileDownloadDTO::getBytes, (k1, k2) -> k1));
         checkpointDOList.forEach(o -> {
             o.setInputPreview(new String(fileIdToBytes.get(o.getInputFileId())));
             o.setOutputPreview(new String(fileIdToBytes.get(o.getOutputFileId())));
