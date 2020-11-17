@@ -39,10 +39,8 @@ public class SubmissionListenHandler {
     private RedisUtils redisUtils;
 
     @RabbitListener(bindings = @QueueBinding(
-            value = @Queue(value = "sduoj.submission.queue", durable = "true"),
-            exchange = @Exchange(value = "sduoj.submission.exchange",
-            ignoreDeclarationExceptions = "true"),
-            key = {"submission.checkpoint.push"})
+            value = @Queue(value = "sduoj.checkpoint.finish.ws", durable = "true"),
+            exchange = @Exchange(value = "sduoj.checkpoint.finish", ignoreDeclarationExceptions = "true"))
     )
     public void pushSubmissionResult(CheckpointResultMessageDTO messageDTO) {
         log.info("rabbitMQ: {}", messageDTO);

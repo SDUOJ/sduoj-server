@@ -31,6 +31,8 @@ public class SubmissionResultDTO extends BaseDTO {
     @JsonDeserialize(using = HexStringToLongDeserializer.class)
     private Long submissionId;
 
+    private Long contestId;
+
     private Date gmtCreate;
 
     private Long problemId;

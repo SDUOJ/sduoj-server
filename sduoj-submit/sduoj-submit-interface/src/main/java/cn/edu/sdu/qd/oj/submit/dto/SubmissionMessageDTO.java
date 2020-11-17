@@ -28,4 +28,8 @@ public class SubmissionMessageDTO extends BaseDTO {
     private Long submissionId;
 
     private Integer version;
+
+    private Long problemId;
+
+    private Long contestId;
 }

@@ -57,6 +57,8 @@ public class SubmissionConverterUtils extends BaseConvertUtils {
         return SubmissionMessageDTO.builder()
                 .submissionId(submissionDO.getSubmissionId())
                 .version(submissionDO.getVersion())
+                .problemId(submissionDO.getProblemId())
+                .contestId(submissionDO.getContestId())
                 .build();
     }
 }

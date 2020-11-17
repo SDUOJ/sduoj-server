@@ -19,17 +19,17 @@ public class RabbitSender {
     private RabbitTemplate rabbitTemplate;
 
     /**
-    * @Description 发送评测请求
+    * @Description 发送评测/重测请求
     **/
     public boolean sendJudgeRequest(SubmissionMessageDTO messageDTO) {
-        return send("", "judge_queue", messageDTO);
+        return send("sduoj.submission.submit", "", messageDTO);
     }
 
     /**
      * @Description 发送ac消息
      **/
     public boolean sendACMessage(SubmissionResultDTO messageDTO) {
-        return send("", "sduoj.submission.ac", messageDTO);
+        return send("sduoj.submission.ac", "", messageDTO);
     }
 
     private boolean send(String exchange, String routingKey, Object o) {

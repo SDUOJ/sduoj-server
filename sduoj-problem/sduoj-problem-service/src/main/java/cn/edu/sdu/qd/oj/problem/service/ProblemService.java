@@ -32,15 +32,18 @@ import cn.edu.sdu.qd.oj.problem.entity.ProblemDescriptionDO;
 import cn.edu.sdu.qd.oj.tag.entity.TagDO;
 import com.baomidou.mybatisplus.extension.conditions.query.LambdaQueryChainWrapper;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
+import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 import org.assertj.core.util.Lists;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 import org.springframework.util.CollectionUtils;
 
 import java.util.*;
 import java.util.stream.Collectors;
 
+@Slf4j
 @Service
 public class ProblemService {
 
@@ -236,7 +239,6 @@ public class ProblemService {
     }
 
     public void incProblemAcceptNumber(long problemId) {
-        // TODO: 提交数递增
         ProblemDO problemDO = problemDao.lambdaQuery().select(
                 ProblemDO::getProblemId,
                 ProblemDO::getVersion,
@@ -246,6 +248,26 @@ public class ProblemService {
         AssertUtils.isTrue(problemDao.updateById(problemDO), ApiExceptionEnum.SERVER_BUSY);
     }
 
+    public void incProblemSubmitNumber(long problemId) {
+        ProblemDO problemDO = problemDao.lambdaQuery().select(
+                ProblemDO::getProblemId,
+                ProblemDO::getVersion,
+                ProblemDO::getSubmitNum
+        ).eq(ProblemDO::getProblemId, problemId).one();
+        problemDO.setSubmitNum(problemDO.getSubmitNum() + 1);
+        AssertUtils.isTrue(problemDao.updateById(problemDO), ApiExceptionEnum.SERVER_BUSY);
+    }
+
+    public static final long CORRECT_RATE = 60L * 60 * 1000; // 60min
+    /**
+     * @Description 定时校准题目的 acceptNum 和 submitNum
+     **/
+    @Scheduled(fixedRate = CORRECT_RATE)
+    public void correctAccpetNumAndSubmitNum() {
+        log.info("correct acceptNum, submitNum");
+        // TODO: 定时校准题目的 acceptNum 和 submitNum
+
+    }
 
 
     public List<Long> queryPrivateProblemIdList(Long userId) {

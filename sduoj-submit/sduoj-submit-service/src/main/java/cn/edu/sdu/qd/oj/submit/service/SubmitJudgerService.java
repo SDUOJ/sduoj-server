@@ -16,6 +16,7 @@ import cn.edu.sdu.qd.oj.common.util.RedisConstants;
 import cn.edu.sdu.qd.oj.common.util.RedisUtils;
 import cn.edu.sdu.qd.oj.submit.client.ProblemClient;
 import cn.edu.sdu.qd.oj.submit.converter.SubmissionJudgeConverter;
+import cn.edu.sdu.qd.oj.submit.converter.SubmissionResultConverter;
 import cn.edu.sdu.qd.oj.submit.converter.SubmissionUpdateConverter;
 import cn.edu.sdu.qd.oj.submit.dao.SubmissionDao;
 import cn.edu.sdu.qd.oj.submit.dto.SubmissionResultDTO;
@@ -49,6 +50,9 @@ public class SubmitJudgerService {
 
     @Autowired
     private SubmissionUpdateConverter submissionUpdateConverter;
+
+    @Autowired
+    private SubmissionResultConverter submissionResultConverter;
 
     @Autowired
     private ProblemClient problemClient;
@@ -118,15 +122,8 @@ public class SubmitJudgerService {
                 redisUtils.hincr(key, RedisConstants.getContestProblemAccept(problemCode), 1);
             }
             // 过题消息
-            SubmissionResultDTO submissionResultDTO = SubmissionResultDTO.builder()
-                    .submissionId(submissionDO.getSubmissionId())
-                    .gmtCreate(submissionDO.getGmtCreate())
-                    .judgeScore(submissionDO.getJudgeScore())
-                    .problemId(submissionDO.getProblemId())
-                    .problemCode(problemCode)
-                    .userId(submissionDO.getUserId())
-                    .judgeResult(submissionDO.getJudgeResult())
-                    .build();
+            SubmissionResultDTO submissionResultDTO = submissionResultConverter.to(submissionDO);
+            submissionResultDTO.setProblemCode(problemCode);
             rabbitSender.sendACMessage(submissionResultDTO);
         }
     }

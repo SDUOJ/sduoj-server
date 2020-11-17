@@ -269,6 +269,7 @@ public class SubmitService {
     public List<SubmissionResultDTO> listResult(long contestId) {
         List<SubmissionDO> list = submissionDao.lambdaQuery().select(
                 SubmissionDO::getSubmissionId,
+                SubmissionDO::getContestId,
                 SubmissionDO::getGmtCreate,
                 SubmissionDO::getProblemId,
                 SubmissionDO::getUserId,
@@ -329,6 +330,8 @@ public class SubmitService {
         // 查询需要重测提交
         List<SubmissionDO> submissionDOList = submissionDao.lambdaQuery().select(
                 SubmissionDO::getSubmissionId,
+                SubmissionDO::getContestId,
+                SubmissionDO::getProblemId,
                 SubmissionDO::getVersion
         ).in(SubmissionDO::getJudgeResult, Lists.newArrayList(SubmissionJudgeResult.PD.code, SubmissionJudgeResult.JUDGING.code))
          .le(SubmissionDO::getGmtCreate, new Date(System.currentTimeMillis() - REJUDGE_RATE)).list();
@@ -340,6 +343,8 @@ public class SubmitService {
         // 查询需要重测提交
         List<SubmissionDO> submissionDOList = submissionDao.lambdaQuery().select(
                 SubmissionDO::getSubmissionId,
+                SubmissionDO::getContestId,
+                SubmissionDO::getProblemId,
                 SubmissionDO::getVersion
         ).in(SubmissionDO::getJudgeResult, SubmissionJudgeResult.CAN_REJUDGE_RESULT_CODE)
          .in(SubmissionDO::getSubmissionId, submissionIdList).list();
