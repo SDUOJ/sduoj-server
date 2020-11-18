@@ -56,6 +56,7 @@ public enum ApiExceptionEnum {
     FILE_NOT_EXISTS(400, "文件不存在"),
     FILE_MD5_EXISTS(400, "文件md5已存在"),
     FILE_TOO_LARGE(400, "文件过大，无法预览，请选择下载"),
+    FILE_NOT_MATCH(500, "文件md5相同但大小不相同，请联系管理员"),
 
     TOKEN_EXPIRE(400, "验证令牌过期或不存在"),
 

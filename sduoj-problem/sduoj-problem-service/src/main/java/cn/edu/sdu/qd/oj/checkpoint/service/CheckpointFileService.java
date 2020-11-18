@@ -120,7 +120,7 @@ public class CheckpointFileService {
             }
             checkpointDao.saveBatch(checkpointDOList);
         } catch (Exception e) {
-            log.error("{}", e);
+            log.error("", e);
             throw new ApiException(ApiExceptionEnum.FILE_WRITE_ERROR);
         }
         return checkpointConverter.to(checkpointDOList);

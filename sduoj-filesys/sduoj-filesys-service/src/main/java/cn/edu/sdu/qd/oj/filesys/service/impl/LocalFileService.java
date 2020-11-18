@@ -27,6 +27,7 @@ import cn.edu.sdu.qd.oj.filesys.entity.FileDO;
 import cn.edu.sdu.qd.oj.filesys.service.FileService;
 import com.google.common.io.Files;
 import org.apache.commons.io.FileUtils;
+import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.core.io.FileSystemResource;
@@ -40,6 +41,7 @@ import java.io.File;
 import java.io.IOException;
 import java.nio.file.Paths;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 import java.util.function.Function;
@@ -164,17 +166,36 @@ public class LocalFileService implements FileService {
         } catch (Exception e) {
             throw new ApiException(ApiExceptionEnum.FILE_WRITE_ERROR);
         }
-        // 查询是否已有相同 MD5
-        List<FileDO> fileDOList = fileDao.lambdaQuery().in(FileDO::getMd5, md5s).list();
+        Map<String, FileDO> md5ToFileDOMap = fileDao.lambdaQuery()
+                .in(FileDO::getMd5, md5s)
+                .list()
+                .stream()
+                .collect(Collectors.toMap(FileDO::getMd5, Function.identity(), (k1, k2) -> k1));
+        // 从 md5s 中逐个 md5 转 FileDO，以解决出现相同上传项的问题
+        List<FileDO> fileDOList = new ArrayList<>();
+        for (int i = 0, n = reqDTOList.size(); i < n; i++) {
+            FileDO source = md5ToFileDOMap.get(md5s[i]);
+            if (source == null) {
+                continue;
+            }
+            FileDO fileDO = new FileDO();
+            BeanUtils.copyProperties(source, fileDO);
+            BinaryFileUploadReqDTO reqDTO = reqDTOList.get(i);
+            AssertUtils.isTrue(reqDTO.getSize().equals(fileDO.getSize()), ApiExceptionEnum.FILE_NOT_MATCH);
+            fileDO.setName(reqDTO.getFilename());
+            fileDO.setExtensionName(Files.getFileExtension(reqDTO.getFilename()));
+            fileDOList.add(fileDO);
+        }
+
+        // 如果都在 filesys 里，则直接返回
         if (fileDOList.size() == reqDTOList.size()) {
             return fileConverter.to(fileDOList);
         }
 
-        Map<String, FileDO> fileDOMap = fileDOList.stream().collect(Collectors.toMap(FileDO::getMd5, Function.identity(), (k1, k2) -> k1));
-
+        // 构造需要新传的数据点
         List<FileDO> newFileDOList = new ArrayList<>();
         for (int i = 0, n = reqDTOList.size(); i < n; i++) {
-            FileDO fileDO = fileDOMap.get(md5s[i]);
+            FileDO fileDO = md5ToFileDOMap.get(md5s[i]);
             if (fileDO == null) {
                 fileDO = FileDO.builder()
                         .id(snowflakeIdWorker.nextId())
@@ -185,29 +206,50 @@ public class LocalFileService implements FileService {
                         .userId(userId)
                         .build();
                 newFileDOList.add(fileDO);
-                fileDOMap.put(fileDO.getMd5(), fileDO);
+                md5ToFileDOMap.put(fileDO.getMd5(), fileDO);
             }
         }
         if (CollectionUtils.isNotEmpty(newFileDOList)) {
             AssertUtils.isTrue(fileDao.saveBatch(newFileDOList), ApiExceptionEnum.SERVER_BUSY);
         }
 
+        // 逐个写入文件系统
         int i = 0;
         try {
             for (int n = reqDTOList.size(); i < n; i++) {
-                FileDO fileDO = fileDOMap.get(md5s[i]);
+                FileDO fileDO = md5ToFileDOMap.get(md5s[i]);
                 File writeFile = new File(Paths.get(fileSystemProperties.getBaseDir(), fileDO.getId().toString()).toString());
                 byte[] bytes = reqDTOList.get(i).getBytes();
                 FileUtils.writeByteArrayToFile(writeFile, bytes);
             }
         } catch (Exception e) {
+            // 失败，逐个删除
             for (int j = 0; j <= i; j++) {
-                FileDO fileDO = fileDOMap.get(md5s[j]);
-                new File(Paths.get(fileSystemProperties.getBaseDir(), fileDO.getId().toString()).toString()).delete();
+                FileDO fileDO = md5ToFileDOMap.get(md5s[j]);
+                File file = new File(Paths.get(fileSystemProperties.getBaseDir(), fileDO.getId().toString()).toString());
+                if (file.exists()) {
+                    file.delete();
+                }
             }
             throw new ApiException(ApiExceptionEnum.FILE_WRITE_ERROR);
         }
-        fileDOList.addAll(newFileDOList);
+
+
+        // 从 md5s 中逐个 md5 转 FileDO，以解决出现相同上传项的问题
+        fileDOList = new ArrayList<>();
+        for (i = 0; i < reqDTOList.size(); i++) {
+            FileDO source = md5ToFileDOMap.get(md5s[i]);
+            if (source == null) {
+                continue;
+            }
+            FileDO fileDO = new FileDO();
+            BeanUtils.copyProperties(source, fileDO);
+            BinaryFileUploadReqDTO reqDTO = reqDTOList.get(i);
+            AssertUtils.isTrue(reqDTO.getSize().equals(fileDO.getSize()), ApiExceptionEnum.FILE_NOT_MATCH);
+            fileDO.setName(reqDTO.getFilename());
+            fileDO.setExtensionName(Files.getFileExtension(reqDTO.getFilename()));
+            fileDOList.add(fileDO);
+        }
         return fileConverter.to(fileDOList);
     }
 
