@@ -10,6 +10,7 @@
 
 package cn.edu.sdu.qd.oj.user.service;
 
+import cn.edu.sdu.qd.oj.auth.enums.PermissionEnum;
 import cn.edu.sdu.qd.oj.common.entity.PageResult;
 import cn.edu.sdu.qd.oj.user.converter.UserConverter;
 import cn.edu.sdu.qd.oj.user.converter.UserManageUpdateConverter;
@@ -84,6 +85,8 @@ public class UserManageService {
         userDOList.forEach(userDO -> {
             userDO.setSalt(CodecUtils.generateSalt());
             userDO.setPassword(CodecUtils.md5Hex(userDO.getPassword(), userDO.getSalt()));
+            userDO.setEmailVerified(1);
+            userDO.setRoles(PermissionEnum.USER.name);
         });
 
         userDao.saveBatch(userDOList);
