@@ -29,6 +29,7 @@ import org.springframework.web.bind.annotation.*;
 
 import javax.validation.Valid;
 import javax.validation.constraints.NotBlank;
+import javax.validation.constraints.NotNull;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -43,8 +44,9 @@ public class ContestController {
 
     @GetMapping("/list")
     @ApiResponseBody
-    public PageResult<ContestListDTO> list(ContestListReqDTO reqDTO) {
-        return contestService.page(reqDTO);
+    public PageResult<ContestListDTO> list(ContestListReqDTO reqDTO,
+                                          @UserSession(nullable=true) UserSessionDTO userSessionDTO) {
+        return contestService.page(reqDTO, userSessionDTO);
     }
 
     @PostMapping("/participate")
@@ -59,18 +61,10 @@ public class ContestController {
 
     @GetMapping("/query")
     @ApiResponseBody
+    @Cacheable(value = ContestCacheTypeManager.CONTEST_OVERVIEW, key = "#contestId+'-'+#userSessionDTO.userId")
     public ContestDTO query(@RequestParam("contestId") @NotBlank Long contestId,
-                            @UserSession UserSessionDTO userSessionDTO) {
-        ContestDTO contestDTO = contestService.query(contestId, userSessionDTO.getUserId());
-        // 脱敏
-        Optional.ofNullable(contestDTO.getProblems()).ifPresent(problems -> {
-            int problemIndex = 1;
-            for (ContestProblemListDTO problem : contestDTO.getProblems()) {
-                problem.setProblemCode(String.valueOf(problemIndex));
-                problemIndex++;
-            }
-        });
-        return contestDTO;
+                            @UserSession UserSessionDTO userSessionDTO) throws InternalApiException {
+        return contestService.query(contestId, userSessionDTO);
     }
 
     @GetMapping("/queryUpcomingContest")
@@ -83,11 +77,11 @@ public class ContestController {
     @GetMapping("/queryProblem")
     @ApiResponseBody
     public ContestProblemDTO queryProblem(@RequestParam("contestId") @NotBlank Long contestId,
-                                          @RequestParam("problemCode") @NotBlank Integer problemIndex,
+                                          @RequestParam("problemCode") @NotNull Integer problemIndex,
                                           @UserSession UserSessionDTO userSessionDTO) {
         ContestProblemDTO contestProblemDTO = contestService.queryProblem(contestId, problemIndex, userSessionDTO.getUserId());
         // 脱敏
-        contestProblemDTO.setProblemCode(String.valueOf(problemIndex));
+        contestProblemDTO.setProblemCode(problemIndex.toString());
         return contestProblemDTO;
     }
 
@@ -113,7 +107,7 @@ public class ContestController {
                                         @RequestParam("contestId") long contestId,
                                         @UserSession UserSessionDTO userSessionDTO) throws InternalApiException {
         Long submissionId = Long.valueOf(submissionIdHex, 16);
-        return contestService.querySubmission(submissionId, contestId, userSessionDTO.getUserId());
+        return contestService.querySubmission(submissionId, contestId, userSessionDTO);
     }
 
 
@@ -128,19 +122,18 @@ public class ContestController {
                 throw new ApiException(ApiExceptionEnum.PARAMETER_ERROR, "problemCode 非法");
             }
         });
-        return contestService.listSubmission(reqDTO, userSessionDTO.getUserId());
+        return contestService.listSubmission(reqDTO, userSessionDTO);
     }
 
-    @GetMapping("/queryACProblem")
-    @ApiResponseBody
-    public List<String> queryACProblem(@RequestParam("contestId") long contestId,
-                                       @UserSession UserSessionDTO userSessionDTO) {
-        return contestService.queryACProblem(userSessionDTO.getUserId(), contestId);
-    }
+//    @GetMapping("/queryACProblem")
+//    @ApiResponseBody
+//    public List<String> queryACProblem(@RequestParam("contestId") long contestId,
+//                                       @UserSession UserSessionDTO userSessionDTO) {
+//        return contestService.queryACProblem(userSessionDTO.getUserId(), contestId);
+//    }
 
     @GetMapping("/rank")
     @ApiResponseBody
-    @Cacheable(value = ContestCacheTypeManager.RANK, key = "#contestId")
     public List<ContestRankDTO> queryRank(@RequestParam("contestId") long contestId,
                                           @UserSession UserSessionDTO userSessionDTO) throws InternalApiException {
         return contestService.queryRank(contestId, userSessionDTO);

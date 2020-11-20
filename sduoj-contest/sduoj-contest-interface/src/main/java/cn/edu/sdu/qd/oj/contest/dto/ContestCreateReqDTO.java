@@ -14,6 +14,7 @@ import cn.edu.sdu.qd.oj.common.entity.BaseDTO;
 import lombok.*;
 import org.hibernate.validator.constraints.Length;
 
+import javax.validation.Valid;
 import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.NotNull;
 import javax.validation.constraints.Size;
@@ -29,12 +30,17 @@ import java.util.Map;
 @EqualsAndHashCode(callSuper = true)
 public class ContestCreateReqDTO extends BaseDTO {
 
-    private Map<String, String> features;
+    @NotNull
+    @Valid
+    private ContestFeatureDTO features;
 
     @Length(max = 60, message = "标题最大长度为 60")
     @NotBlank
     @NotNull
     private String contestTitle;
+
+    @NotNull
+    private Integer isPublic;
 
     private Long userId;
 
@@ -52,5 +58,6 @@ public class ContestCreateReqDTO extends BaseDTO {
     @Size(max = 96, message = "最多出 96 道题")
     private List<ContestProblemListDTO> problems;
 
+    @Size(max = 1024, message = "最多支持 1024 个人参加比赛")
     private List<String> participants; // List<username>
 }

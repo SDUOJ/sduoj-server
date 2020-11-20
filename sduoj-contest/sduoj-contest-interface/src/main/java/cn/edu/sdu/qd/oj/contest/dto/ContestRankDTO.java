@@ -11,11 +11,11 @@
 package cn.edu.sdu.qd.oj.contest.dto;
 
 import cn.edu.sdu.qd.oj.common.entity.BaseDTO;
-import cn.edu.sdu.qd.oj.contest.enums.ContestTypeEnum;
+import cn.edu.sdu.qd.oj.common.util.CollectionUtils;
+import cn.edu.sdu.qd.oj.contest.enums.ContestModeEnum;
 import cn.edu.sdu.qd.oj.submit.dto.SubmissionResultDTO;
 import cn.edu.sdu.qd.oj.submit.enums.SubmissionJudgeResult;
 import lombok.*;
-import org.springframework.util.CollectionUtils;
 
 import java.util.*;
 import java.util.stream.Collectors;
@@ -43,8 +43,8 @@ public class ContestRankDTO extends BaseDTO {
     public static List<ContestRankDTO> create(Map<Long, List<SubmissionResultDTO>> userIdToSubmissionListMap, int problemNum) {
         return userIdToSubmissionListMap.entrySet().stream().map(entry -> {
             List<OneSubmission> submissions = entry.getValue().stream().filter(submissionResultDTO ->
-                    SubmissionJudgeResult.CE.code != submissionResultDTO.getJudgeResult() &&
-                            SubmissionJudgeResult.SE.code != submissionResultDTO.getJudgeResult()
+                SubmissionJudgeResult.CE.code != submissionResultDTO.getJudgeResult() &&
+                SubmissionJudgeResult.SE.code != submissionResultDTO.getJudgeResult()
             ).map(OneSubmission::new).collect(Collectors.toList());
             return ContestRankDTO.builder()
                     .userId(entry.getKey())
@@ -56,9 +56,12 @@ public class ContestRankDTO extends BaseDTO {
     }
 
     /**
-     * @Description 将提交列表计算为榜单结果
+     * @Description 将提交列表计算为榜单结果，同时清空提交列表
      **/
-    public void computeProblemResults(ContestTypeEnum contestType) {
+    public void toComputeProblemResults(ContestModeEnum contestType) {
+        if (this.submissions == null) {
+            return;
+        }
         problemResults = new ArrayList<>(problemNum);
         Map<String, List<OneSubmission>> problemIndexToSubmissionMap = submissions.stream().collect(Collectors.groupingBy(o -> String.valueOf(o.get(0))));
         for (int i = 1; i <= problemNum; i++) {
@@ -69,10 +72,22 @@ public class ContestRankDTO extends BaseDTO {
         this.submissions = null;
     }
 
-    private OneProblemResult computeOneProblemResult(List<OneSubmission> problemSubmissions, ContestTypeEnum contestType) {
-        // TODO: 封榜功能，过滤出封榜后的 submissions，转为 pendingNum
+    /**
+    * @Description 对数据进行封榜，过滤出封榜后的 submissions，转为 pending
+    **/
+    public void frozenRank(Date frozenTime) {
+        if (CollectionUtils.isNotEmpty(submissions)) {
+            submissions.stream().filter(s -> s.getGmtCreate().after(frozenTime)).forEach(s -> {
+                s.setJudgeResult(SubmissionJudgeResult.PD.code);
+                s.setJudgeScore(0);
+            });
+        }
+    }
 
-
+    /**
+    * @Description 给某人同一题的所有提交，计算出该榜单单元格结果
+    **/
+    private OneProblemResult computeOneProblemResult(List<OneSubmission> problemSubmissions, ContestModeEnum contestType) {
         // 根据提交算 oneProblemResult
         int pendingNum = 0;
         if (!CollectionUtils.isEmpty(problemSubmissions)) {
@@ -157,8 +172,16 @@ public class ContestRankDTO extends BaseDTO {
             return (Integer) super.get(INDEX_JUDGE_SCORE);
         }
 
+        public void setJudgeScore(Integer judgeScore) {
+            super.set(INDEX_JUDGE_SCORE, judgeScore);
+        }
+
         public Integer getJudgeResult() {
             return (Integer) super.get(INDEX_JUDGE_RESULT);
+        }
+
+        public void setJudgeResult(Integer judgeResult) {
+            super.set(INDEX_JUDGE_RESULT, judgeResult);
         }
     }
 

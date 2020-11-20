@@ -40,6 +40,9 @@ public class ContestDO extends BaseDO {
     @TableField(ContestDOField.FEATURES)
     private String features;
 
+    @TableField(ContestDOField.IS_PUBLIC)
+    private Integer isPublic;
+
     @TableField(ContestDOField.DELETED)
     @TableLogic(value = "0", delval = "1")
     private Integer deleted;

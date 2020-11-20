@@ -39,7 +39,8 @@ public interface SubmissionApi {
                                        @RequestBody SubmissionListReqDTO reqDTO) throws InternalApiException;
 
     @PostMapping("/listResult")
-    List<SubmissionResultDTO> listResult(@RequestParam("contestId") long contestId) throws InternalApiException;
+    List<SubmissionResultDTO> listResult(@RequestParam("contestId") long contestId,
+                                         @RequestParam(value = "userId", required = false) Long userId) throws InternalApiException;
 
     @GetMapping("query")
     SubmissionDTO query(@RequestParam("submissionId") long submissionId,

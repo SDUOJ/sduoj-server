@@ -60,9 +60,8 @@ public interface ProblemApi {
      * @Description 获取题目和指定描述模板，找不到时返回null; userId 为鉴权使用
      **/
     @GetMapping("/queryAndValidate")
-    ProblemDTO queryAndValidate(@RequestParam("problemCode") String problemCode,
-                                @RequestParam("problemDescriptionId") long problemDescriptionId,
-                                @RequestParam("userId") long userId);
+    ProblemDTO queryProblemWithDescriptionId(@RequestParam("problemCode") String problemCode,
+                                             @RequestParam("problemDescriptionId") long problemDescriptionId);
 
     /**
     * @Description 获取非该用户出题且不 public 题目的 id 列表

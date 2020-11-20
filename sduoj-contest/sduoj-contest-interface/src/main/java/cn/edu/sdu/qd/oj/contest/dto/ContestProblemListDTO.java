@@ -44,9 +44,13 @@ public class ContestProblemListDTO extends BaseDTO {
     @JsonProperty(access = JsonProperty.Access.WRITE_ONLY)
     private Long problemDescriptionId;
 
-    // 其他字段，如在该比赛内的过题人数
+    // -------------------------------- 其他字段，如在该比赛内的过题人数
 
     private int acceptNum;
 
     private int submitNum;
+
+    private Integer judgeResult; // null 表示没交过该题
+
+    private Integer judgeScore;  // null 表示没交过该题
 }

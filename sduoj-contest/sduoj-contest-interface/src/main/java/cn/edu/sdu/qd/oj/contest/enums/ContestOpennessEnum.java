@@ -13,18 +13,22 @@ package cn.edu.sdu.qd.oj.contest.enums;
 import lombok.AllArgsConstructor;
 
 @AllArgsConstructor
-public enum ContestTypeEnum {
+public enum ContestOpennessEnum {
 
-    OI("OI"),
-    IOI("IOI"),
-    ACM("ACM"),
+    PUBLIC("public"),
+    PROTECTED("protected"),
+    PRIVATE("private"),
     ;
 
-    public String type;
+    public String name;
 
-    public static ContestTypeEnum of(String type) {
-        for (ContestTypeEnum value : ContestTypeEnum.values()) {
-            if (value.type.equalsIgnoreCase(type)) {
+    public boolean equals(String name) {
+        return this.name.equals(name);
+    }
+
+    public static ContestOpennessEnum of(String type) {
+        for (ContestOpennessEnum value : ContestOpennessEnum.values()) {
+            if (value.name.equalsIgnoreCase(type)) {
                 return value;
             }
         }

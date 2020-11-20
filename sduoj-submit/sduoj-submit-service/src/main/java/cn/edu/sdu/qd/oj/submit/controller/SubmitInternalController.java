@@ -42,8 +42,8 @@ public class SubmitInternalController implements SubmissionApi {
     }
 
     @Override
-    public List<SubmissionResultDTO> listResult(long contestId) throws InternalApiException {
-        return submitService.listResult(contestId);
+    public List<SubmissionResultDTO> listResult(long contestId, Long userId) throws InternalApiException {
+        return submitService.listResult(contestId, userId);
     }
 
     @Override

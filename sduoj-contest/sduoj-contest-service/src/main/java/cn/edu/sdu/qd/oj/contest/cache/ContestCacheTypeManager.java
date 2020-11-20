@@ -18,11 +18,17 @@ import org.springframework.stereotype.Component;
 @Component
 public class ContestCacheTypeManager extends AbstractCacheTypeManager {
 
+    public static final String RAW_RANK = "RawRank";
     public static final String RANK = "Rank";
+    public static final String SUBMISSION_RESULT_LIST = "SubmissionResultList";
+    public static final String CONTEST_OVERVIEW = "ContestOverview";
 
     public ContestCacheTypeManager() {
         cacheTypeList = Lists.newArrayList(
-                new CacheType(RANK, 30)
+                new CacheType(RAW_RANK, 30),
+                new CacheType(RANK, 15),
+                new CacheType(SUBMISSION_RESULT_LIST, 10),
+                new CacheType(CONTEST_OVERVIEW, 10)
         );
     }
 

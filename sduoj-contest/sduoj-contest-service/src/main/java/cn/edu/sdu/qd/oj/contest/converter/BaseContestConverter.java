@@ -11,6 +11,7 @@
 package cn.edu.sdu.qd.oj.contest.converter;
 
 import cn.edu.sdu.qd.oj.common.converter.BaseConverter;
+import cn.edu.sdu.qd.oj.contest.dto.ContestFeatureDTO;
 import cn.edu.sdu.qd.oj.contest.dto.ContestProblemListDTO;
 import cn.edu.sdu.qd.oj.contest.dto.ContestProblemManageListDTO;
 import java.util.List;
@@ -41,5 +42,13 @@ public interface BaseContestConverter<S, T> extends BaseConverter<S, T> {
 
     default byte[] participantsFrom(List<String> participants) {
         return ContestConvertUtils.participantsFrom(participants);
+    }
+
+    default ContestFeatureDTO featuresTo(String features) {
+        return ContestConvertUtils.featuresTo(features);
+    }
+
+    default String featuresFrom(ContestFeatureDTO features) {
+        return ContestConvertUtils.featuresFrom(features);
     }
 }

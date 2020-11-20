@@ -18,6 +18,7 @@ public class ContestDOField {
     public static final String FEATURES = "ct_features";
     public static final String VERSION = "ct_version";
     public static final String DELETED = "ct_is_deleted";
+    public static final String IS_PUBLIC = "ct_is_public";
     public static final String TITLE = "ct_title";
     public static final String USER_ID = "u_id";
     public static final String GMT_START = "ct_gmt_start";

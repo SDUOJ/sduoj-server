@@ -13,7 +13,12 @@ package cn.edu.sdu.qd.oj.contest.dto;
 import cn.edu.sdu.qd.oj.common.entity.BaseDTO;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.*;
+import org.hibernate.validator.constraints.Length;
 
+import javax.validation.Valid;
+import javax.validation.constraints.NotBlank;
+import javax.validation.constraints.NotNull;
+import javax.validation.constraints.Size;
 import java.util.Date;
 import java.util.List;
 import java.util.Map;
@@ -34,8 +39,16 @@ public class ContestDTO extends BaseDTO {
     @JsonProperty(access = JsonProperty.Access.READ_ONLY)
     private Date gmtModified;
 
-    private Map<String, String> features;
+    @NotNull
+    @Valid
+    private ContestFeatureDTO features;
 
+    @NotNull
+    private Integer isPublic;
+
+    @Length(max = 60, message = "标题最大长度为 60")
+    @NotBlank
+    @NotNull
     private String contestTitle;
 
     @JsonProperty(access = JsonProperty.Access.WRITE_ONLY)
@@ -45,6 +58,7 @@ public class ContestDTO extends BaseDTO {
 
     private Date gmtEnd;
 
+    @Length(max = 60, message = "密码最大长度为 60")
     @JsonProperty(access = JsonProperty.Access.WRITE_ONLY)
     private String password;
 
@@ -55,8 +69,10 @@ public class ContestDTO extends BaseDTO {
 
     private String markdownDescription;
 
+    @Size(max = 96, message = "最多出 96 道题")
     private List<ContestProblemListDTO> problems;
 
+    @Size(max = 1024, message = "最多支持 1024 个人参加比赛")
     private List<String> participants; // List<username>
 
     // -----------------

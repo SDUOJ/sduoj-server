@@ -220,12 +220,12 @@ public class ProblemService {
         return problemCodeList.size() == problemDao.lambdaQuery().in(ProblemDO::getProblemCode, problemCodeList).count();
     }
 
-    public ProblemDTO queryWithDescriptionId(String problemCode, long problemDescriptionId, long userId) {
+    /**
+    * @Description 查询题目带题面，不对用户进行鉴权
+    **/
+    public ProblemDTO queryWithDescriptionId(String problemCode, long problemDescriptionId) {
         ProblemDO problemDO = problemDao.lambdaQuery().eq(ProblemDO::getProblemCode, problemCode).one();
         if (problemDO == null) {
-            return null;
-        }
-        if (0 == problemDO.getIsPublic() && userId != problemDO.getUserId()) {
             return null;
         }
         ProblemDescriptionDO problemDescriptionDO = problemDescriptionDao.lambdaQuery()
@@ -272,9 +272,13 @@ public class ProblemService {
 
     public List<Long> queryPrivateProblemIdList(Long userId) {
         LambdaQueryChainWrapper<ProblemDO> query = problemDao.lambdaQuery();
-        query.select(ProblemDO::getProblemId)
-                .and(o1 -> o1.eq(ProblemDO::getIsPublic, 0)
-                        .and(o3 -> o3.ne(ProblemDO::getUserId, userId)));
+        if (userId != null) {
+            query.select(ProblemDO::getProblemId)
+                    .and(o1 -> o1.eq(ProblemDO::getIsPublic, 0)
+                                 .and(o3 -> o3.ne(ProblemDO::getUserId, userId)));
+        } else {
+            query.select(ProblemDO::getProblemId).eq(ProblemDO::getIsPublic, 0);
+        }
         List<ProblemDO> problemDOList = query.list();
         return problemDOList.stream().map(ProblemDO::getProblemId).collect(Collectors.toList());
     }

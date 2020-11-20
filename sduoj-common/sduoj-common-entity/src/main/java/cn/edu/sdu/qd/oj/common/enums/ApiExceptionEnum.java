@@ -27,6 +27,7 @@ public enum ApiExceptionEnum {
     PARAMETER_ERROR(400, "请求参数错误"),
 
     UNKNOWN_ERROR(500, "服务器出错"),
+    INTERNAL_ERROR(500, "内部服务出错"),
     SERVER_BUSY(500, "服务器正忙，请重试"),
 
     GATEWAY_ERROR(500, "网关错误"),

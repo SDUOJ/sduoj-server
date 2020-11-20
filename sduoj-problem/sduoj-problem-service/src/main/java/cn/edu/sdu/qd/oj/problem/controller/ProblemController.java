@@ -41,6 +41,7 @@ public class ProblemController {
     public ProblemDTO queryByCode(@RequestParam("problemCode") String problemCode,
                                   @RequestParam("descriptionId") @Nullable Long descriptionId,
                                   @RequestHeader("authorization-userId") @Nullable Long userId) {
+        // TODO: 超管可以看到所有题
         return this.problemService.queryByCode(problemCode, descriptionId, userId);
     }
 
@@ -48,6 +49,7 @@ public class ProblemController {
     @ApiResponseBody
     public PageResult<ProblemListDTO> queryList(@Valid ProblemListReqDTO problemListReqDTO,
                                                 @RequestHeader("authorization-userId") @Nullable Long userId) {
+        // TODO: 超管可以看到所有题
         return this.problemService.queryProblemByPage(problemListReqDTO, userId);
     }
 }

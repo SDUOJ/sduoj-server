@@ -36,7 +36,6 @@ import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
-import org.springframework.util.CollectionUtils;
 
 import java.util.*;
 import java.util.stream.Collectors;
@@ -225,12 +224,14 @@ public class SubmitService {
         });
         Optional.of(reqDTO).map(SubmissionListReqDTO::getProblemCodeList).ifPresent(problemCodeList -> {
             List<Long> problemIdList = problemCodeList.stream().map(problemClient::problemCodeToProblemId).collect(Collectors.toList());
-            query.in(SubmissionDO::getProblemId, problemIdList);
+            if (CollectionUtils.isNotEmpty(problemCodeList)) {
+                query.in(SubmissionDO::getProblemId, problemIdList);
+            }
         });
 
-        // 过滤不 public 的题目
-        List<Long> problemIdList = problemClient.queryPrivateProblemIdList(Optional.ofNullable(userSessionDTO).map(UserSessionDTO::getUserId).orElse(null));
-        if (!CollectionUtils.isEmpty(problemIdList)) {
+        // 非比赛场景，需要过滤不 public 的题目
+        List<Long> problemIdList = contestId == 0 ? problemClient.queryPrivateProblemIdList(Optional.ofNullable(userSessionDTO).map(UserSessionDTO::getUserId).orElse(null)) : Lists.newArrayList();
+        if (CollectionUtils.isNotEmpty(problemIdList)) {
             query.notIn(SubmissionDO::getProblemId, problemIdList);
         }
 
@@ -266,8 +267,8 @@ public class SubmitService {
         return new PageResult<>(pageResult.getPages(), submissionListDTOList);
     }
 
-    public List<SubmissionResultDTO> listResult(long contestId) {
-        List<SubmissionDO> list = submissionDao.lambdaQuery().select(
+    public List<SubmissionResultDTO> listResult(long contestId, Long userId) {
+        LambdaQueryChainWrapper<SubmissionDO> query = submissionDao.lambdaQuery().select(
                 SubmissionDO::getSubmissionId,
                 SubmissionDO::getContestId,
                 SubmissionDO::getGmtCreate,
@@ -275,7 +276,11 @@ public class SubmitService {
                 SubmissionDO::getUserId,
                 SubmissionDO::getJudgeScore,
                 SubmissionDO::getJudgeResult
-        ).eq(SubmissionDO::getContestId, contestId).list();
+        ).eq(SubmissionDO::getContestId, contestId);
+        if (userId != null) {
+            query.eq(SubmissionDO::getUserId, userId);
+        }
+        List<SubmissionDO> list = query.list();
         List<SubmissionResultDTO> submissionResultDTOList = submissionResultConverter.to(list);
         submissionResultDTOList.forEach(o -> o.setProblemCode(problemClient.problemIdToProblemCode(o.getProblemId())));
         return submissionResultDTOList;

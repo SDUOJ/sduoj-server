@@ -13,6 +13,7 @@ package cn.edu.sdu.qd.oj.contest.converter;
 import cn.edu.sdu.qd.oj.common.converter.BaseConvertUtils;
 import cn.edu.sdu.qd.oj.common.util.SpringContextUtils;
 import cn.edu.sdu.qd.oj.contest.client.UserClient;
+import cn.edu.sdu.qd.oj.contest.dto.ContestFeatureDTO;
 import cn.edu.sdu.qd.oj.contest.dto.ContestProblemListDTO;
 import cn.edu.sdu.qd.oj.contest.dto.ContestProblemManageListDTO;
 import com.alibaba.fastjson.JSON;
@@ -150,4 +151,11 @@ public class ContestConvertUtils extends BaseConvertUtils {
         return byteBuf.array();
     }
 
+    public static ContestFeatureDTO featuresTo(String features) {
+        return JSON.parseObject(features, ContestFeatureDTO.class);
+    }
+
+    public static String featuresFrom(ContestFeatureDTO features) {
+        return JSON.toJSONString(features);
+    }
 }

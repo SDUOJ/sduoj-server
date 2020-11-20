@@ -85,8 +85,9 @@ public class UserManageService {
         userDOList.forEach(userDO -> {
             userDO.setSalt(CodecUtils.generateSalt());
             userDO.setPassword(CodecUtils.md5Hex(userDO.getPassword(), userDO.getSalt()));
-            userDO.setEmailVerified(1);
-            userDO.setRoles(PermissionEnum.USER.name);
+            if (userDO.getEmailVerified() == 1) {
+                userDO.setRoles(PermissionEnum.USER.name);
+            }
         });
 
         userDao.saveBatch(userDOList);

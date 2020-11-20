@@ -76,8 +76,9 @@ public class ContestManageController {
 
     @GetMapping("/page")
     @ApiResponseBody
-    public PageResult<ContestListDTO> page(ContestListReqDTO reqDTO) {
-        return contestService.page(reqDTO);
+    public PageResult<ContestListDTO> page(ContestListReqDTO reqDTO,
+                                           @UserSession(nullable=true) UserSessionDTO userSessionDTO) {
+        return contestService.page(reqDTO, userSessionDTO);
     }
 
     @GetMapping("/query")

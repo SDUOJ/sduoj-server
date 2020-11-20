@@ -13,6 +13,8 @@ package cn.edu.sdu.qd.oj.contest.dto;
 import cn.edu.sdu.qd.oj.common.entity.BaseDTO;
 import lombok.*;
 
+import javax.validation.Valid;
+import javax.validation.constraints.NotNull;
 import java.util.Date;
 import java.util.List;
 import java.util.Map;
@@ -31,7 +33,12 @@ public class ContestListDTO extends BaseDTO {
 
     private Date gmtModified;
 
-    private Map<String, String> features;
+    @NotNull
+    @Valid
+    private ContestFeatureDTO features;
+
+    @NotNull
+    private Integer isPublic;
 
     private String contestTitle;
 

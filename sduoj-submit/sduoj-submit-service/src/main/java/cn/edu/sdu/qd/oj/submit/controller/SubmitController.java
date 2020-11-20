@@ -87,7 +87,7 @@ public class SubmitController {
     public PageResult<SubmissionListDTO> page(@Valid SubmissionListReqDTO reqDTO,
                                               @UserSession(nullable = true) UserSessionDTO userSessionDTO) throws Exception {
         log.info("submissionList: req:{}", reqDTO);
-        reqDTO.setProblemCodeList(null); // 禁掉指定题目
+        reqDTO.setProblemCodeList(null); // 暂不允许在该接口指定多题查询
         return this.submitService.querySubmissionByPage(reqDTO, 0, userSessionDTO);
     }
 

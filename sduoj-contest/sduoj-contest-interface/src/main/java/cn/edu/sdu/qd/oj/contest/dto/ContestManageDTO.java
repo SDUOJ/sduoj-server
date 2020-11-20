@@ -14,6 +14,8 @@ import cn.edu.sdu.qd.oj.common.entity.BaseDTO;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.*;
 
+import javax.validation.Valid;
+import javax.validation.constraints.NotNull;
 import java.util.Date;
 import java.util.List;
 import java.util.Map;
@@ -34,7 +36,12 @@ public class ContestManageDTO extends BaseDTO {
     @JsonProperty(access = JsonProperty.Access.READ_ONLY)
     private Date gmtModified;
 
-    private Map<String, String> features;
+    @NotNull
+    @Valid
+    private ContestFeatureDTO features;
+
+    @NotNull
+    private Integer isPublic;
 
     private String contestTitle;
 

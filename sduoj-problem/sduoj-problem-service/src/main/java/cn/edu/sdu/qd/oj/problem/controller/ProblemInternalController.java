@@ -70,8 +70,8 @@ public class ProblemInternalController implements ProblemApi {
     }
 
     @Override
-    public ProblemDTO queryAndValidate(String problemCode, long problemDescriptionId, long userId) {
-        return problemService.queryWithDescriptionId(problemCode, problemDescriptionId, userId);
+    public ProblemDTO queryProblemWithDescriptionId(String problemCode, long problemDescriptionId) {
+        return problemService.queryWithDescriptionId(problemCode, problemDescriptionId);
     }
 
     @Override
