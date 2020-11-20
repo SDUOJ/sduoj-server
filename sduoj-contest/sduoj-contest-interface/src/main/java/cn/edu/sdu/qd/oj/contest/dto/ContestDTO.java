@@ -75,6 +75,9 @@ public class ContestDTO extends BaseDTO {
     @Size(max = 1024, message = "最多支持 1024 个人参加比赛")
     private List<String> participants; // List<username>
 
+    @Size(max = 1024, message = "最多支持 1024 个人参加比赛")
+    private List<String> unofficialParticipants; // List<username>
+
     // -----------------
 
     @JsonProperty(access = JsonProperty.Access.READ_ONLY)

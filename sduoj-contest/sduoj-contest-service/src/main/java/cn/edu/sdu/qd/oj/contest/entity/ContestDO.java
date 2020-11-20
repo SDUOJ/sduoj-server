@@ -81,6 +81,8 @@ public class ContestDO extends BaseDO {
     @TableField(ContestDOField.PARTICIPANTS)
     private byte[] participants; // userId 列表
 
+    @TableField(ContestDOField.UNOFFICIAL_PARTICIPANTS)
+    private byte[] unofficialParticipants; // userId 列表
 
     /**
     * @Description 加入一个比赛参与者，已存在则加入失败

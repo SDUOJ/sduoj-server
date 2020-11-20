@@ -29,4 +29,5 @@ public class ContestDOField {
     public static final String MARKDOWN_DESCRIPTION = "ct_markdown_description";
     public static final String PROBLEMS = "ct_problems";
     public static final String PARTICIPANTS = "ct_participants";
+    public static final String UNOFFICIAL_PARTICIPANTS = "ct_unofficial_participants";
 }

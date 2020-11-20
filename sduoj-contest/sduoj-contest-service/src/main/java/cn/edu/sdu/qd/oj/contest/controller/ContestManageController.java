@@ -22,6 +22,7 @@ import cn.edu.sdu.qd.oj.contest.client.ProblemClient;
 import cn.edu.sdu.qd.oj.contest.dto.*;
 import cn.edu.sdu.qd.oj.contest.service.ContestManageService;
 import cn.edu.sdu.qd.oj.contest.service.ContestService;
+import com.google.common.collect.Lists;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.*;
@@ -29,6 +30,7 @@ import org.springframework.web.bind.annotation.*;
 import javax.validation.Valid;
 import java.util.Date;
 import java.util.List;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 
@@ -69,7 +71,11 @@ public class ContestManageController {
 
         // TODO: 校验 problemDescriptionId
 
-
+        // 挂星参赛者必须是参赛者子集
+        List<String> participants = Optional.ofNullable(reqDTO.getParticipants()).orElse(Lists.newArrayList());
+        List<String> unofficialParticipants = Optional.ofNullable(reqDTO.getUnofficialParticipants()).orElse(Lists.newArrayList());
+        participants.addAll(unofficialParticipants);
+        reqDTO.setParticipants(participants.stream().distinct().collect(Collectors.toList()));
 
         return contestManageService.create(reqDTO);
     }
@@ -103,6 +109,12 @@ public class ContestManageController {
                        @UserSession UserSessionDTO userSessionDTO) {
         // 校验 开始时间<结束时间
         AssertUtils.isTrue(reqDTO.getGmtStart().before(reqDTO.getGmtEnd()), ApiExceptionEnum.CONTEST_TIME_ERROR);
+
+        // 挂星参赛者必须是参赛者子集
+        List<String> participants = Optional.ofNullable(reqDTO.getParticipants()).orElse(Lists.newArrayList());
+        List<String> unofficialParticipants = Optional.ofNullable(reqDTO.getUnofficialParticipants()).orElse(Lists.newArrayList());
+        participants.addAll(unofficialParticipants);
+        reqDTO.setParticipants(participants.stream().distinct().collect(Collectors.toList()));
 
         contestManageService.update(reqDTO, userSessionDTO);
         return null;

@@ -65,6 +65,8 @@ public class ContestManageDTO extends BaseDTO {
 
     private List<String> participants; // List<username>
 
+    private List<String> unofficialParticipants;
+
     // -----------------
 
     @JsonProperty(access = JsonProperty.Access.READ_ONLY)
