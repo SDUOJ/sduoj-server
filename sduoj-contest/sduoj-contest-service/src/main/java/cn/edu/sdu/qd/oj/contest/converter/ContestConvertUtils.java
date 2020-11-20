@@ -55,6 +55,7 @@ public class ContestConvertUtils extends BaseConvertUtils {
                             .problemTitle(array.getString(1))
                             .problemDescriptionId(array.getLong(2))
                             .problemWeight(array.getInteger(3))
+                            .problemColor(array.getString(4))
                             .build()
             );
         }
@@ -73,6 +74,7 @@ public class ContestConvertUtils extends BaseConvertUtils {
             array.add(contestProblemListDTO.getProblemTitle());
             array.add(contestProblemListDTO.getProblemDescriptionId());
             array.add(contestProblemListDTO.getProblemWeight());
+            array.add(contestProblemListDTO.getProblemColor());
             json.add(array);
         });
         return json.toJSONString();
@@ -93,6 +95,7 @@ public class ContestConvertUtils extends BaseConvertUtils {
                             .problemTitle(array.getString(1))
                             .problemDescriptionId(array.getLong(2))
                             .problemWeight(array.getInteger(3))
+                            .problemColor(array.getString(4))
                             .build()
             );
         }
@@ -111,6 +114,7 @@ public class ContestConvertUtils extends BaseConvertUtils {
             array.add(contestProblemManageListDTO.getProblemTitle());
             array.add(contestProblemManageListDTO.getProblemDescriptionId());
             array.add(contestProblemManageListDTO.getProblemWeight());
+            array.add(contestProblemManageListDTO.getProblemColor());
             json.add(array);
         });
         return json.toJSONString();

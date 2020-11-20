@@ -44,6 +44,9 @@ public class ContestProblemListDTO extends BaseDTO {
     @JsonProperty(access = JsonProperty.Access.WRITE_ONLY)
     private Long problemDescriptionId;
 
+    @NotNull
+    private String problemColor;
+
     // -------------------------------- 其他字段，如在该比赛内的过题人数
 
     private int acceptNum;
