@@ -68,4 +68,11 @@ public interface SubmissionApi {
     @GetMapping("/querySubmissionJudgeDTO")
     SubmissionJudgeDTO querySubmissionJudgeDTO(@RequestParam("submissionId") long submissionId,
                                                @RequestParam("version") int version);
+
+    /**
+    * @Description 使得提交无效
+    **/
+    @GetMapping("invalidateSubmission")
+    boolean invalidateSubmission(@RequestParam("submissionId") long submissionId,
+                                 @RequestParam("contestId") long contestId);
 }

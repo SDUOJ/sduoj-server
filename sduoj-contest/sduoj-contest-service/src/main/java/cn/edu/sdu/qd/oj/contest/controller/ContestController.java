@@ -17,13 +17,11 @@ import cn.edu.sdu.qd.oj.common.entity.UserSessionDTO;
 import cn.edu.sdu.qd.oj.common.enums.ApiExceptionEnum;
 import cn.edu.sdu.qd.oj.common.exception.ApiException;
 import cn.edu.sdu.qd.oj.common.exception.InternalApiException;
-import cn.edu.sdu.qd.oj.contest.cache.ContestCacheTypeManager;
 import cn.edu.sdu.qd.oj.contest.dto.*;
 import cn.edu.sdu.qd.oj.contest.service.ContestService;
 import cn.edu.sdu.qd.oj.submit.dto.SubmissionDTO;
 import org.apache.commons.lang.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.cache.annotation.Cacheable;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.*;
 
@@ -61,7 +59,6 @@ public class ContestController {
 
     @GetMapping("/query")
     @ApiResponseBody
-    @Cacheable(value = ContestCacheTypeManager.CONTEST_OVERVIEW, key = "#contestId+'-'+#userSessionDTO.userId")
     public ContestDTO query(@RequestParam("contestId") @NotBlank Long contestId,
                             @UserSession UserSessionDTO userSessionDTO) throws InternalApiException {
         return contestService.query(contestId, userSessionDTO);
@@ -137,5 +134,15 @@ public class ContestController {
     public List<ContestRankDTO> queryRank(@RequestParam("contestId") long contestId,
                                           @UserSession UserSessionDTO userSessionDTO) throws InternalApiException {
         return contestService.queryRank(contestId, userSessionDTO);
+    }
+
+    @GetMapping("/invalidateSubmission")
+    @ApiResponseBody
+    public Void invalidateSubmission(@RequestParam("contestId") long contestId,
+                                     @RequestParam("submissionId") String submissionIdHex,
+                                     @UserSession UserSessionDTO userSessionDTO) {
+        long submissionId = Long.valueOf(submissionIdHex, 16);
+        contestService.invalidateSubmission(contestId, submissionId, userSessionDTO);
+        return null;
     }
 }

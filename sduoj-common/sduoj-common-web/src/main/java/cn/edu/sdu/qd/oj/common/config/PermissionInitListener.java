@@ -36,7 +36,11 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 
-
+/**
+* @Description 获取所有 @Controller 的 URL 进行注册
+* 注意不能在 Controller 使用 @Cacheable 或 @Transactional 等导致 Controller 类被动态代理的注解
+* TODO: 写一个 ci 自动检测代码规范
+**/
 @Slf4j
 public class PermissionInitListener implements SpringApplicationRunListener {
 

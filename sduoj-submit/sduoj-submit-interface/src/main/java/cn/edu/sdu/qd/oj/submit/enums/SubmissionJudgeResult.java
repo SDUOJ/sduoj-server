@@ -32,6 +32,7 @@ public enum SubmissionJudgeResult {
     WA(6,"Wrong Answer"),
     PR(7,"Presentation Error"),
     CE(8,"Compilation Error"),
+    CAN(9,"Canceled"),
 
 
     ;
@@ -39,7 +40,10 @@ public enum SubmissionJudgeResult {
     public int code;
     public String message;
 
-    public static final List<Integer> CAN_REJUDGE_RESULT_CODE = Arrays.asList(
+    // 结果码的分界线
+    public static final int RESULT_CODE_DIVIDING = 1;
+
+    public static final List<Integer> WILL_REJUDGE_RESULT_CODE = Arrays.asList(
             PD.code,
             AC.code,
             TLE.code,
@@ -48,7 +52,8 @@ public enum SubmissionJudgeResult {
             SE.code,
             WA.code,
             PR.code,
-            CE.code
+            CE.code,
+            CAN.code
     );
 
     public boolean equals(Integer code) {

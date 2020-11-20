@@ -351,7 +351,7 @@ public class SubmitService {
                 SubmissionDO::getContestId,
                 SubmissionDO::getProblemId,
                 SubmissionDO::getVersion
-        ).in(SubmissionDO::getJudgeResult, SubmissionJudgeResult.CAN_REJUDGE_RESULT_CODE)
+        ).in(SubmissionDO::getJudgeResult, SubmissionJudgeResult.WILL_REJUDGE_RESULT_CODE)
          .in(SubmissionDO::getSubmissionId, submissionIdList).list();
 
         submissionDOList.forEach(this::rejudgeOneSubmission);
@@ -378,5 +378,15 @@ public class SubmitService {
             log.error("[submit] submissionCreate MQ send error {}", submissionDO.getSubmissionId());
             // 该行仍然在 pending，需要定时任务或手动将 mq 重发
         }
+    }
+
+    public boolean invalidateSubmission(long submissionId, long contestId) {
+        return submissionDao.lambdaUpdate()
+                .set(SubmissionDO::getJudgeResult, SubmissionJudgeResult.CAN.code)
+                .set(SubmissionDO::getJudgeScore, 0)
+                .eq(SubmissionDO::getSubmissionId, submissionId)
+                .eq(SubmissionDO::getContestId, contestId)
+                .ge(SubmissionDO::getJudgeResult, SubmissionJudgeResult.RESULT_CODE_DIVIDING)
+                .update();
     }
 }

@@ -109,6 +109,7 @@ public class ContestService {
     }
 
     @Transactional
+    @Cacheable(value = ContestCacheTypeManager.CONTEST_OVERVIEW, key = "#contestId+'-'+#userSessionDTO.userId")
     public ContestDTO query(long contestId, UserSessionDTO userSessionDTO) throws InternalApiException {
         ContestDTO contestDTO = queryAndValidate(contestId, userSessionDTO.getUserId());
 
@@ -514,5 +515,14 @@ public class ContestService {
                 .filter(o -> Objects.nonNull(o.getProblemCode()))
                 .collect(Collectors.toList());
         return submissionResultDTOList;
+    }
+
+    public void invalidateSubmission(long contestId, long submissionId, UserSessionDTO userSessionDTO) {
+        // 查比赛
+        ContestDO contestDO = queryContestAndValidate(contestId, userSessionDTO.getUserId());
+        // 超级管理员/出题者才可
+        AssertUtils.isTrue(PermissionEnum.SUPERADMIN.in(userSessionDTO) || userSessionDTO.userIdEquals(contestDO.getUserId()), ApiExceptionEnum.USER_NOT_MATCHING);
+        // 取消成绩
+        AssertUtils.isTrue(this.submissionClient.invalidateSubmission(submissionId, contestId), ApiExceptionEnum.SERVER_BUSY);
     }
 }

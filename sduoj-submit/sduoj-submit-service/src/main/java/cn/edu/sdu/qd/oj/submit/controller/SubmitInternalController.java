@@ -70,4 +70,9 @@ public class SubmitInternalController implements SubmissionApi {
     public SubmissionJudgeDTO querySubmissionJudgeDTO(long submissionId, int version) {
         return this.submitJudgerService.query(submissionId, version);
     }
+
+    @Override
+    public boolean invalidateSubmission(long submissionId, long contestId) {
+        return this.submitService.invalidateSubmission(submissionId, contestId);
+    }
 }

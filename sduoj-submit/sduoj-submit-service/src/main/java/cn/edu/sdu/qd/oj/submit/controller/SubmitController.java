@@ -106,4 +106,14 @@ public class SubmitController {
         submitService.rejudge(submissionIdList);
         return null;
     }
+
+    @GetMapping("/invalidateSubmission")
+    @ApiResponseBody
+    public Void invalidateSubmission(@RequestParam("submissionId") String submissionIdHex,
+                                     @UserSession UserSessionDTO userSessionDTO) {
+        long submissionId = Long.valueOf(submissionIdHex, 16);
+        AssertUtils.isTrue(PermissionEnum.ADMIN.in(userSessionDTO), ApiExceptionEnum.USER_NOT_MATCHING);
+        submitService.invalidateSubmission(submissionId, 0);
+        return null;
+    }
 }
