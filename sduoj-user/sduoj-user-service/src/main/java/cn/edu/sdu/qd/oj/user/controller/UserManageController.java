@@ -15,6 +15,8 @@ import cn.edu.sdu.qd.oj.common.annotation.UserSession;
 import cn.edu.sdu.qd.oj.common.entity.ApiResponseBody;
 import cn.edu.sdu.qd.oj.common.entity.PageResult;
 import cn.edu.sdu.qd.oj.common.entity.UserSessionDTO;
+import cn.edu.sdu.qd.oj.common.enums.ApiExceptionEnum;
+import cn.edu.sdu.qd.oj.common.util.AssertUtils;
 import cn.edu.sdu.qd.oj.user.dto.UserDTO;
 import cn.edu.sdu.qd.oj.user.dto.UserListReqDTO;
 import cn.edu.sdu.qd.oj.user.dto.UserManageUpdateReqDTO;
@@ -66,6 +68,15 @@ public class UserManageController {
     public Void addUsers(@RequestBody @Valid List<UserDTO> userDTOList,
                          @UserSession UserSessionDTO userSessionDTO) {
         userManageService.addUsers(userDTOList);
+        return null;
+    }
+
+    @PostMapping("/delete")
+    @ApiResponseBody
+    public Void delete(@RequestBody List<String> usernameList,
+                       @UserSession UserSessionDTO userSessionDTO) {
+        AssertUtils.isTrue(PermissionEnum.SUPERADMIN.in(userSessionDTO), ApiExceptionEnum.USER_NOT_MATCHING);
+        userManageService.delete(usernameList);
         return null;
     }
 

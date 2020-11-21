@@ -95,4 +95,8 @@ public class UserManageService {
 
         userDao.saveBatch(userDOList);
     }
+
+    public void delete(List<String> usernameList) {
+        userDao.lambdaUpdate().in(UserDO::getUsername, usernameList).remove();
+    }
 }
