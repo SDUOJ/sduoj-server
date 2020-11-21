@@ -275,7 +275,8 @@ public class ContestService {
                 ContestDO::getGmtEnd,
                 ContestDO::getUserId,
                 ContestDO::getProblems,
-                ContestDO::getParticipants
+                ContestDO::getParticipants,
+                ContestDO::getUnofficialParticipants
         ).eq(ContestDO::getContestId, contestId).one();
         AssertUtils.notNull(contestDO, ApiExceptionEnum.CONTEST_NOT_FOUND);
 
@@ -441,6 +442,9 @@ public class ContestService {
         ContestModeEnum contestMode = ContestModeEnum.of(contestFeatureDTO.getMode());
         // 查询 raw 的榜单数据
         List<ContestRankDTO> contestRankDTOList = queryRawRankData(contestDO);
+        // 置挂星参赛者
+        Set<Long> unofficialParticipantIds = new HashSet<>(ContestConvertUtils.participantsToUserIdList(contestDO.getUnofficialParticipants()));
+        contestRankDTOList.stream().filter(o -> unofficialParticipantIds.contains(o.getUserId())).forEach(o -> o.setOfficial(false));
 
         // 超级管理员/出题者 直接获取所有榜单，无封榜无脱敏
         if (PermissionEnum.SUPERADMIN.in(userSessionDTO) || userSessionDTO.userIdEquals(contestDO.getUserId())) {

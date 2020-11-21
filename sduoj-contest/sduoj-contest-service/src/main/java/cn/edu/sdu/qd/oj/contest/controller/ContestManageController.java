@@ -76,6 +76,7 @@ public class ContestManageController {
         List<String> unofficialParticipants = Optional.ofNullable(reqDTO.getUnofficialParticipants()).orElse(Lists.newArrayList());
         participants.addAll(unofficialParticipants);
         reqDTO.setParticipants(participants.stream().distinct().collect(Collectors.toList()));
+        reqDTO.setUnofficialParticipants(unofficialParticipants.stream().distinct().collect(Collectors.toList()));
 
         return contestManageService.create(reqDTO);
     }
@@ -115,6 +116,7 @@ public class ContestManageController {
         List<String> unofficialParticipants = Optional.ofNullable(reqDTO.getUnofficialParticipants()).orElse(Lists.newArrayList());
         participants.addAll(unofficialParticipants);
         reqDTO.setParticipants(participants.stream().distinct().collect(Collectors.toList()));
+        reqDTO.setUnofficialParticipants(unofficialParticipants.stream().distinct().collect(Collectors.toList()));
 
         contestManageService.update(reqDTO, userSessionDTO);
         return null;
