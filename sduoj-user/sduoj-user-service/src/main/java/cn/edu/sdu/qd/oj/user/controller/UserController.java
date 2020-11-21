@@ -10,6 +10,7 @@
 
 package cn.edu.sdu.qd.oj.user.controller;
 
+import cn.edu.sdu.qd.oj.common.annotation.RealIp;
 import cn.edu.sdu.qd.oj.common.annotation.UserSession;
 import cn.edu.sdu.qd.oj.common.entity.ApiResponseBody;
 import cn.edu.sdu.qd.oj.common.entity.ResponseResult;
@@ -115,14 +116,14 @@ public class UserController {
 
     @GetMapping("/getProfile")
     @ApiResponseBody
-    public UserDTO getProfile(@RequestHeader("Authorization-userId") Long userId) {
-        return this.userService.queryByUserId(userId);
+    public UserDTO getProfile(@UserSession UserSessionDTO userSessionDTO) {
+        return this.userService.queryByUserId(userSessionDTO.getUserId());
     }
 
     @PostMapping("/updateProfile")
     @ApiResponseBody
     public Void updateProfile(@RequestBody UserUpdateReqDTO reqDTO,
-                              @RequestHeader("Authorization-userId") Long userId) throws MessagingException {
+                              @UserSession UserSessionDTO userSessionDTO) throws MessagingException {
         // 新密码校验
         if (StringUtils.isNotBlank(reqDTO.getNewPassword())) {
             validatePassword(reqDTO.getNewPassword());
@@ -133,7 +134,7 @@ public class UserController {
             validateEmail(reqDTO.getNewEmail());
         }
 
-        reqDTO.setUserId(userId);
+        reqDTO.setUserId(userSessionDTO.getUserId());
         this.userService.updateProfile(reqDTO);
         return null;
     }
@@ -174,7 +175,7 @@ public class UserController {
     @ResponseBody
     public ResponseResult<UserSessionDTO> login(HttpServletResponse response,
                                                 @RequestBody @NotNull Map<String, String> json,
-                                                @RequestHeader("X-FORWARDED-FOR") String ipv4,
+                                                @RealIp String ipv4,
                                                 @RequestHeader("user-agent") String userAgent) throws ApiException {
         String username = null, password = null;
         try {
@@ -186,8 +187,7 @@ public class UserController {
         if (StringUtils.isNotBlank(username) && StringUtils.isNotBlank(password)) {
             // 登录校验
             UserSessionDTO userSessionDTO = this.userService.login(username, password, ipv4, userAgent);
-            // TODO: 魔法值解决
-            response.setHeader("SDUOJUserInfo", JSON.toJSONString(userSessionDTO));
+            response.setHeader(UserSessionDTO.HEADER_KEY, JSON.toJSONString(userSessionDTO));
             return ResponseResult.ok(userSessionDTO);
         }
         return ResponseResult.error();
@@ -196,7 +196,7 @@ public class UserController {
     @GetMapping("/logout")
     @ResponseBody
     public ResponseResult<Void> logout(HttpServletResponse response) {
-        response.setHeader("SDUOJUserInfo", "Logout");
+        response.setHeader(UserSessionDTO.HEADER_KEY, UserSessionDTO.HEADER_VALUE_LOGOUT);
         return ResponseResult.ok(null);
     }
 

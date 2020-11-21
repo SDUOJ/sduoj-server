@@ -10,7 +10,9 @@
 
 package cn.edu.sdu.qd.oj.submit.controller;
 
+import cn.edu.sdu.qd.oj.common.annotation.UserSession;
 import cn.edu.sdu.qd.oj.common.entity.ApiResponseBody;
+import cn.edu.sdu.qd.oj.common.entity.UserSessionDTO;
 import cn.edu.sdu.qd.oj.submit.dto.SubmissionUpdateReqDTO;
 import cn.edu.sdu.qd.oj.submit.service.SubmitJudgerService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -45,8 +47,8 @@ public class SubmitJudgerController {
     @PostMapping("/update")
     @ApiResponseBody
     public Void update(@RequestBody @Valid SubmissionUpdateReqDTO reqDTO,
-                       @RequestHeader("authorization-userId") Long userId) {
-        reqDTO.setJudgerId(userId);
+                       @UserSession UserSessionDTO userSessionDTO) {
+        reqDTO.setJudgerId(userSessionDTO.getUserId());
         this.submitJudgerService.updateSubmission(reqDTO);
         return null;
     }

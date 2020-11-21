@@ -34,7 +34,6 @@ public class LocalCacheConfig {
     @Primary
     public CacheManager caffeineCacheManager() {
         SimpleCacheManager cacheManager = new SimpleCacheManager();
-        // TODO: 魔法值解决
         List<CaffeineCache> caches = Lists.newArrayList(
                 new CaffeineCache(RedisConstants.URL_TO_ROLES, Caffeine.newBuilder().recordStats().expireAfterWrite(60, TimeUnit.SECONDS).build()),
                 new CaffeineCache(RedisConstants.USER_ID_TO_ROLES, Caffeine.newBuilder().recordStats().expireAfterWrite(10, TimeUnit.SECONDS).build())

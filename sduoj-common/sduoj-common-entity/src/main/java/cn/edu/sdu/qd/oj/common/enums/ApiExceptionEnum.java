@@ -31,6 +31,7 @@ public enum ApiExceptionEnum {
     SERVER_BUSY(500, "服务器正忙，请重试"),
 
     GATEWAY_ERROR(500, "网关错误"),
+    GET_IP_ERROR(500, "获取不到IP"),
 
     USER_NOT_FOUND(400, "该用户不存在"),
     USER_NOT_LOGIN(403, "该用户未登录"),

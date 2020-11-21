@@ -17,14 +17,11 @@ import java.lang.annotation.Target;
 
 
 /**
-* @Description Annotation which is used to get UserSessionDTO in controller method
+* @Description Annotation which is used to get RealIp String in controller method
 * @author zhangt2333
-* @see cn.edu.sdu.qd.oj.common.entity.UserSessionDTO
-* @see cn.edu.sdu.qd.oj.common.config.UserSessionMethodArgumentResolver
 * @see cn.edu.sdu.qd.oj.common.config.HttpArgumentResolverConfig
 **/
 @Retention(RetentionPolicy.RUNTIME)
 @Target(ElementType.PARAMETER)
-public @interface UserSession {
-    boolean nullable() default false;
+public @interface RealIp {
 }

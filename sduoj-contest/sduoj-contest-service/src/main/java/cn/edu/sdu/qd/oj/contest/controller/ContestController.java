@@ -10,6 +10,7 @@
 
 package cn.edu.sdu.qd.oj.contest.controller;
 
+import cn.edu.sdu.qd.oj.common.annotation.RealIp;
 import cn.edu.sdu.qd.oj.common.annotation.UserSession;
 import cn.edu.sdu.qd.oj.common.entity.ApiResponseBody;
 import cn.edu.sdu.qd.oj.common.entity.PageResult;
@@ -85,7 +86,7 @@ public class ContestController {
     @PostMapping("/createSubmission")
     @ApiResponseBody
     public String submitCode(@RequestBody @Valid ContestSubmissionCreateReqDTO reqDTO,
-                             @RequestHeader("X-FORWARDED-FOR") String ipv4,
+                             @RealIp String ipv4,
                              @UserSession UserSessionDTO userSessionDTO) {
         // 增补数据
         reqDTO.setIpv4(ipv4);

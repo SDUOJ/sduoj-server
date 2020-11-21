@@ -50,9 +50,9 @@ public class ContestManageController {
     @PostMapping("/create")
     @ApiResponseBody
     public Long create(@RequestBody @Valid ContestCreateReqDTO reqDTO,
-                       @RequestHeader("authorization-userId") Long userId) {
+                       @UserSession UserSessionDTO userSessionDTO) {
         // 增补
-        reqDTO.setUserId(userId);
+        reqDTO.setUserId(userSessionDTO.getUserId());
 
         // 校验 当前时间<开始时间<结束时间
         AssertUtils.isTrue(reqDTO.getGmtStart().after(new Date()), ApiExceptionEnum.CONTEST_TIME_ERROR);

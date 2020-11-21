@@ -26,6 +26,7 @@ import org.springframework.core.Ordered;
 import org.springframework.core.io.buffer.DataBuffer;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.server.reactive.ServerHttpRequest;
 import org.springframework.http.server.reactive.ServerHttpRequestDecorator;
 import org.springframework.http.server.reactive.ServerHttpResponse;
 import org.springframework.stereotype.Component;
@@ -69,14 +70,18 @@ public class LoginFilter implements GlobalFilter, Ordered {
      **/
     @Override
     public Mono<Void> filter(ServerWebExchange exchange, GatewayFilterChain chain) {
-        String requestUrl = exchange.getRequest().getPath().toString();
-        log.info("filter url:{} from:{}", requestUrl, exchange.getRequest().getRemoteAddress());
+        ServerHttpRequest request = exchange.getRequest();
+        String requestUrl = request.getPath().toString();
+        String realIp = Optional.of(request)
+                .map(o -> o.getHeaders().getFirst("x-real-ip"))
+                .orElse(String.valueOf(request.getRemoteAddress()));
+        log.info("Filter From: {}\tUrl: {}\tParams: {}", realIp, requestUrl, request.getQueryParams());
         // 取 token 并解密
         UserSessionDTO userSessionDTO = Optional.of(exchange)
                                     .map(ServerWebExchange::getSession)
                                     .map(Mono::block)
                                     .map(WebSession::getAttributes)
-                                    .map(map -> map.get("SDUOJUserInfo"))
+                                    .map(map -> map.get(UserSessionDTO.HEADER_KEY))
                                     .map(o -> (String) o)
                                     .map(o -> JSON.parseObject(o, UserSessionDTO.class))
                                     .orElse(null);
@@ -88,14 +93,15 @@ public class LoginFilter implements GlobalFilter, Ordered {
         // 鉴权
         if (userSessionDTO != null) {
 
-            List<String> urlRoles = Optional.ofNullable(permissionClient.urlToRoles(requestUrl.replace("/api", ""))).orElse(Lists.newArrayList());
-            List<String> roles = Optional.ofNullable(userClient.queryRolesById(userSessionDTO.getUserId())).orElse(Lists.newArrayList());
+            List<String> urlRoles = Optional.ofNullable(permissionClient.urlToRoles(requestUrl.replace("/api", "")))
+                    .orElse(Lists.newArrayList());
+            List<String> roles = Optional.ofNullable(userClient.queryRolesById(userSessionDTO.getUserId()))
+                    .orElse(Lists.newArrayList());
 
             if (!urlRoles.contains(PermissionEnum.ALL.name) && Collections.disjoint(roles, urlRoles)) {
                 log.warn("have not permission {} {}", userSessionDTO, requestUrl);
                 return returnNoPermission(exchange, String.format("This User has no permission on '%s'", requestUrl));
             }
-
 
             // 装饰器 修改 getHeaders 方法
             ServerHttpRequestDecorator decorator = new ServerHttpRequestDecorator(exchange.getRequest()) {
@@ -104,17 +110,17 @@ public class LoginFilter implements GlobalFilter, Ordered {
                     MultiValueMap<String, String> multiValueMap = CollectionUtils.toMultiValueMap(new LinkedCaseInsensitiveMap(8, Locale.ENGLISH));
                     super.getHeaders().forEach((key, value) -> multiValueMap.put(key, value));
     //              multiValueMap.remove("cookie"); // 在此处已解码 token, 故不下传省流量, 如果后续有多值 cookie 此处需要修改
-                    multiValueMap.remove("SDUOJUserInfo");
-                    multiValueMap.add("SDUOJUserInfo", JSON.toJSONString(userSessionDTO));
-                    for (Field field : UserSessionDTO.class.getDeclaredFields()) {
-                        try {
-                            field.setAccessible(true);
-                            multiValueMap.remove("Authorization-" + field.getName());
-                            multiValueMap.add("Authorization-" + field.getName(), String.valueOf(field.get(userSessionDTO)));
-                        } catch (IllegalAccessException e) {
-                            log.error("getHeaders Decorator", e);
-                        }
-                    }
+                    multiValueMap.remove(UserSessionDTO.HEADER_KEY);
+                    multiValueMap.add(UserSessionDTO.HEADER_KEY, JSON.toJSONString(userSessionDTO));
+//                    for (Field field : UserSessionDTO.class.getDeclaredFields()) { // 删掉对 UserSession 逐个字段加入 header 的操作
+//                        try {
+//                            field.setAccessible(true);
+//                            multiValueMap.remove("authorization-" + field.getName());
+//                            multiValueMap.add("authorization-" + field.getName(), String.valueOf(field.get(userSessionDTO)));
+//                        } catch (IllegalAccessException e) {
+//                            log.error("getHeaders Decorator", e);
+//                        }
+//                    }
                     return new HttpHeaders(multiValueMap);
                 }
             };
@@ -125,13 +131,13 @@ public class LoginFilter implements GlobalFilter, Ordered {
 
     private Mono<Void> thenHandlerSession(ServerWebExchange exchange) {
         return Mono.fromRunnable(() -> {
-            List<String> userInfos = exchange.getResponse().getHeaders().remove("SDUOJUserInfo");
+            List<String> userInfos = exchange.getResponse().getHeaders().remove(UserSessionDTO.HEADER_KEY);
             Optional.of(userInfos).filter(list -> !list.isEmpty()).map(list -> list.get(0)).ifPresent(userInfoStr -> {
                 Optional.of(exchange).map(ServerWebExchange::getSession).map(Mono::block).map(WebSession::getAttributes).ifPresent(map -> {
-                    if ("Logout".equals(userInfoStr)) {
-                        map.remove("SDUOJUserInfo");
+                    if (UserSessionDTO.HEADER_VALUE_LOGOUT.equals(userInfoStr)) {
+                        map.remove(UserSessionDTO.HEADER_KEY);
                     } else {
-                        map.put("SDUOJUserInfo", userInfoStr);
+                        map.put(UserSessionDTO.HEADER_KEY, userInfoStr);
                     }
                 });
             });

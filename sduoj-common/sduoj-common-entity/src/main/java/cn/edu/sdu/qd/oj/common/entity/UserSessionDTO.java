@@ -22,6 +22,10 @@ import java.util.function.Function;
 @AllArgsConstructor
 @EqualsAndHashCode(callSuper = true)
 public class UserSessionDTO extends BaseDTO {
+
+    public static final String HEADER_KEY = "SDUOJUserInfo";
+    public static final String HEADER_VALUE_LOGOUT = "logout";
+
     private Long userId;
     private String username;
     private String nickname;

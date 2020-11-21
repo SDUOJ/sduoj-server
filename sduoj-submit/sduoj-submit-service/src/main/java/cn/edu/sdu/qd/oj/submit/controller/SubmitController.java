@@ -11,6 +11,7 @@
 package cn.edu.sdu.qd.oj.submit.controller;
 
 import cn.edu.sdu.qd.oj.auth.enums.PermissionEnum;
+import cn.edu.sdu.qd.oj.common.annotation.RealIp;
 import cn.edu.sdu.qd.oj.common.annotation.UserSession;
 import cn.edu.sdu.qd.oj.common.entity.ApiResponseBody;
 import cn.edu.sdu.qd.oj.common.entity.PageResult;
@@ -52,7 +53,7 @@ public class SubmitController {
     @PostMapping("/create")
     @ApiResponseBody
     public String createSubmission(@RequestBody @Valid SubmissionCreateReqDTO reqDTO,
-                                   @RequestHeader("X-FORWARDED-FOR") String ipv4,
+                                   @RealIp String ipv4,
                                    @UserSession UserSessionDTO userSessionDTO) {
         // 特判 代码或文件 仅一个不空
         AssertUtils.isTrue(StringUtils.isNotBlank(reqDTO.getCode()) || Objects.nonNull(reqDTO.getZipFileId()), ApiExceptionEnum.SUBMISSION_PARAM_ERROR);

@@ -63,8 +63,8 @@ public class ProblemManageController {
     @PostMapping("/create")
     @ApiResponseBody
     public String createProblemManageBo(@RequestBody ProblemManageDTO problemManageDTO,
-                                        @RequestHeader("authorization-userId") Long userId) {
-        problemManageDTO.setUserId(userId);
+                                        @UserSession UserSessionDTO userSessionDTO) {
+        problemManageDTO.setUserId(userSessionDTO.getUserId());
         return this.problemManageService.createProblem(problemManageDTO);
     }
 
@@ -91,8 +91,8 @@ public class ProblemManageController {
     @PostMapping("/createDescription")
     @ApiResponseBody
     public Long createDescription(@RequestBody ProblemDescriptionDTO problemDescriptionDTO,
-                                  @RequestHeader("authorization-userId") Long userId) {
-        problemDescriptionDTO.setUserId(userId);
+                                  @UserSession UserSessionDTO userSessionDTO) {
+        problemDescriptionDTO.setUserId(userSessionDTO.getUserId());
         return problemManageService.createDescription(problemDescriptionDTO);
     }
 
