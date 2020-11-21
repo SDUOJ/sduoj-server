@@ -35,6 +35,8 @@ public class ProblemListDTO extends BaseDTO {
 
     private Map<String, String> features;
 
+    private Integer isPublic;
+
     private String problemCode;
 
     private String problemTitle;

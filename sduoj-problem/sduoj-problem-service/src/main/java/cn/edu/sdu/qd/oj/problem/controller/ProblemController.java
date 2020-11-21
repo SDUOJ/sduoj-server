@@ -10,11 +10,10 @@
 
 package cn.edu.sdu.qd.oj.problem.controller;
 
+import cn.edu.sdu.qd.oj.common.annotation.UserSession;
 import cn.edu.sdu.qd.oj.common.entity.ApiResponseBody;
 import cn.edu.sdu.qd.oj.common.entity.PageResult;
-import cn.edu.sdu.qd.oj.common.enums.ApiExceptionEnum;
-import cn.edu.sdu.qd.oj.common.exception.ApiException;
-import cn.edu.sdu.qd.oj.common.util.AssertUtils;
+import cn.edu.sdu.qd.oj.common.entity.UserSessionDTO;
 import cn.edu.sdu.qd.oj.problem.dto.ProblemDTO;
 import cn.edu.sdu.qd.oj.problem.dto.ProblemListDTO;
 import cn.edu.sdu.qd.oj.problem.dto.ProblemListReqDTO;
@@ -27,7 +26,6 @@ import org.springframework.web.bind.annotation.*;
 
 import javax.annotation.Nullable;
 import javax.validation.Valid;
-import java.util.Map;
 
 @Controller
 @RequestMapping("/problem")
@@ -40,16 +38,14 @@ public class ProblemController {
     @ApiResponseBody
     public ProblemDTO queryByCode(@RequestParam("problemCode") String problemCode,
                                   @RequestParam("descriptionId") @Nullable Long descriptionId,
-                                  @RequestHeader("authorization-userId") @Nullable Long userId) {
-        // TODO: 超管可以看到所有题
-        return this.problemService.queryByCode(problemCode, descriptionId, userId);
+                                  @UserSession(nullable = true) UserSessionDTO userSessionDTO) {
+        return this.problemService.queryByCode(problemCode, descriptionId, userSessionDTO);
     }
 
     @GetMapping("/list")
     @ApiResponseBody
     public PageResult<ProblemListDTO> queryList(@Valid ProblemListReqDTO problemListReqDTO,
-                                                @RequestHeader("authorization-userId") @Nullable Long userId) {
-        // TODO: 超管可以看到所有题
-        return this.problemService.queryProblemByPage(problemListReqDTO, userId);
+                                                @UserSession(nullable = true) UserSessionDTO userSessionDTO) {
+        return this.problemService.queryProblemByPage(problemListReqDTO, userSessionDTO);
     }
 }

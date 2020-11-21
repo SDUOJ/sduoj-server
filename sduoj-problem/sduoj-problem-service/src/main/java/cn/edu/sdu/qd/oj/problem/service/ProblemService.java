@@ -10,6 +10,8 @@
 
 package cn.edu.sdu.qd.oj.problem.service;
 
+import cn.edu.sdu.qd.oj.auth.enums.PermissionEnum;
+import cn.edu.sdu.qd.oj.common.entity.UserSessionDTO;
 import cn.edu.sdu.qd.oj.common.util.AssertUtils;
 import cn.edu.sdu.qd.oj.common.entity.PageResult;
 import cn.edu.sdu.qd.oj.common.enums.ApiExceptionEnum;
@@ -77,14 +79,18 @@ public class ProblemService {
     @Autowired
     private UserClient userClient;
 
-    public ProblemDTO queryByCode(String problemCode, Long descriptionId, Long userId) {
+    public ProblemDTO queryByCode(String problemCode, Long descriptionId, UserSessionDTO userSessionDTO) {
         // TODO: cache, polish
+
+        Long userId = Optional.ofNullable(userSessionDTO).map(UserSessionDTO::getUserId).orElse(null);
 
         ProblemDO problemDO = problemDao.lambdaQuery().select(
                 ProblemDO.class, field -> !field.getColumn().equals(ProblemDOField.CHECKPOINTS)
         ).eq(ProblemDO::getProblemCode, problemCode).one();
         AssertUtils.notNull(problemDO, ApiExceptionEnum.PROBLEM_NOT_FOUND);
-        AssertUtils.isTrue(problemDO.getIsPublic() == 1 || problemDO.getUserId().equals(userId), ApiExceptionEnum.USER_NOT_MATCHING);
+
+        // 非公开题只能出题者和超管查询
+        AssertUtils.isTrue(problemDO.getIsPublic() == 1 || problemDO.getUserId().equals(userId) || PermissionEnum.SUPERADMIN.in(userSessionDTO), ApiExceptionEnum.USER_NOT_MATCHING);
 
         // 查询题目描述
         ProblemDescriptionDO problemDescriptionDO = problemDescriptionDao.lambdaQuery()
@@ -147,10 +153,10 @@ public class ProblemService {
         return problemDTO;
     }
 
-    public PageResult<ProblemListDTO> queryProblemByPage(ProblemListReqDTO reqDTO, Long userId) {
-        LambdaQueryChainWrapper<ProblemDO> query = problemDao.lambdaQuery();
-        query.select(
+    public PageResult<ProblemListDTO> queryProblemByPage(ProblemListReqDTO reqDTO, UserSessionDTO userSessionDTO) {
+        LambdaQueryChainWrapper<ProblemDO> query = problemDao.lambdaQuery().select(
                 ProblemDO::getProblemId,
+                ProblemDO::getIsPublic,
                 ProblemDO::getFeatures,
                 ProblemDO::getProblemCode,
                 ProblemDO::getProblemTitle,
@@ -159,9 +165,16 @@ public class ProblemService {
                 ProblemDO::getRemoteUrl,
                 ProblemDO::getSubmitNum,
                 ProblemDO::getAcceptNum
-        ).and(o1 -> o1.eq(ProblemDO::getIsPublic, 1)
-                .or(o2 -> o2.eq(ProblemDO::getIsPublic, 0)
-                        .and(o3 -> o3.eq(ProblemDO::getUserId, userId))));
+        );
+        if (PermissionEnum.SUPERADMIN.notIn(userSessionDTO)) {
+            if (userSessionDTO != null) {
+                query.and(o1 -> o1.eq(ProblemDO::getIsPublic, 1)
+                                  .or(o2 -> o2.eq(ProblemDO::getIsPublic, 0)
+                                              .and(o3 -> o3.eq(ProblemDO::getUserId, userSessionDTO.getUserId()))));
+            } else {
+                query.eq(ProblemDO::getIsPublic, 1);
+            }
+        }
         Optional.ofNullable(reqDTO.getSortBy()).filter(StringUtils::isNotBlank).ifPresent(sortBy -> {
             switch (sortBy) {
                 case "acceptNum":

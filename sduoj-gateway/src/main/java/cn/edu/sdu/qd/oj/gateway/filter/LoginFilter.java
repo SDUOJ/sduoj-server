@@ -70,7 +70,7 @@ public class LoginFilter implements GlobalFilter, Ordered {
     @Override
     public Mono<Void> filter(ServerWebExchange exchange, GatewayFilterChain chain) {
         String requestUrl = exchange.getRequest().getPath().toString();
-        log.info("filter url:{}", requestUrl);
+        log.info("filter url:{} from:{}", requestUrl, exchange.getRequest().getRemoteAddress());
         // 取 token 并解密
         UserSessionDTO userSessionDTO = Optional.of(exchange)
                                     .map(ServerWebExchange::getSession)
