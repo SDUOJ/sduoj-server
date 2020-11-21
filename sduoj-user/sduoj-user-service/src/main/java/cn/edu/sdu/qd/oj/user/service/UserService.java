@@ -140,6 +140,7 @@ public class UserService {
         UserDO userDO = userConverter.from(userDTO);
         userDO.setSalt(CodecUtils.generateSalt());
         userDO.setPassword(CodecUtils.md5Hex(userDO.getPassword(), userDO.getSalt()));
+        userDO.setNickname(userDO.getUsername());
         // TODO: username 重复时插入失败的异常处理器
         try {
             AssertUtils.isTrue(userDao.save(userDO), ApiExceptionEnum.UNKNOWN_ERROR);
@@ -284,6 +285,12 @@ public class UserService {
     public String queryUsername(Long userId) {
         return Optional.ofNullable(userDao.lambdaQuery().select(UserDO::getUserId, UserDO::getUsername).eq(UserDO::getUserId, userId).one())
                 .map(UserDO::getUsername)
+                .orElse(null);
+    }
+
+    public String queryNickname(Long userId) {
+        return Optional.ofNullable(userDao.lambdaQuery().select(UserDO::getUserId, UserDO::getNickname).eq(UserDO::getUserId, userId).one())
+                .map(UserDO::getNickname)
                 .orElse(null);
     }
 }

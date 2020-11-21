@@ -25,6 +25,7 @@ public class RedisConstants {
     public static final String URL_TO_ROLES = "urlToRoles";
 
     public static final String USER_ID_TO_USERNAME = "userIdToUsername";
+    public static final String USER_ID_TO_NICKNAME = "userIdToNickname";
     public static final String USERNAME_TO_USERID = "usernameToUserId";
     public static final String USER_ID_TO_ROLES = "userIdToRoles";
 

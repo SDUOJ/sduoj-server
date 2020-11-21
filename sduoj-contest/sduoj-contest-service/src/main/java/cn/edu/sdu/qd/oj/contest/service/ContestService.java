@@ -491,8 +491,9 @@ public class ContestService {
         Map<Long, List<SubmissionResultDTO>> userIdToSubmissionListMap = submissionResultDTOList.stream().collect(Collectors.groupingBy(SubmissionResultDTO::getUserId));
         // 转换成 contestRankDTO
         List<ContestRankDTO> contestRankDTOList = ContestRankDTO.create(userIdToSubmissionListMap, contestProblemListDTOList.size());
-        // 置入 username 数据
+        // 置入 username、nickname 数据
         contestRankDTOList.forEach(o -> o.setUsername(userClient.userIdToUsername(o.getUserId())));
+        contestRankDTOList.forEach(o -> o.setNickname(userClient.userIdToNickname(o.getUserId())));
         return contestRankDTOList;
     }
 

@@ -48,6 +48,14 @@ public interface UserApi {
     String userIdToUsername(@RequestParam("userId") Long userId);
 
     /**
+     * 根据userId查询nickname
+     * @param userId
+     */
+    @GetMapping("/userIdToNickname")
+    @Cacheable(key = "#userId", value = RedisConstants.USER_ID_TO_NICKNAME)
+    String userIdToNickname(@RequestParam("userId") Long userId);
+
+    /**
      * @Description 查询具体用户权限
      **/
     @GetMapping("/userIdToRoles")

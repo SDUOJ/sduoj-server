@@ -63,6 +63,11 @@ public class UserInternalController implements UserApi {
     }
 
     @Override
+    public String userIdToNickname(Long userId) {
+        return this.userService.queryNickname(userId);
+    }
+
+    @Override
     public Map<Long, String> queryIdToNameMap() throws InternalApiException {
         return userService.queryIdToUsernameMap();
     }

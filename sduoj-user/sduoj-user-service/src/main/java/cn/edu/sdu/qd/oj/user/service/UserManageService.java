@@ -88,6 +88,9 @@ public class UserManageService {
             if (userDO.getEmailVerified() == 1) {
                 userDO.setRoles(PermissionEnum.USER.name);
             }
+            if (userDO.getNickname() == null) {
+                userDO.setNickname(userDO.getUsername());
+            }
         });
 
         userDao.saveBatch(userDOList);

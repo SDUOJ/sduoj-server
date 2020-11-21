@@ -28,6 +28,7 @@ public class UserUpdateReqDTO extends BaseDTO {
 
     private Long userId;
 
+    @NotBlank(message = "昵称不能为空")
     @Length(max = 30, message = "昵称长度不合法，比如在30位之内")
     private String nickname;
 

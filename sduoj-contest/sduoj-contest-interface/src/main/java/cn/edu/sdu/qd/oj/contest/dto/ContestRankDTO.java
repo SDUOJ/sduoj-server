@@ -35,6 +35,7 @@ public class ContestRankDTO extends BaseDTO {
     private Long userId;
     private boolean official;
     private String username;
+    private String nickname;
     private Integer problemNum;
     private List<OneSubmission> submissions;       // [ [problemCode, gmtCreate, judgeScore, judgeResult], ... ]
     private List<OneProblemResult> problemResults; // [ [gmtCreate, judgeScore, judgeResult, submissionNum, pendingNum], ... ]

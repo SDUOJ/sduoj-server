@@ -26,6 +26,7 @@ public class CommonCacheTypeManager extends AbstractCacheTypeManager {
                 new CacheType(RedisConstants.URL_TO_ROLES, 60 * 5),
 
                 new CacheType(RedisConstants.USER_ID_TO_USERNAME, 60 * 5),
+                new CacheType(RedisConstants.USER_ID_TO_NICKNAME, 60 * 5),
                 new CacheType(RedisConstants.USERNAME_TO_USERID, 60 * 5),
                 new CacheType(RedisConstants.USER_ID_TO_ROLES, 60),
 
