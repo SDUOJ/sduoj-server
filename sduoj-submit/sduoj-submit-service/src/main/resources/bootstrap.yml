@@ -1,6 +1,6 @@
 sduoj:
   config:
-    port: 8082
+    port: 19014
     application-name: submit-service
     active: dev
     nacos-addr: nacos.oj.cs.sdu.edu.cn:8848

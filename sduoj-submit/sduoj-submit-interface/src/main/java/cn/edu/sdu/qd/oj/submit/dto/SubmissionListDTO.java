@@ -10,7 +10,6 @@
 
 package cn.edu.sdu.qd.oj.submit.dto;
 
-import cn.edu.sdu.qd.oj.common.util.DateToTimestampSerializer;
 import cn.edu.sdu.qd.oj.common.entity.BaseDTO;
 import cn.edu.sdu.qd.oj.common.util.HexStringToLongDeserializer;
 import cn.edu.sdu.qd.oj.common.util.LongToHexStringSerializer;

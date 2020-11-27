@@ -24,12 +24,6 @@
             <artifactId>sduoj-auth-interface</artifactId>
             <version>1.0.0-SNAPSHOT</version>
         </dependency>
-        <dependency>
-            <groupId>cn.edu.sdu.qd.oj.common</groupId>
-            <artifactId>sduoj-common-util</artifactId>
-            <version>1.0.0-SNAPSHOT</version>
-            <scope>compile</scope>
-        </dependency>
         <!-- 三方依赖 -->
     </dependencies>
 

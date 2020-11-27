@@ -1,6 +1,6 @@
 sduoj:
   config:
-    port: 10114
+    port: 19016
     application-name: websocket-service
     active: dev
     nacos-addr: nacos.oj.cs.sdu.edu.cn:8848

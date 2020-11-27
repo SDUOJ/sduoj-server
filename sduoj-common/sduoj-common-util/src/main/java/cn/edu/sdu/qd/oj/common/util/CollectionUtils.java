@@ -18,6 +18,11 @@ import java.util.Map;
 
 public class CollectionUtils {
 
+    /**
+    * @Description 容器 -> 元素映射为下标的 map
+    * @param collection
+    * @return java.util.Map<T,java.lang.Integer>
+    **/
     public static <T> Map<T, Integer> getMapToIndex(Collection<T> collection) {
         if (isEmpty(collection)) {
             return new HashMap<>();

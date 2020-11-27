@@ -1,6 +1,6 @@
 sduoj:
   config:
-    port: 11111
+    port: 19012
     application-name: filesys-service
     active: dev
     nacos-addr: nacos.oj.cs.sdu.edu.cn:8848

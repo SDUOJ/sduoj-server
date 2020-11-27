@@ -1,6 +1,6 @@
 sduoj:
   config:
-    port: 8090
+    port: 19010
     application-name: auth-service
     active: dev
     nacos-addr: nacos.oj.cs.sdu.edu.cn:8848

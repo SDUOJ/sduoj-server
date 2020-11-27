@@ -10,10 +10,8 @@
 
 package cn.edu.sdu.qd.oj.user.dto;
 
-import cn.edu.sdu.qd.oj.common.util.DateToTimestampSerializer;
 import cn.edu.sdu.qd.oj.common.entity.BaseDTO;
 import com.fasterxml.jackson.annotation.JsonProperty;
-import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 import lombok.*;
 import org.hibernate.validator.constraints.Length;
 import org.hibernate.validator.constraints.Range;
@@ -21,7 +19,6 @@ import org.hibernate.validator.constraints.Range;
 import javax.validation.constraints.Email;
 import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.Pattern;
-import java.util.Date;
 import java.util.List;
 import java.util.Map;
 

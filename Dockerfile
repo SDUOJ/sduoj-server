@@ -5,7 +5,7 @@ COPY docker/sources.list /etc/apt/sources.list
 COPY docker/mavenSettings.xml /usr/share/maven/conf/settings.xml
 
 RUN apt-get update \
- && apt-get install -y wget unzip openjdk-8-jdk maven
+ && apt-get install -y wget curl unzip openjdk-8-jdk maven
 
 RUN ln -sf /usr/lib/jvm/java-8-openjdk-amd64/bin/java /usr/bin/java \
  && ln -sf /usr/lib/jvm/java-8-openjdk-amd64/bin/javac /usr/bin/javac \
@@ -29,9 +29,20 @@ RUN ln -sf /usr/lib/jvm/java-8-openjdk-amd64/bin/java /usr/bin/java \
  && apt-get purge -y maven \
  && apt-get autoremove -y
 
-ENV NACOS_ADDR=127.0.0.1:8848
-ENV ACTIVE=prod
-ENV SERVICE=service-name
+ENV NACOS_ADDR=127.0.0.1:8848 \
+    ACTIVE=prod \
+    SERVICE=none \
+    PORT=8080
+
+EXPOSE 8080
 
 WORKDIR /sduoj
-CMD java -jar sduoj-$SERVICE.jar --sduoj.config.nacos-addr=$NACOS_ADDR --sduoj.config.active=$ACTIVE > /sduoj/sduoj.log
+
+HEALTHCHECK --interval=30s --timeout=3s --retries=3 \
+  CMD test `curl -s http://localhost:8080/actuator/health` == "{\"status\":\"UP\"}" || exit 1
+
+CMD java -jar sduoj-$SERVICE.jar \
+ --sduoj.config.nacos-addr=$NACOS_ADDR \
+ --sduoj.config.active=$ACTIVE \
+ --sduoj.config.port=$PORT \
+ > /sduoj/sduoj.log
