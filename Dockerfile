@@ -39,7 +39,7 @@ EXPOSE 8080
 WORKDIR /sduoj
 
 HEALTHCHECK --interval=15s --timeout=3s --retries=3 \
-  CMD test `curl -s http://localhost:8080/actuator/health` == '{"status":"UP"}' || exit 1
+  CMD test `curl -s http://localhost:8080/actuator/health` = '{"status":"UP"}' || exit 1
 
 CMD java -jar sduoj-$SERVICE.jar \
  --sduoj.config.nacos-addr=$NACOS_ADDR \

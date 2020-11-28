@@ -42,7 +42,7 @@ import java.util.*;
 
 /**
  * @ClassName LoginFilter
- * @Description TODO
+ * @Description 鉴权, 登录, 登出 处理
  * @Author zhangt2333
  * @Date 2020/4/21 21:16
  * @Version V1.0
@@ -53,6 +53,11 @@ import java.util.*;
 @EnableConfigurationProperties({FilterProperties.class})
 public class LoginFilter implements GlobalFilter, Ordered {
 
+    @Override
+    public int getOrder() {
+        return 0;
+    }
+
     @Autowired
     private FilterProperties filterProp;
 
@@ -62,12 +67,6 @@ public class LoginFilter implements GlobalFilter, Ordered {
     @Autowired
     private UserClient userClient;
 
-    /**
-     * @Description TODO
-     * @param exchange
-     * @param chain
-     * @return reactor.core.publisher.Mono<java.lang.Void>
-     **/
     @Override
     public Mono<Void> filter(ServerWebExchange exchange, GatewayFilterChain chain) {
         ServerHttpRequest request = exchange.getRequest();
@@ -165,10 +164,4 @@ public class LoginFilter implements GlobalFilter, Ordered {
                 return true;
         return false;
     }
-
-    @Override
-    public int getOrder() {
-        return 0;
-    }
-
 }
