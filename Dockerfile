@@ -3,6 +3,7 @@ MAINTAINER SDUOJ-dev
 
 COPY docker/sources.list /etc/apt/sources.list
 COPY docker/mavenSettings.xml /usr/share/maven/conf/settings.xml
+ADD https://github.com/ufoscout/docker-compose-wait/releases/download/2.7.3/wait /wait
 
 RUN apt-get update \
  && apt-get install -y wget curl unzip openjdk-8-jdk maven
@@ -27,7 +28,8 @@ RUN ln -sf /usr/lib/jvm/java-8-openjdk-amd64/bin/java /usr/bin/java \
  && rm -rf /sduoj/sduoj-server-master \
  && apt remove -y openjdk-11-jre-headless \
  && apt-get purge -y maven \
- && apt-get autoremove -y
+ && apt-get autoremove -y \
+ && chmod +x /wait
 
 ENV NACOS_ADDR=127.0.0.1:8848 \
     ACTIVE=prod \
@@ -41,8 +43,9 @@ WORKDIR /sduoj
 HEALTHCHECK --interval=15s --timeout=3s --retries=3 \
   CMD test `curl -s http://localhost:8080/actuator/health` = '{"status":"UP"}' || exit 1
 
-CMD java -jar sduoj-$SERVICE.jar \
- --sduoj.config.nacos-addr=$NACOS_ADDR \
- --sduoj.config.active=$ACTIVE \
- --sduoj.config.port=$PORT \
- > /sduoj/sduoj.log
+CMD /wait \
+ && java -jar sduoj-$SERVICE.jar \
+   --sduoj.config.nacos-addr=$NACOS_ADDR \
+   --sduoj.config.active=$ACTIVE \
+   --sduoj.config.port=$PORT \
+   > /sduoj/sduoj.log
