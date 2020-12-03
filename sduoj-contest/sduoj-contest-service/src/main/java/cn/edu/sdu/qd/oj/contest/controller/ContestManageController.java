@@ -62,7 +62,7 @@ public class ContestManageController {
         try {
             List<String> problemCodeList = reqDTO.getProblems()
                     .stream()
-                    .map(ContestProblemListDTO::getProblemCode)
+                    .map(ContestProblemManageListDTO::getProblemCode)
                     .collect(Collectors.toList());
             AssertUtils.isTrue(problemClient.validateProblemCodeList(problemCodeList), ApiExceptionEnum.PROBLEM_NOT_FOUND);
         } catch (Exception e) {
@@ -106,7 +106,7 @@ public class ContestManageController {
 
     @PostMapping("/update")
     @ApiResponseBody
-    public Void update(@RequestBody @Valid ContestDTO reqDTO,
+    public Void update(@RequestBody @Valid ContestManageDTO reqDTO,
                        @UserSession UserSessionDTO userSessionDTO) {
         // 校验 开始时间<结束时间
         AssertUtils.isTrue(reqDTO.getGmtStart().before(reqDTO.getGmtEnd()), ApiExceptionEnum.CONTEST_TIME_ERROR);

@@ -43,5 +43,5 @@ public class ContestProblemManageListDTO extends BaseDTO {
     private Long problemDescriptionId;
 
     @NotNull
-    private String problemColor;
+    private String problemColor; // can be blank, not be null
 }

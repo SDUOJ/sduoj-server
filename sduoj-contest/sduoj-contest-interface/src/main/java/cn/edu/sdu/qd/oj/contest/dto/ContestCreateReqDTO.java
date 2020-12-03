@@ -36,7 +36,6 @@ public class ContestCreateReqDTO extends BaseDTO {
 
     @Length(max = 60, message = "标题最大长度为 60")
     @NotBlank
-    @NotNull
     private String contestTitle;
 
     @NotNull
@@ -56,11 +55,11 @@ public class ContestCreateReqDTO extends BaseDTO {
     private String markdownDescription;
 
     @Size(max = 96, message = "最多出 96 道题")
-    private List<ContestProblemListDTO> problems;
+    private List<@Valid ContestProblemManageListDTO> problems;
 
     @Size(max = 1024, message = "最多支持 1024 个人参加比赛")
-    private List<String> participants; // List<username>
+    private List<@NotBlank String> participants; // List<username>
 
     @Size(max = 1024, message = "最多支持 1024 个人参加比赛")
-    private List<String> unofficialParticipants; // List<username>
+    private List<@NotBlank String> unofficialParticipants; // List<username>
 }

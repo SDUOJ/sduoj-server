@@ -20,7 +20,6 @@ import cn.edu.sdu.qd.oj.contest.converter.ContestCreateReqConverter;
 import cn.edu.sdu.qd.oj.contest.converter.ContestManageConverter;
 import cn.edu.sdu.qd.oj.contest.dao.ContestDao;
 import cn.edu.sdu.qd.oj.contest.dto.ContestCreateReqDTO;
-import cn.edu.sdu.qd.oj.contest.dto.ContestDTO;
 import cn.edu.sdu.qd.oj.contest.dto.ContestManageDTO;
 import cn.edu.sdu.qd.oj.contest.entity.ContestDO;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -37,9 +36,6 @@ public class ContestManageService {
 
     @Autowired
     private ContestCreateReqConverter contestCreateReqConverter;
-
-    @Autowired
-    private ContestConverter contestConverter;
 
     @Autowired
     private ContestManageConverter contestManageConverter;
@@ -59,7 +55,7 @@ public class ContestManageService {
         return contestManageConverter.to(contestDO);
     }
 
-    public void update(ContestDTO reqDTO, UserSessionDTO userSessionDTO) {
+    public void update(ContestManageDTO reqDTO, UserSessionDTO userSessionDTO) {
         ContestDO contestDO = contestDao.lambdaQuery().select(
                 ContestDO::getContestId,
                 ContestDO::getUserId,
@@ -75,7 +71,7 @@ public class ContestManageService {
 
         reqDTO.setParticipantNum(Optional.ofNullable(reqDTO.getParticipants()).map(List::size).orElse(0));
 
-        ContestDO contestUpdateDO = contestConverter.from(reqDTO);
+        ContestDO contestUpdateDO = contestManageConverter.from(reqDTO);
         contestUpdateDO.setVersion(contestDO.getVersion());
 
         if (!contestDao.updateById(contestUpdateDO)) {

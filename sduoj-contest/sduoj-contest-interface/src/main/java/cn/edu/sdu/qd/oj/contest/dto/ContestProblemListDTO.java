@@ -27,24 +27,15 @@ import javax.validation.constraints.Pattern;
 @EqualsAndHashCode(callSuper = true)
 public class ContestProblemListDTO extends BaseDTO {
 
-    // 脱敏后的含义是 problemIndex，脱敏前的含义是 problemCode
-    @Pattern(regexp = "^[^;]+$", message = "题目编码中不允许包含 ';' 号")
-    @NotBlank
     private String problemCode;
 
-    @Pattern(regexp = "^[^;]+$", message = "标题中不允许包含 ';' 号")
-    @Length(max = 96, message = "题目标题长度超限")
-    @NotBlank
     private String problemTitle;
 
-    @NotNull
     private Integer problemWeight;
 
-    @NotNull
     @JsonProperty(access = JsonProperty.Access.WRITE_ONLY)
     private Long problemDescriptionId;
 
-    @NotNull
     private String problemColor;
 
     // -------------------------------- 其他字段，如在该比赛内的过题人数

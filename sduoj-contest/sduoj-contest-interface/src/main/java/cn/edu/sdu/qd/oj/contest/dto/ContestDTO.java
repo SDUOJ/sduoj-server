@@ -33,22 +33,14 @@ public class ContestDTO extends BaseDTO {
 
     private Long contestId;
 
-    @JsonProperty(access = JsonProperty.Access.READ_ONLY)
     private Date gmtCreate;
 
-    @JsonProperty(access = JsonProperty.Access.READ_ONLY)
     private Date gmtModified;
 
-    @NotNull
-    @Valid
     private ContestFeatureDTO features;
 
-    @NotNull
     private Integer isPublic;
 
-    @Length(max = 60, message = "标题最大长度为 60")
-    @NotBlank
-    @NotNull
     private String contestTitle;
 
     @JsonProperty(access = JsonProperty.Access.WRITE_ONLY)
@@ -58,25 +50,15 @@ public class ContestDTO extends BaseDTO {
 
     private Date gmtEnd;
 
-    @Length(max = 60, message = "密码最大长度为 60")
-    @JsonProperty(access = JsonProperty.Access.WRITE_ONLY)
-    private String password;
-
     private String source;
 
-    @JsonProperty(access = JsonProperty.Access.READ_ONLY)
     private Integer participantNum;
 
     private String markdownDescription;
 
-    @Size(max = 96, message = "最多出 96 道题")
     private List<ContestProblemListDTO> problems;
 
-    @Size(max = 1024, message = "最多支持 1024 个人参加比赛")
     private List<String> participants; // List<username>
-
-    @Size(max = 1024, message = "最多支持 1024 个人参加比赛")
-    private List<String> unofficialParticipants; // List<username>
 
     // -----------------
 

@@ -219,7 +219,7 @@ public class ContestService {
 
         // TODO: 修改掉临时的暴力 feature 匹配
         Optional.ofNullable(reqDTO).map(ContestListReqDTO::getMode).filter(StringUtils::isNotBlank).ifPresent(mode -> {
-            query.like(ContestListDO::getFeatures, String.format("mode:\"%s", mode));
+            query.like(ContestListDO::getFeatures, String.format("mode\":\"%s", mode));
         });
 
         Page<ContestListDO> pageResult = query.page(new Page<>(reqDTO.getPageNow(), reqDTO.getPageSize()));
