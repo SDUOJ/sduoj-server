@@ -23,6 +23,7 @@ import cn.edu.sdu.qd.oj.contest.dto.*;
 import cn.edu.sdu.qd.oj.contest.service.ContestManageService;
 import cn.edu.sdu.qd.oj.contest.service.ContestService;
 import com.google.common.collect.Lists;
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.*;
@@ -115,8 +116,8 @@ public class ContestManageController {
         List<String> participants = Optional.ofNullable(reqDTO.getParticipants()).orElse(Lists.newArrayList());
         List<String> unofficialParticipants = Optional.ofNullable(reqDTO.getUnofficialParticipants()).orElse(Lists.newArrayList());
         participants.addAll(unofficialParticipants);
-        reqDTO.setParticipants(participants.stream().distinct().collect(Collectors.toList()));
-        reqDTO.setUnofficialParticipants(unofficialParticipants.stream().distinct().collect(Collectors.toList()));
+        reqDTO.setParticipants(participants.stream().filter(StringUtils::isNotBlank).distinct().collect(Collectors.toList()));
+        reqDTO.setUnofficialParticipants(unofficialParticipants.stream().filter(StringUtils::isNotBlank).distinct().collect(Collectors.toList()));
 
         contestManageService.update(reqDTO, userSessionDTO);
         return null;

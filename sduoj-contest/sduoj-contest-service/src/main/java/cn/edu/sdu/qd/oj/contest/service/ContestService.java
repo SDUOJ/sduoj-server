@@ -44,10 +44,12 @@ import cn.edu.sdu.qd.oj.submit.dto.SubmissionListReqDTO;
 import cn.edu.sdu.qd.oj.submit.enums.SubmissionJudgeResult;
 import com.baomidou.mybatisplus.extension.conditions.query.LambdaQueryChainWrapper;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
+import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 import org.assertj.core.util.Lists;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.cache.annotation.Cacheable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -56,6 +58,7 @@ import java.util.*;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
+@Slf4j
 @Service
 public class ContestService {
 
@@ -108,38 +111,69 @@ public class ContestService {
         return contestDTO;
     }
 
+    /**
+    * @Description 清除比赛详情的缓存
+    **/
+    @CacheEvict(value = ContestCacheTypeManager.CONTEST_OVERVIEW, key = "#contestId+'-'+#userSessionDTO.userId")
+    public void clearContestDetailCache(long contestId, UserSessionDTO userSessionDTO) {
+    }
+
+    /**
+    * @Description 带缓存查询比赛详情
+    **/
     @Transactional
     @Cacheable(value = ContestCacheTypeManager.CONTEST_OVERVIEW, key = "#contestId+'-'+#userSessionDTO.userId")
-    public ContestDTO query(long contestId, UserSessionDTO userSessionDTO) throws InternalApiException {
+    public ContestDTO queryDetail(long contestId, UserSessionDTO userSessionDTO) throws InternalApiException {
         ContestDTO contestDTO = queryAndValidate(contestId, userSessionDTO.getUserId());
 
         // 查询各题的提交情况  缓存优先
         String key = RedisConstants.getContestSubmission(contestId);
+        boolean success = false;
         if (redisUtils.hasKey(key)) {
-            contestDTO.getProblems().forEach(p -> {
-                p.setAcceptNum((int) redisUtils.hget(key, RedisConstants.getContestProblemAccept(p.getProblemCode())));
-                p.setSubmitNum((int) redisUtils.hget(key, RedisConstants.getContestProblemSubmit(p.getProblemCode())));
-            });
-        } else {
-            Map<String, ProblemListDTO> problemCodeToProblemListDTOMap = submissionClient.queryContestSubmitAndAccept(contestId)
-                    .stream().collect(Collectors.toMap(ProblemListDTO::getProblemCode, Function.identity(), (k1, k2) -> k1));
-            contestDTO.getProblems().forEach(p -> {
-                Optional.ofNullable(problemCodeToProblemListDTOMap.get(p.getProblemCode())).ifPresent(m -> {
-                    p.setAcceptNum(m.getAcceptNum());
-                    p.setSubmitNum(m.getSubmitNum());
+            success = true;
+            try {
+                contestDTO.getProblems().forEach(p -> {
+                    p.setAcceptNum((int) redisUtils.hget(key, RedisConstants.getContestProblemAccept(p.getProblemCode())));
+                    p.setSubmitNum((int) redisUtils.hget(key, RedisConstants.getContestProblemSubmit(p.getProblemCode())));
                 });
-                redisUtils.hset(key, RedisConstants.getContestProblemAccept(p.getProblemCode()), p.getAcceptNum());
-                redisUtils.hset(key, RedisConstants.getContestProblemSubmit(p.getProblemCode()), p.getSubmitNum());
-            });
-            redisUtils.expire(key, RedisConstants.CONTEST_SUBMISSION_NUM_EXPIRE);
+            } catch (Exception e) {
+                log.warn("", e);
+                success = false;
+            }
+        }
+        if (!success) {
+            try {
+                Map<String, ProblemListDTO> problemCodeToProblemListDTOMap = submissionClient.queryContestSubmitAndAccept(contestId)
+                        .stream().collect(Collectors.toMap(ProblemListDTO::getProblemCode, Function.identity(), (k1, k2) -> k1));
+                contestDTO.getProblems().forEach(p -> {
+                    Optional.ofNullable(problemCodeToProblemListDTOMap.get(p.getProblemCode())).ifPresent(m -> {
+                        p.setAcceptNum(m.getAcceptNum());
+                        p.setSubmitNum(m.getSubmitNum());
+                    });
+                    redisUtils.hset(key, RedisConstants.getContestProblemAccept(p.getProblemCode()), p.getAcceptNum());
+                    redisUtils.hset(key, RedisConstants.getContestProblemSubmit(p.getProblemCode()), p.getSubmitNum());
+                });
+                redisUtils.expire(key, RedisConstants.CONTEST_SUBMISSION_NUM_EXPIRE);
+            } catch (Exception e) {
+                log.warn("", e);
+            }
         }
 
         // 提出 contestFeature
         ContestFeatureDTO contestFeatureDTO = contestDTO.getFeatures();
         ContestFeatureDTO.InfoOpenness infoOpenness = contestDTO.getGmtEnd().after(new Date()) ? contestFeatureDTO.getContestRunning() : contestFeatureDTO.getContestEnd();
+
         // 查询本人的过题情况
-        Map<String, List<SubmissionResultDTO>> problemCodeToSubmissionList = querySubmissionResultList(contestId, contestDTO.getProblems(), userSessionDTO.getUserId())
-                .stream().collect(Collectors.groupingBy(SubmissionResultDTO::getProblemCode));
+        Map<String, List<SubmissionResultDTO>> problemCodeToSubmissionList = null;
+        try { // TODO: 设计更好的 RPC 异常机制
+            problemCodeToSubmissionList = querySubmissionResultList(contestId, contestDTO.getProblems(), userSessionDTO.getUserId())
+                    .stream().collect(Collectors.groupingBy(SubmissionResultDTO::getProblemCode));
+        } catch (Exception e) {
+            log.warn("", e);
+        }
+        problemCodeToSubmissionList = Optional.ofNullable(problemCodeToSubmissionList).orElseGet(HashMap::new);
+        Map<String, List<SubmissionResultDTO>> finalProblemCodeToSubmissionList = problemCodeToSubmissionList;
+
         // problemCode 脱敏成 problemIndex，并置当前用户的 judge 情况
         Optional.ofNullable(contestDTO.getProblems()).ifPresent(problems -> {
             int problemIndex = 0;
@@ -147,7 +181,7 @@ public class ContestService {
                 problemIndex++;
                 problem.setProblemCode(String.valueOf(problemIndex));
                 // 置当前用户对各题的 judge 情况
-                for (SubmissionResultDTO submission : Optional.ofNullable(problemCodeToSubmissionList.get(problem.getProblemCode())).orElse(Lists.newArrayList())) {
+                for (SubmissionResultDTO submission : Optional.ofNullable(finalProblemCodeToSubmissionList.get(problem.getProblemCode())).orElse(Lists.newArrayList())) {
                     if (infoOpenness.getDisplayJudgeScore() != 0) {
                         problem.setJudgeScore(problem.getJudgeResult() == null ? submission.getJudgeScore() : Math.max(problem.getJudgeScore(), submission.getJudgeScore()));
                     }
@@ -158,7 +192,7 @@ public class ContestService {
                     problem.setJudgeResult(submission.getJudgeResult());
                 }
                 // 根据 infoOpenness 将各题的 submitNum acceptNum 脱敏
-                if (!(PermissionEnum.SUPERADMIN.in(userSessionDTO) || PermissionEnum.ADMIN.in(userSessionDTO) || userSessionDTO.userIdEquals(contestDTO.getUserId()))) {
+                if (!(PermissionEnum.SUPERADMIN.in(userSessionDTO) || userSessionDTO.userIdEquals(contestDTO.getUserId()))) {
                     if (infoOpenness.getDisplayRank() == 0 && infoOpenness.getDisplayPeerSubmission() == 0) {
                         problem.setSubmitNum(problem.getJudgeResult() != null ? 1 : 0);
                         problem.setAcceptNum(SubmissionJudgeResult.AC.equals(problem.getJudgeResult()) ? 1 : 0);
@@ -173,6 +207,7 @@ public class ContestService {
 
 
     @Transactional
+    @CacheEvict(value = ContestCacheTypeManager.CONTEST_OVERVIEW, key = "#contestId+'-'+#userId")
     public void participate(Long contestId, Long userId, String password) {
         ContestDO contestDO = contestDao.lambdaQuery().select(
                 ContestDO::getContestId,
@@ -317,11 +352,11 @@ public class ContestService {
     public PageResult<ContestSubmissionListDTO> listSubmission(ContestSubmissionListReqDTO reqDTO, UserSessionDTO userSessionDTO) {
         ContestDO contestDO = queryContestAndValidate(reqDTO.getContestId(), userSessionDTO.getUserId());
 
-        // 脱敏, 但管理员/出题者能查所有的提交
+        // 脱敏, 但超级管理员/出题者能查所有的提交
         ContestFeatureDTO contestFeatureDTO = ContestConvertUtils.featuresTo(contestDO.getFeatures());
         ContestFeatureDTO.InfoOpenness infoOpenness = contestDO.getGmtEnd().after(new Date()) ? contestFeatureDTO.getContestRunning() : contestFeatureDTO.getContestEnd();
         if (infoOpenness.getDisplayPeerSubmission() == 0 &&
-           !(PermissionEnum.SUPERADMIN.in(userSessionDTO) || PermissionEnum.ADMIN.in(userSessionDTO) || userSessionDTO.userIdEquals(contestDO.getUserId()))) {
+           !(PermissionEnum.SUPERADMIN.in(userSessionDTO) || userSessionDTO.userIdEquals(contestDO.getUserId()))) {
             reqDTO.setUsername(userClient.userIdToUsername(userSessionDTO.getUserId()));
         }
 
@@ -394,15 +429,21 @@ public class ContestService {
 
         ContestDO contestDO = queryContestAndValidate(contestId, userSessionDTO.getUserId());
 
-        List<ContestProblemListDTO> contestProblemListDTOList = ContestConvertUtils.problemsTo(contestDO.getProblems());
-        Map<Long, Integer> problemIdToProblemIndexMap = new HashMap<>(contestProblemListDTOList.size());
-        for (int i = 0, n = contestProblemListDTOList.size(); i < n; i++) {
-            problemIdToProblemIndexMap.put(problemClient.problemCodeToProblemId(contestProblemListDTOList.get(i).getProblemCode()), i + 1);
-        }
 
-        // problemId、problemCode 脱敏
-        submissionDTO.setProblemCode(problemIdToProblemIndexMap.get(submissionDTO.getProblemId()).toString());
+        // problemId、problemCode、problemTitle 脱敏
+        String problemCode = submissionDTO.getProblemCode();
+        submissionDTO.setProblemTitle(null);
         submissionDTO.setProblemId(null);
+        submissionDTO.setProblemCode(null);
+        List<ContestProblemListDTO> contestProblemListDTOList = ContestConvertUtils.problemsTo(contestDO.getProblems());
+        for (int i = 0, n = contestProblemListDTOList.size(); i < n; i++) {
+            ContestProblemListDTO contestProblemListDTO = contestProblemListDTOList.get(i);
+            if (Objects.equals(contestProblemListDTO.getProblemCode(), problemCode)) {
+                submissionDTO.setProblemTitle(contestProblemListDTO.getProblemTitle());
+                submissionDTO.setProblemCode(String.valueOf(i + 1));
+                break;
+            }
+        }
 
         // 超级管理员/出题者 直接看所有代码
         if (PermissionEnum.SUPERADMIN.in(userSessionDTO) || userSessionDTO.userIdEquals(contestDO.getUserId())) {

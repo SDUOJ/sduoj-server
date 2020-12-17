@@ -64,14 +64,13 @@ public class ContestManageService {
         if (contestDO == null) {
             throw new ApiException(ApiExceptionEnum.CONTEST_NOT_FOUND);
         }
-        // 超级管理员一定可以更新比赛详情，除此之外只有出题者能
+        // 超级管理员一定可以更新比赛详情，除此之外只有创建者能
         if (PermissionEnum.SUPERADMIN.notIn(userSessionDTO) && userSessionDTO.userIdNotEquals(contestDO.getUserId())) {
             throw new ApiException(ApiExceptionEnum.USER_NOT_MATCHING);
         }
 
-        reqDTO.setParticipantNum(Optional.ofNullable(reqDTO.getParticipants()).map(List::size).orElse(0));
-
         ContestDO contestUpdateDO = contestManageConverter.from(reqDTO);
+        contestUpdateDO.setParticipantNum(contestUpdateDO.getParticipants().length / 8);
         contestUpdateDO.setVersion(contestDO.getVersion());
 
         if (!contestDao.updateById(contestUpdateDO)) {

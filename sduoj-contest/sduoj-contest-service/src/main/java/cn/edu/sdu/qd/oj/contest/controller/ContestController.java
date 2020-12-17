@@ -18,6 +18,7 @@ import cn.edu.sdu.qd.oj.common.entity.UserSessionDTO;
 import cn.edu.sdu.qd.oj.common.enums.ApiExceptionEnum;
 import cn.edu.sdu.qd.oj.common.exception.ApiException;
 import cn.edu.sdu.qd.oj.common.exception.InternalApiException;
+import cn.edu.sdu.qd.oj.common.util.CollectionUtils;
 import cn.edu.sdu.qd.oj.contest.dto.*;
 import cn.edu.sdu.qd.oj.contest.service.ContestService;
 import cn.edu.sdu.qd.oj.submit.dto.SubmissionDTO;
@@ -29,6 +30,7 @@ import org.springframework.web.bind.annotation.*;
 import javax.validation.Valid;
 import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.NotNull;
+import java.util.Date;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -60,9 +62,15 @@ public class ContestController {
 
     @GetMapping("/query")
     @ApiResponseBody
-    public ContestDTO query(@RequestParam("contestId") @NotBlank Long contestId,
-                            @UserSession UserSessionDTO userSessionDTO) throws InternalApiException {
-        return contestService.query(contestId, userSessionDTO);
+    public ContestDTO queryDetail(@RequestParam("contestId") @NotBlank Long contestId,
+                                  @UserSession UserSessionDTO userSessionDTO) throws InternalApiException {
+        ContestDTO contestDTO = contestService.queryDetail(contestId, userSessionDTO);
+        // 倘若比赛已开始但仍取的是比赛未开始时的缓存，则清除缓存再查一遍
+        if (contestDTO != null && CollectionUtils.isEmpty(contestDTO.getProblems()) && contestDTO.getGmtStart().before(new Date())) {
+            contestService.clearContestDetailCache(contestId, userSessionDTO);
+            contestDTO = contestService.queryDetail(contestId, userSessionDTO);
+        }
+        return contestDTO;
     }
 
     @GetMapping("/queryUpcomingContest")
