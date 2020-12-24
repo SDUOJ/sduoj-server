@@ -140,7 +140,15 @@ public class UserService {
         UserDO userDO = userConverter.from(userDTO);
         userDO.setSalt(CodecUtils.generateSalt());
         userDO.setPassword(CodecUtils.md5Hex(userDO.getPassword(), userDO.getSalt()));
-        userDO.setNickname(userDO.getUsername());
+        if (StringUtils.isBlank(userDO.getNickname())) {
+            userDO.setNickname(userDO.getUsername());
+        }
+
+        if (!emailUtil.isEmailEnable()) {
+            userDO.setEmailVerified(1);
+            userDO.setRoles(PermissionEnum.USER.name);
+        }
+
         // TODO: username 重复时插入失败的异常处理器
         try {
             AssertUtils.isTrue(userDao.save(userDO), ApiExceptionEnum.UNKNOWN_ERROR);
@@ -150,8 +158,10 @@ public class UserService {
             throw new ApiException(ApiExceptionEnum.UNKNOWN_ERROR);
         }
 
-        sendVerificationEmail(userDTO.getUsername(), userDTO.getEmail());
 
+        if (emailUtil.isEmailEnable()) {
+            sendVerificationEmail(userDTO.getUsername(), userDTO.getEmail());
+        }
     }
 
     public Map<Long, String> queryIdToUsernameMap() {

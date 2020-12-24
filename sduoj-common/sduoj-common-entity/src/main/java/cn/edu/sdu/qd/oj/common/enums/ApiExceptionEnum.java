@@ -65,9 +65,11 @@ public enum ApiExceptionEnum {
     CAPTCHA_NOT_FOUND(400, "验证码不存在"),
     CAPTCHA_NOT_MATCHING(400, "验证码不匹配"),
 
-    USER_EXIST(400, "用户已存在"),
+    USER_EXIST(400, "用户名已存在或邮箱已被使用"),
     EMAIL_EXIST(400, "邮箱已存在"),
+    NONE_EMAIL_SENDER(500, "服务器没有配置邮件发送者"),
 
+    EMAIL_SEND_FAILED(500, "邮件发送失败，请联系管理员"),
 
     CONTEST_NOT_FOUND(400, "比赛不存在"),
     CONTEST_NOT_PARTICIPATE(403, "未参加这场比赛"),

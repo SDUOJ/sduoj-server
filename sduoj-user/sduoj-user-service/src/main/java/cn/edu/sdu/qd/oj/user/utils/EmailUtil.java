@@ -10,6 +10,8 @@
 
 package cn.edu.sdu.qd.oj.user.utils;
 
+import cn.edu.sdu.qd.oj.common.enums.ApiExceptionEnum;
+import cn.edu.sdu.qd.oj.common.exception.ApiException;
 import cn.edu.sdu.qd.oj.user.config.UserServiceProperties;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -31,7 +33,7 @@ public class EmailUtil {
     @Autowired
     private UserServiceProperties userServiceProperties;
 
-    @Autowired
+    @Autowired(required = false)
     private JavaMailSender javaMailSender;
 
     static final String EMAIL_VERIFY_PATTERN =
@@ -76,6 +78,10 @@ public class EmailUtil {
                     "  </body>" +
                     "</html>";
 
+    public boolean isEmailEnable() {
+        return javaMailSender != null;
+    }
+
     public void sendResetEmailMail(String username, @Email String email, String token) throws MessagingException {
         String subject = userServiceProperties.getResetEmailSubject();
         String url = userServiceProperties.getVerificationUrlPrefix() + token;
@@ -101,6 +107,9 @@ public class EmailUtil {
     }
 
     private MimeMessage packageMail(@Email String email, String subject, String text) throws MessagingException {
+        if (javaMailSender == null) {
+            throw new ApiException(ApiExceptionEnum.NONE_EMAIL_SENDER);
+        }
         MimeMessage mail = javaMailSender.createMimeMessage();
         MimeMessageHelper helper = new MimeMessageHelper(mail, true);
         helper.setSubject(subject);
@@ -112,6 +121,10 @@ public class EmailUtil {
 
     @Async
     public void send(MimeMessage mail) {
-        javaMailSender.send(mail);
+        try {
+            javaMailSender.send(mail);
+        } catch (Exception e) {
+            throw new ApiException(ApiExceptionEnum.EMAIL_SEND_FAILED);
+        }
     }
 }
