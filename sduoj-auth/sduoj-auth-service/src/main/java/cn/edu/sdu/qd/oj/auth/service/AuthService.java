@@ -21,6 +21,7 @@ import org.springframework.stereotype.Service;
 
 import java.util.List;
 import java.util.Set;
+import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
 /**
@@ -39,6 +40,9 @@ public class AuthService {
     @Autowired
     private PermissionConverter permissionConverter;
 
+    @Autowired
+    private static final Pattern REGEX_PATH_VARIABLE = Pattern.compile("\\{.*?\\}");
+
     public void syncNewPermissionUrl(List<PermissionDTO> permissionDTOList) {
         List<PermissionDO> permissionDOList = permissionConverter.from(permissionDTOList);
         List<String> urlList = permissionDOList.stream().map(PermissionDO::getUrl).collect(Collectors.toList());
@@ -56,6 +60,13 @@ public class AuthService {
 
     public List<String> urlToRoles(String url) {
         PermissionDO permissionDO = permissionDao.lambdaQuery().select(PermissionDO::getRoles).eq(PermissionDO::getUrl, url).one();
+        // 查询使用了 PathVariable 的 URL
+        if (permissionDO == null) {
+            permissionDO = permissionDao.list().stream()
+                    .filter(p -> p.getUrl().indexOf('{') != -1 && p.getUrl().indexOf('}') != -1)
+                    .filter(p -> url.matches(REGEX_PATH_VARIABLE.matcher(p.getUrl()).replaceAll(".*?")))
+                    .findFirst().orElse(null);
+        }
         return BaseConvertUtils.stringToList(permissionDO.getRoles());
     }
 }

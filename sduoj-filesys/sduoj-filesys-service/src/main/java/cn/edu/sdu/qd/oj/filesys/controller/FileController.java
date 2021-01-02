@@ -26,6 +26,9 @@ import org.springframework.web.multipart.MultipartFile;
 import javax.servlet.http.HttpServletResponse;
 import javax.validation.constraints.NotNull;
 import java.io.IOException;
+import java.net.URLEncoder;
+import java.nio.file.Files;
+import java.nio.file.Paths;
 import java.util.List;
 import java.util.zip.ZipOutputStream;
 
@@ -59,6 +62,41 @@ public class FileController {
         response.setCharacterEncoding("UTF-8");
         response.setStatus(HttpServletResponse.SC_OK);
         fileService.downloadFilesInZip(fileDownloadReqDTOList, new ZipOutputStream(response.getOutputStream()));
+    }
+
+    /**
+    * @Description 以 filename 为文件名下载指定 fileId 的文件
+    **/
+    @GetMapping(value = "/download/{fileId}/{filename}")
+    public void download(@PathVariable("fileId") long fileId,
+                         @PathVariable("filename") String filename,
+                         HttpServletResponse response) throws IOException {
+        log.info("download: {}", fileId);
+
+        // 从 filename 获取 contentType
+        String contentType = null;
+        try {
+            contentType = Files.probeContentType(Paths.get(filename)); // 这个 API 最终调用 JNI, 结果可能因 OS 而不同
+        } catch (Exception e) {
+            log.warn("", e);
+        }
+
+        // 设置 header
+        if (contentType == null) {
+            response.setHeader(HttpHeaders.CONTENT_DISPOSITION, "attachment;filename=" + URLEncoder.encode(filename, "UTF-8"));
+            response.setContentType("application/octet-stream; charset=utf-8");
+        } else {
+            response.setContentType(contentType);
+        }
+        response.setCharacterEncoding("UTF-8");
+        response.setStatus(HttpServletResponse.SC_OK);
+
+        // 读取文件
+        try {
+            fileService.downloadToStream(fileId, response.getOutputStream());
+        } catch (Exception e) {
+            response.setStatus(HttpServletResponse.SC_NOT_FOUND);
+        }
     }
 
     @GetMapping(value = "/queryByMd5")

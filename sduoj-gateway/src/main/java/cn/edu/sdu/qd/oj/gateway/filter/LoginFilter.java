@@ -11,6 +11,7 @@
 package cn.edu.sdu.qd.oj.gateway.filter;
 
 import cn.edu.sdu.qd.oj.auth.enums.PermissionEnum;
+import cn.edu.sdu.qd.oj.common.util.NonExceptionOptional;
 import cn.edu.sdu.qd.oj.gateway.client.PermissionClient;
 import cn.edu.sdu.qd.oj.gateway.client.UserClient;
 import cn.edu.sdu.qd.oj.gateway.config.FilterProperties;
@@ -37,7 +38,6 @@ import org.springframework.web.server.ServerWebExchange;
 import org.springframework.web.server.WebSession;
 import reactor.core.publisher.Mono;
 
-import java.lang.reflect.Field;
 import java.util.*;
 
 /**
@@ -85,19 +85,19 @@ public class LoginFilter implements GlobalFilter, Ordered {
                                     .map(o -> JSON.parseObject(o, UserSessionDTO.class))
                                     .orElse(null);
         // 无 session，非 allowUrl
-        if (userSessionDTO == null && !isAllowPath(requestUrl)) {
+        boolean isAllowPath = isAllowPath(requestUrl);
+        if (userSessionDTO == null && !isAllowPath) {
             return returnNoPermission(exchange, " 你的账号没有该权限或未登录! ");
         }
 
         // 鉴权
         if (userSessionDTO != null) {
-
-            List<String> urlRoles = Optional.ofNullable(permissionClient.urlToRoles(requestUrl.replace("/api", "")))
+            List<String> urlRoles = NonExceptionOptional.ofNullable(() -> permissionClient.urlToRoles(requestUrl.replace("/api", "")))
                     .orElse(Lists.newArrayList());
-            List<String> roles = Optional.ofNullable(userClient.queryRolesById(userSessionDTO.getUserId()))
+            List<String> roles = NonExceptionOptional.ofNullable(() -> userClient.queryRolesById(userSessionDTO.getUserId()))
                     .orElse(Lists.newArrayList());
 
-            if (!urlRoles.contains(PermissionEnum.ALL.name) && Collections.disjoint(roles, urlRoles)) {
+            if (!urlRoles.contains(PermissionEnum.ALL.name) && Collections.disjoint(roles, urlRoles) && !isAllowPath) {
                 log.warn("have not permission {} {}", userSessionDTO, requestUrl);
                 return returnNoPermission(exchange, String.format("This User has no permission on '%s'", requestUrl));
             }
