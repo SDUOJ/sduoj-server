@@ -58,8 +58,8 @@ public class ContestCreateReqDTO extends BaseDTO {
     private List<@Valid ContestProblemManageListDTO> problems;
 
     @Size(max = 1024, message = "最多支持 1024 个人参加比赛")
-    private List<@NotBlank String> participants; // List<username>
+    private List<String> participants;           // List<username>
 
     @Size(max = 1024, message = "最多支持 1024 个人参加比赛")
-    private List<@NotBlank String> unofficialParticipants; // List<username>
+    private List<String> unofficialParticipants; // List<username>
 }

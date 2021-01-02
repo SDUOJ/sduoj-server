@@ -76,8 +76,8 @@ public class ContestManageController {
         List<String> participants = Optional.ofNullable(reqDTO.getParticipants()).orElse(Lists.newArrayList());
         List<String> unofficialParticipants = Optional.ofNullable(reqDTO.getUnofficialParticipants()).orElse(Lists.newArrayList());
         participants.addAll(unofficialParticipants);
-        reqDTO.setParticipants(participants.stream().distinct().collect(Collectors.toList()));
-        reqDTO.setUnofficialParticipants(unofficialParticipants.stream().distinct().collect(Collectors.toList()));
+        reqDTO.setParticipants(participants.stream().filter(StringUtils::isNotBlank).distinct().collect(Collectors.toList()));
+        reqDTO.setUnofficialParticipants(unofficialParticipants.stream().filter(StringUtils::isNotBlank).distinct().collect(Collectors.toList()));
 
         return contestManageService.create(reqDTO);
     }

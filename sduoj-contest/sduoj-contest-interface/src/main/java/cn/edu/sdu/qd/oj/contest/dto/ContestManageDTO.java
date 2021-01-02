@@ -58,7 +58,6 @@ public class ContestManageDTO extends BaseDTO {
     private Date gmtEnd;
 
     @Length(max = 60, message = "密码最大长度为 60")
-    @JsonProperty(access = JsonProperty.Access.WRITE_ONLY)
     private String password;
 
     private String source;
