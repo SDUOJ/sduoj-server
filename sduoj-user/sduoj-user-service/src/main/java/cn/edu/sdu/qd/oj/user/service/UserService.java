@@ -286,21 +286,15 @@ public class UserService {
 
 
 
-    public Long queryUserId(String username) {
-        return Optional.ofNullable(userDao.lambdaQuery().eq(UserDO::getUsername, username).select(UserDO::getUserId).one())
-                .map(UserDO::getUserId)
-                .orElse(null);
+    public Long usernameToUserId(String username) {
+        return userDao.getBaseMapper().usernameToUserId(username);
     }
 
-    public String queryUsername(Long userId) {
-        return Optional.ofNullable(userDao.lambdaQuery().select(UserDO::getUserId, UserDO::getUsername).eq(UserDO::getUserId, userId).one())
-                .map(UserDO::getUsername)
-                .orElse(null);
+    public String userIdToUsername(Long userId) {
+        return userDao.getBaseMapper().userIdToUsername(userId);
     }
 
-    public String queryNickname(Long userId) {
-        return Optional.ofNullable(userDao.lambdaQuery().select(UserDO::getUserId, UserDO::getNickname).eq(UserDO::getUserId, userId).one())
-                .map(UserDO::getNickname)
-                .orElse(null);
+    public String userIdToNickname(Long userId) {
+        return userDao.getBaseMapper().userIdToNickname(userId);
     }
 }

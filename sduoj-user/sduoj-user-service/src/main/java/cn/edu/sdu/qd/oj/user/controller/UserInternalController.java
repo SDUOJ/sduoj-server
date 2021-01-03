@@ -54,17 +54,17 @@ public class UserInternalController implements UserApi {
 
     @Override
     public Long usernameToUserId(String username) {
-        return this.userService.queryUserId(username);
+        return this.userService.usernameToUserId(username);
     }
 
     @Override
     public String userIdToUsername(Long userId) {
-        return this.userService.queryUsername(userId);
+        return this.userService.userIdToUsername(userId);
     }
 
     @Override
     public String userIdToNickname(Long userId) {
-        return this.userService.queryNickname(userId);
+        return this.userService.userIdToNickname(userId);
     }
 
     @Override
