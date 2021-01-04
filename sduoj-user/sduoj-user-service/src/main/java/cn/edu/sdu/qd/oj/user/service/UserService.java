@@ -175,14 +175,17 @@ public class UserService {
     }
 
     public void emailVerify(String token) {
-        String username = Optional.ofNullable(redisUtils.get(RedisConstants.getEmailVerificationKey(token))).map(o -> (String) o).orElse(null);
+        String username = (String) Optional.ofNullable(redisUtils.get(RedisConstants.getEmailVerificationKey(token))).orElse(null);
         AssertUtils.notNull(username, ApiExceptionEnum.TOKEN_EXPIRE);
-        // 单字段更新，不需要先查后改，不需要乐观锁
-        AssertUtils.isTrue(userDao.lambdaUpdate()
-                    .eq(UserDO::getUsername, username)
-                    .set(UserDO::getEmailVerified, 1)
-                    .set(UserDO::getRoles, PermissionEnum.USER.name)
-                    .update(), ApiExceptionEnum.UNKNOWN_ERROR);
+        UserDO userDO = userDao.lambdaQuery().eq(UserDO::getUsername, username).select(
+                UserDO::getUserId,
+                UserDO::getVersion,
+                UserDO::getRoles
+        ).one();
+        userDO.setEmailVerified(1);
+        // 有角色时不更新 roles, 无时更新为 USER
+        userDO.setRoles(StringUtils.isNotBlank(userDO.getRoles()) ? null : PermissionEnum.USER.name);
+        AssertUtils.isTrue(userDao.updateById(userDO), ApiExceptionEnum.UNKNOWN_ERROR);
     }
 
     public UserDTO queryByUserId(Long userId) {
