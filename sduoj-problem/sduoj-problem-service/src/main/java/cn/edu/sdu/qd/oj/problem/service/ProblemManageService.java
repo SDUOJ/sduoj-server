@@ -242,7 +242,7 @@ public class ProblemManageService {
         Optional.of(problemDescriptionDO).map(ProblemDescriptionDO::getUserId).ifPresent(userId -> {
             updater.eq(ProblemDescriptionDO::getUserId, userId);
         });
-        AssertUtils.isTrue(updater.update(problemDescriptionDO), ApiExceptionEnum.UNKNOWN_ERROR);
+        AssertUtils.isTrue(updater.update(problemDescriptionDO), ApiExceptionEnum.UNKNOWN_ERROR, "或 修改他人题面出错");
     }
 
     public ProblemDescriptionDTO queryDescription(long id, UserSessionDTO userSessionDTO) {
@@ -260,6 +260,7 @@ public class ProblemManageService {
 
     public List<ProblemDescriptionListDTO> queryDescriptionList(String problemCode, UserSessionDTO userSessionDTO) {
         long problemId = problemService.problemCodeToProblemId(problemCode);
+        ProblemDO problemDO = problemDao.lambdaQuery().select(ProblemDO::getDefaultDescriptionId).eq(ProblemDO::getProblemId, problemId).one();
         LambdaQueryChainWrapper<ProblemDescriptionDO> query = problemDescriptionDao.lambdaQuery().select(
                 ProblemDescriptionDO::getId,
                 ProblemDescriptionDO::getIsPublic,
@@ -268,12 +269,13 @@ public class ProblemManageService {
                 ProblemDescriptionDO::getUserId,
                 ProblemDescriptionDO::getTitle
         );
-        // 超级管理员能看到所有
+        // superadmin 能看到所有，admin 只能看到公开/默认/自己的题面
         if (PermissionEnum.SUPERADMIN.notIn(userSessionDTO)) {
             Long userId = Optional.ofNullable(userSessionDTO).map(UserSessionDTO::getUserId).orElse(null);
             query.and(o1 -> o1.eq(ProblemDescriptionDO::getIsPublic, 1)
-                    .or(o2 -> o2.eq(ProblemDescriptionDO::getIsPublic, 0)
-                            .and(o3 -> o3.eq(ProblemDescriptionDO::getUserId, userId))));
+                              .or(o2 -> o2.eq(ProblemDescriptionDO::getIsPublic, 0)
+                                          .and(o3 -> o3.eq(ProblemDescriptionDO::getUserId, userId)))
+                              .or(o4 -> o4.eq(ProblemDescriptionDO::getId, problemDO.getDefaultDescriptionId())));
         }
         List<ProblemDescriptionDO> problemDescriptionDOList = query.eq(ProblemDescriptionDO::getProblemId, problemId).list();
         List<ProblemDescriptionListDTO> problemDescriptionDTOList = problemDescriptionListConverter.to(problemDescriptionDOList);

@@ -10,6 +10,7 @@
 
 package cn.edu.sdu.qd.oj.checkpoint.service;
 
+import cn.edu.sdu.qd.oj.auth.enums.PermissionEnum;
 import cn.edu.sdu.qd.oj.checkpoint.client.FilesysClient;
 import cn.edu.sdu.qd.oj.checkpoint.converter.CheckpointConverter;
 import cn.edu.sdu.qd.oj.checkpoint.converter.CheckpointManageListConverter;
@@ -17,6 +18,9 @@ import cn.edu.sdu.qd.oj.checkpoint.dao.CheckpointDao;
 import cn.edu.sdu.qd.oj.checkpoint.dto.CheckpointDTO;
 import cn.edu.sdu.qd.oj.checkpoint.dto.CheckpointManageListDTO;
 import cn.edu.sdu.qd.oj.checkpoint.entity.CheckpointDO;
+import cn.edu.sdu.qd.oj.common.entity.UserSessionDTO;
+import cn.edu.sdu.qd.oj.common.enums.ApiExceptionEnum;
+import cn.edu.sdu.qd.oj.common.util.AssertUtils;
 import cn.edu.sdu.qd.oj.dto.PlainFileDownloadDTO;
 import cn.edu.sdu.qd.oj.problem.converter.ProblemConverterUtils;
 import cn.edu.sdu.qd.oj.problem.dao.ProblemDao;
@@ -91,12 +95,15 @@ public class CheckpointManageService {
         return checkpointDTOList;
     }
 
-    public List<CheckpointManageListDTO> getCheckpoints(String problemCode) {
+    public List<CheckpointManageListDTO> getCheckpoints(String problemCode, UserSessionDTO userSessionDTO) {
         ProblemDO problemDO = problemDao.lambdaQuery().select(
                 ProblemDO::getProblemId,
                 ProblemDO::getCheckpoints,
-                ProblemDO::getCheckpointCases
+                ProblemDO::getCheckpointCases,
+                ProblemDO::getUserId
         ).eq(ProblemDO::getProblemCode, problemCode).one();
+        AssertUtils.isTrue(userSessionDTO.userIdEquals(problemDO.getUserId()) || PermissionEnum.SUPERADMIN.in(userSessionDTO),
+                           ApiExceptionEnum.USER_NOT_MATCHING, "(不是出题人或超管无法看测试数据)");
         return getCheckpoints(problemDO);
     }
 

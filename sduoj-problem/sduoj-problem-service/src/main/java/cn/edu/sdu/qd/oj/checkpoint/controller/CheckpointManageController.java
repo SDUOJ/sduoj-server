@@ -88,7 +88,8 @@ public class CheckpointManageController {
 
     @GetMapping(value = "/list")
     @ApiResponseBody
-    public List<CheckpointManageListDTO> getCheckpoints(@RequestParam("problemCode") String problemCode) {
-        return checkpointManageService.getCheckpoints(problemCode);
+    public List<CheckpointManageListDTO> getCheckpoints(@RequestParam("problemCode") String problemCode,
+                                                        @UserSession UserSessionDTO userSessionDTO) {
+        return checkpointManageService.getCheckpoints(problemCode, userSessionDTO);
     }
 }

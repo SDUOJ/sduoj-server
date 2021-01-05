@@ -97,11 +97,11 @@ public class ProblemService {
                 .eq(ProblemDescriptionDO::getProblemId, problemDO.getProblemId())
                 .eq(ProblemDescriptionDO::getId, descriptionId != null ? descriptionId : problemDO.getDefaultDescriptionId())
                 .one();
-        // 过滤掉非公开且非默认且非自己的题面
-        if (problemDescriptionDO != null &&
-                problemDescriptionDO.getIsPublic() == 0 &&
+        // 若非 superadmin 则进行过滤，过滤掉非公开且非默认且非自己的题面
+        if (problemDescriptionDO != null && problemDescriptionDO.getIsPublic() == 0 &&
                 !problemDescriptionDO.getId().equals(problemDO.getDefaultDescriptionId()) &&
-                !problemDescriptionDO.getUserId().equals(userId)) {
+                !problemDescriptionDO.getUserId().equals(userId) &&
+                 PermissionEnum.SUPERADMIN.notIn(userSessionDTO)) {
             problemDescriptionDO = null;
         }
 
@@ -114,20 +114,14 @@ public class ProblemService {
                 ProblemDescriptionDO::getVoteNum,
                 ProblemDescriptionDO::getTitle
         ).eq(ProblemDescriptionDO::getProblemId, problemDO.getProblemId());
-        Optional.ofNullable(problemDescriptionDO).map(ProblemDescriptionDO::getId).ifPresent(problemDescriptionId -> {
-            descriptionListQuery.ne(ProblemDescriptionDO::getId, problemDescriptionId);
-        });
-        // 查询并过滤掉非公开非自己的题面
-        List<ProblemDescriptionDO> problemDescriptionDOList = descriptionListQuery.list()
-                .stream()
-                .filter(o -> o.getIsPublic() == 1 || (o.getIsPublic() == 0 && o.getUserId().equals(userId)))
-                .collect(Collectors.toList());
-        // 将 problemDescriptionDO 加入到 list
-        if (problemDescriptionDO != null) {
-            problemDescriptionDOList.add(problemDescriptionDO);
-        }
-        // 按照 descriptionId 排序
+        // 查询，若非 superadmin 则进行过滤，过滤掉非公开非自己非默认的题面，并按照 descriptionId 排序
+        List<ProblemDescriptionDO> problemDescriptionDOList = descriptionListQuery.list();
         problemDescriptionDOList.sort(ProblemDescriptionDO::compareById);
+        if (PermissionEnum.SUPERADMIN.notIn(userSessionDTO)) {
+            problemDescriptionDOList = problemDescriptionDOList.stream()
+                .filter(o -> o.getIsPublic() == 1 || (o.getIsPublic() == 0 && o.getUserId().equals(userId)) || o.getId().equals(problemDO.getDefaultDescriptionId()))
+                .collect(Collectors.toList());
+        }
 
         // 查询 problemCase
         List<ProblemCaseDTO> problemCaseDTOList = problemExtensionSerivce.queryProblemCase(problemDO.getProblemId());
