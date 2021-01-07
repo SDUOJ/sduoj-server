@@ -21,7 +21,7 @@ import java.util.Optional;
 
 
 /**
-* @Description cn.edu.sdu.qd.oj.judgetemplate.dto.JudgeTemplateDTO#shellScript 的实体类
+* @Description cn.edu.sdu.qd.oj.judgetemplate.dto.JudgeTemplateDTO#shellScript 的 IO 和 SPJ 两种类型的实体类
 **/
 @Data
 @Builder

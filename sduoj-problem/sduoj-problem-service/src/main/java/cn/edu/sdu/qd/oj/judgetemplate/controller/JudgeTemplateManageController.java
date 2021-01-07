@@ -17,10 +17,15 @@ import cn.edu.sdu.qd.oj.common.entity.PageResult;
 import cn.edu.sdu.qd.oj.common.entity.UserSessionDTO;
 import cn.edu.sdu.qd.oj.common.enums.ApiExceptionEnum;
 import cn.edu.sdu.qd.oj.common.exception.ApiException;
+import cn.edu.sdu.qd.oj.common.util.AssertUtils;
+import cn.edu.sdu.qd.oj.judgetemplate.dto.JudgeTemplateConfigDTO;
 import cn.edu.sdu.qd.oj.judgetemplate.dto.JudgeTemplateDTO;
 import cn.edu.sdu.qd.oj.judgetemplate.dto.JudgeTemplateManageListDTO;
 import cn.edu.sdu.qd.oj.judgetemplate.dto.JudgeTemplatePageReqDTO;
+import cn.edu.sdu.qd.oj.judgetemplate.enums.JudgeTemplateTypeEnum;
 import cn.edu.sdu.qd.oj.judgetemplate.service.JudgeTemplateService;
+import com.alibaba.fastjson.JSON;
+import com.alibaba.fastjson.JSONValidator;
 import org.apache.commons.lang3.StringUtils;
 import org.assertj.core.util.Lists;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -63,6 +68,7 @@ public class JudgeTemplateManageController {
     @ApiResponseBody
     public Long create(@RequestBody JudgeTemplateDTO judgeTemplateDTO,
                        @UserSession UserSessionDTO userSessionDTO) {
+        validateShellScript(judgeTemplateDTO);
         judgeTemplateDTO.setUserId(userSessionDTO.getUserId());
         return judgeTemplateService.create(judgeTemplateDTO, userSessionDTO);
     }
@@ -71,6 +77,7 @@ public class JudgeTemplateManageController {
     @ApiResponseBody
     public Void update(@RequestBody JudgeTemplateDTO judgeTemplateDTO,
                        @UserSession UserSessionDTO userSessionDTO) {
+        validateShellScript(judgeTemplateDTO);
         judgeTemplateService.update(judgeTemplateDTO, userSessionDTO);
         return null;
     }
@@ -83,5 +90,19 @@ public class JudgeTemplateManageController {
             return Lists.newArrayList();
         }
         return judgeTemplateService.listByTitle(title, userSessionDTO);
+    }
+
+    /**
+    * @Description 校验 jt 的 JSON 格式
+    **/
+    private void validateShellScript(JudgeTemplateDTO judgeTemplateDTO) {
+        JudgeTemplateTypeEnum type = JudgeTemplateTypeEnum.of(judgeTemplateDTO.getType());
+        if (JudgeTemplateTypeEnum.IO == type || JudgeTemplateTypeEnum.SPJ == type) {
+            try {
+                JSON.parseObject(judgeTemplateDTO.getShellScript(), JudgeTemplateConfigDTO.class);
+            } catch (Exception e) {
+                 throw new ApiException(ApiExceptionEnum.PARAMETER_ERROR, "JSON 格式错误");
+            }
+        }
     }
 }
