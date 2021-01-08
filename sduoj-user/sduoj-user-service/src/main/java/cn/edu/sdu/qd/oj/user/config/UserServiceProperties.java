@@ -19,11 +19,48 @@ import org.springframework.boot.context.properties.ConfigurationProperties;
 @ConfigurationProperties(prefix = "sduoj.user")
 public class UserServiceProperties {
 
-    private String verificationUrlPrefix;
-    private String forgetPasswordUrlPrefix;
+    /**
+    * 邮件验证码有效期
+    **/
     private int verificationExpire;
-    private String fromEmail;
-    private String verificationEmailSubject;
+
+    /**
+     * 验证邮箱链接前缀
+     **/
+    private String verifyEmailUrlPrefix;
+
+    /**
+     * 验证邮箱邮件主题
+     **/
+    private String verifyEmailSubject;
+
+    /**
+     * 验证邮箱邮件内容
+     **/
+    private String verifyEmailPattern;
+
+    /**
+     * 忘记密码邮件主题
+     **/
     private String forgetPasswordEmailSubject;
+
+    /**
+     * 忘记密码链接前缀
+     **/
+    private String forgetPasswordUrlPrefix;
+
+    /**
+     * 忘记密码邮件内容
+     **/
+    private String forgetPasswordPattern;
+
+    /**
+     * 重设邮箱邮件主题
+     **/
     private String resetEmailSubject;
+
+    /**
+     * 重设邮箱邮件内容
+     **/
+    private String resetEmailPattern;
 }
