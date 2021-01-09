@@ -67,7 +67,7 @@ public interface ProblemApi {
     * @Description 获取非该用户出题且不 public 题目的 id 列表
     **/
     @GetMapping("/queryPrivateProblemIdList")
-    List<Long> queryPrivateProblemIdList(@RequestParam(value = "userId", required = false) Long userId);
+    List<Long> queryPrivateProblemIdList(@RequestParam(value = "userId", required = false) Long exclusiveUserId);
 
     @GetMapping("/queryProblemJudgeDTO")
     ProblemJudgerDTO queryProblemJudgeDTO(@RequestParam("problemId") Long problemId);

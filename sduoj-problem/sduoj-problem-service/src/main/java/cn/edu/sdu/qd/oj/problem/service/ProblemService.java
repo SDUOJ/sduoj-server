@@ -277,12 +277,12 @@ public class ProblemService {
     }
 
 
-    public List<Long> queryPrivateProblemIdList(Long userId) {
+    public List<Long> queryPrivateProblemIdList(Long exclusiveUserId) {
         LambdaQueryChainWrapper<ProblemDO> query = problemDao.lambdaQuery();
-        if (userId != null) {
+        if (exclusiveUserId != null) {
             query.select(ProblemDO::getProblemId)
                     .and(o1 -> o1.eq(ProblemDO::getIsPublic, 0)
-                                 .and(o3 -> o3.ne(ProblemDO::getUserId, userId)));
+                                 .and(o3 -> o3.ne(ProblemDO::getUserId, exclusiveUserId)));
         } else {
             query.select(ProblemDO::getProblemId).eq(ProblemDO::getIsPublic, 0);
         }

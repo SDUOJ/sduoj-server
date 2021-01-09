@@ -10,6 +10,7 @@
 
 package cn.edu.sdu.qd.oj.submit.service;
 
+import cn.edu.sdu.qd.oj.auth.enums.PermissionEnum;
 import cn.edu.sdu.qd.oj.common.entity.PageResult;
 import cn.edu.sdu.qd.oj.common.entity.UserSessionDTO;
 import cn.edu.sdu.qd.oj.common.enums.ApiExceptionEnum;
@@ -230,9 +231,10 @@ public class SubmitService {
         });
 
         // 非比赛场景，需要过滤不 public 的题目
-        List<Long> problemIdList = contestId == 0 ? problemClient.queryPrivateProblemIdList(Optional.ofNullable(userSessionDTO).map(UserSessionDTO::getUserId).orElse(null)) : Lists.newArrayList();
-        if (CollectionUtils.isNotEmpty(problemIdList)) {
-            query.notIn(SubmissionDO::getProblemId, problemIdList);
+        List<Long> privateProblemIdList = contestId == 0 ? problemClient.queryPrivateProblemIdList(
+                Optional.ofNullable(userSessionDTO).map(UserSessionDTO::getUserId).orElse(null)) : Lists.newArrayList();
+        if (CollectionUtils.isNotEmpty(privateProblemIdList) && PermissionEnum.SUPERADMIN.notIn(userSessionDTO)) {
+            query.notIn(SubmissionDO::getProblemId, privateProblemIdList);
         }
 
         // 查询数据
