@@ -12,6 +12,7 @@ package cn.edu.sdu.qd.oj.contest.converter;
 
 import cn.edu.sdu.qd.oj.common.converter.BaseConvertUtils;
 import cn.edu.sdu.qd.oj.common.util.SpringContextUtils;
+import cn.edu.sdu.qd.oj.contest.client.ProblemClient;
 import cn.edu.sdu.qd.oj.contest.client.UserClient;
 import cn.edu.sdu.qd.oj.contest.dto.ContestFeatureDTO;
 import cn.edu.sdu.qd.oj.contest.dto.ContestProblemListDTO;
@@ -45,13 +46,15 @@ public class ContestConvertUtils extends BaseConvertUtils {
             return new ArrayList<>();
         }
 
+        ProblemClient problemClient = SpringContextUtils.getBean(ProblemClient.class);
+
         JSONArray json = JSON.parseArray(problems);
         List<ContestProblemListDTO> contestProblemListDTOList = new ArrayList<>(json.size());
         for (int i = 0, n = json.size(); i < n; i++) {
             JSONArray array = json.getJSONArray(i);
             contestProblemListDTOList.add(
                     ContestProblemListDTO.builder()
-                            .problemCode(array.getString(0))
+                            .problemCode(problemClient.problemIdToProblemCode(Long.parseLong(array.getString(0))))
                             .problemTitle(array.getString(1))
                             .problemDescriptionId(array.getLong(2))
                             .problemWeight(array.getInteger(3))
@@ -67,10 +70,12 @@ public class ContestConvertUtils extends BaseConvertUtils {
             return null;
         }
 
+        ProblemClient problemClient = SpringContextUtils.getBean(ProblemClient.class);
+
         JSONArray json = new JSONArray();
         contestProblemListDTOList.forEach(contestProblemListDTO -> {
             JSONArray array = new JSONArray();
-            array.add(contestProblemListDTO.getProblemCode());
+            array.add(problemClient.problemCodeToProblemId(contestProblemListDTO.getProblemCode()));
             array.add(contestProblemListDTO.getProblemTitle());
             array.add(contestProblemListDTO.getProblemDescriptionId());
             array.add(contestProblemListDTO.getProblemWeight());
@@ -85,13 +90,15 @@ public class ContestConvertUtils extends BaseConvertUtils {
             return new ArrayList<>();
         }
 
+        ProblemClient problemClient = SpringContextUtils.getBean(ProblemClient.class);
+
         JSONArray json = JSON.parseArray(problems);
         List<ContestProblemManageListDTO> contestProblemListDTOList = new ArrayList<>(json.size());
         for (int i = 0, n = json.size(); i < n; i++) {
             JSONArray array = json.getJSONArray(i);
             contestProblemListDTOList.add(
                     ContestProblemManageListDTO.builder()
-                            .problemCode(array.getString(0))
+                            .problemCode(problemClient.problemIdToProblemCode(Long.parseLong(array.getString(0))))
                             .problemTitle(array.getString(1))
                             .problemDescriptionId(array.getLong(2))
                             .problemWeight(array.getInteger(3))
@@ -107,10 +114,12 @@ public class ContestConvertUtils extends BaseConvertUtils {
             return null;
         }
 
+        ProblemClient problemClient = SpringContextUtils.getBean(ProblemClient.class);
+
         JSONArray json = new JSONArray();
         contestProblemListDTOList.forEach(contestProblemManageListDTO -> {
             JSONArray array = new JSONArray();
-            array.add(contestProblemManageListDTO.getProblemCode());
+            array.add(problemClient.problemCodeToProblemId(contestProblemManageListDTO.getProblemCode()));
             array.add(contestProblemManageListDTO.getProblemTitle());
             array.add(contestProblemManageListDTO.getProblemDescriptionId());
             array.add(contestProblemManageListDTO.getProblemWeight());
