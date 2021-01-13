@@ -16,7 +16,9 @@ import cn.edu.sdu.qd.oj.gateway.client.PermissionClient;
 import cn.edu.sdu.qd.oj.gateway.client.UserClient;
 import cn.edu.sdu.qd.oj.gateway.config.FilterProperties;
 import cn.edu.sdu.qd.oj.common.entity.UserSessionDTO;
+import cn.edu.sdu.qd.oj.gateway.util.SessionIdStrategyForceModifyUtils;
 import com.alibaba.fastjson.JSON;
+import com.alibaba.fastjson.JSONObject;
 import com.google.common.collect.Lists;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -24,9 +26,9 @@ import org.springframework.boot.context.properties.EnableConfigurationProperties
 import org.springframework.cloud.gateway.filter.GatewayFilterChain;
 import org.springframework.cloud.gateway.filter.GlobalFilter;
 import org.springframework.core.Ordered;
-import org.springframework.core.io.buffer.DataBuffer;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
 import org.springframework.http.server.reactive.ServerHttpRequest;
 import org.springframework.http.server.reactive.ServerHttpRequestDecorator;
 import org.springframework.http.server.reactive.ServerHttpResponse;
@@ -132,10 +134,13 @@ public class LoginFilter implements GlobalFilter, Ordered {
         return Mono.fromRunnable(() -> {
             List<String> userInfos = exchange.getResponse().getHeaders().remove(UserSessionDTO.HEADER_KEY);
             Optional.of(userInfos).filter(list -> !list.isEmpty()).map(list -> list.get(0)).ifPresent(userInfoStr -> {
-                Optional.of(exchange).map(ServerWebExchange::getSession).map(Mono::block).map(WebSession::getAttributes).ifPresent(map -> {
+                Optional.of(exchange).map(ServerWebExchange::getSession).map(Mono::block).ifPresent(webSession -> {
+                    Map<String, Object> map = webSession.getAttributes();
                     if (UserSessionDTO.HEADER_VALUE_LOGOUT.equals(userInfoStr)) {
                         map.remove(UserSessionDTO.HEADER_KEY);
                     } else {
+                        // 将 session-key 改为带 userId 前缀，便于批量失效
+                        SessionIdStrategyForceModifyUtils.changeSessionId(webSession, JSON.parseObject(userInfoStr, UserSessionDTO.class).getUserId());
                         map.put(UserSessionDTO.HEADER_KEY, userInfoStr);
                     }
                 });
@@ -145,17 +150,15 @@ public class LoginFilter implements GlobalFilter, Ordered {
 
     private Mono<Void> returnNoPermission(ServerWebExchange exchange, String msg) {
         // 返回鉴权失败的消息
-        ServerHttpResponse response = exchange.getResponse();
-        Map<String, Object> message = new HashMap<>();
+        JSONObject message = new JSONObject();
         message.put("code", HttpStatus.UNAUTHORIZED.value());
         message.put("message", msg);
         message.put("timestamp", String.valueOf(System.currentTimeMillis()));
         message.put("data", null);
-        byte[] bits = JSON.toJSONBytes(message);
-        DataBuffer buffer = response.bufferFactory().wrap(bits);
+        ServerHttpResponse response = exchange.getResponse();
         response.setStatusCode(HttpStatus.UNAUTHORIZED);
-        response.getHeaders().add("Content-Type", "application/json;charset=UTF-8");
-        return response.writeWith(Mono.just(buffer));
+        response.getHeaders().setContentType(MediaType.APPLICATION_JSON_UTF8);
+        return response.writeWith(Mono.just(response.bufferFactory().wrap(JSON.toJSONBytes(message))));
     }
 
     private boolean isAllowPath(String requestUrl) {

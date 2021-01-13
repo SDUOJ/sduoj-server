@@ -12,7 +12,6 @@ package cn.edu.sdu.qd.oj.gateway.config;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnClass;
-import org.springframework.boot.autoconfigure.session.SessionProperties;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.session.config.annotation.web.server.SpringWebSessionConfiguration;
@@ -36,11 +35,11 @@ import javax.annotation.Resource;
 **/
 @Configuration
 @ConditionalOnClass(SpringWebSessionConfiguration.class)
-@EnableConfigurationProperties({SessionProperties.class})
-public class CookieMaxAgeConfig {
+@EnableConfigurationProperties({CookieProperties.class})
+public class CookieConfiguration {
 
     @Autowired
-    private SessionProperties sessionProperties;
+    private CookieProperties cookieProperties;
 
     @Resource(name = WebHttpHandlerBuilder.WEB_SESSION_MANAGER_BEAN_NAME)
     private WebSessionManager webSessionManager;
@@ -50,7 +49,7 @@ public class CookieMaxAgeConfig {
         if (webSessionManager instanceof DefaultWebSessionManager) {
             WebSessionIdResolver sessionIdResolver = ((DefaultWebSessionManager) webSessionManager).getSessionIdResolver();
             if (sessionIdResolver instanceof CookieWebSessionIdResolver) {
-                ((CookieWebSessionIdResolver) sessionIdResolver).setCookieMaxAge(sessionProperties.getTimeout());
+                ((CookieWebSessionIdResolver) sessionIdResolver).setCookieMaxAge(cookieProperties.getMaxAge());
             }
         }
     }
