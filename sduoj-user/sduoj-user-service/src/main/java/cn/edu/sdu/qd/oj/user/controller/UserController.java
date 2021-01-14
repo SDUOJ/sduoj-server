@@ -184,6 +184,7 @@ public class UserController {
         } catch (Exception ignore) {
         }
 
+        log.info("{} login from {} by {}", username, ipv4, userAgent);
         if (StringUtils.isNotBlank(username) && StringUtils.isNotBlank(password)) {
             // 登录校验
             UserSessionDTO userSessionDTO = this.userService.login(username, password, ipv4, userAgent);

@@ -41,6 +41,10 @@ public class RealIpMethodArgumentResolver implements HandlerMethodArgumentResolv
             realIp = request.getHeader("x-forwarded-for");
         }
         AssertUtils.notNull(realIp, ApiExceptionEnum.GET_IP_ERROR);
+        int index = realIp.indexOf(',');
+        if (index != -1) {
+            realIp = realIp.substring(0, index);
+        }
         return realIp;
     }
 }
