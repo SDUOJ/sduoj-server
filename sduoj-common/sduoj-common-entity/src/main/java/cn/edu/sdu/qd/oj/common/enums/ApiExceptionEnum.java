@@ -42,6 +42,7 @@ public enum ApiExceptionEnum {
 
     PROBLEM_NOT_FOUND(400, "题目未找到"),
     PROBLEM_NOT_PUBLIC(403, "题目非公开"),
+    DESCRIPTION_NOT_FOUND(400, "题面未找到"),
 
     JUDGETEMPLATE_NOT_FOUND(400, "评测模板未找到"),
 

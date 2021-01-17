@@ -123,4 +123,11 @@ public class ProblemManageController {
         return problemManageService.queryDescriptionList(problemCode, userSessionDTO);
     }
 
+    @GetMapping("/deleteDescription")
+    @ApiResponseBody
+    public Void delete(@RequestParam("id") long id,
+                       @UserSession UserSessionDTO userSessionDTO) {
+        problemManageService.deleteDescription(id, userSessionDTO);
+        return null;
+    }
 }

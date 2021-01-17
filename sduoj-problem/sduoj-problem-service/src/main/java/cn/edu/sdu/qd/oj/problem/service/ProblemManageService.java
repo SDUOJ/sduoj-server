@@ -246,21 +246,24 @@ public class ProblemManageService {
     }
 
     public ProblemDescriptionDTO queryDescription(long id, UserSessionDTO userSessionDTO) {
-        LambdaQueryChainWrapper<ProblemDescriptionDO> query = problemDescriptionDao.lambdaQuery();
-        // 超级管理员能看到所有
+        ProblemDescriptionDO descriptionDO = problemDescriptionDao.lambdaQuery().eq(ProblemDescriptionDO::getId, id).one();
+        AssertUtils.notNull(descriptionDO, ApiExceptionEnum.DESCRIPTION_NOT_FOUND);
         if (PermissionEnum.SUPERADMIN.notIn(userSessionDTO)) {
-            Long userId = Optional.ofNullable(userSessionDTO).map(UserSessionDTO::getUserId).orElse(null);
-            query.and(o1 -> o1.eq(ProblemDescriptionDO::getIsPublic, 1)
-                              .or(o2 -> o2.eq(ProblemDescriptionDO::getIsPublic, 0)
-                                          .and(o3 -> o3.eq(ProblemDescriptionDO::getUserId, userId))));
+            Long defaultDescriptionId = Optional.ofNullable(problemDao.lambdaQuery().select(ProblemDO::getDefaultDescriptionId)
+                                                                                    .eq(ProblemDO::getProblemId, descriptionDO.getProblemId()).one())
+                                                .map(ProblemDO::getDefaultDescriptionId).orElse(null);
+            AssertUtils.isTrue(Objects.equals(defaultDescriptionId, descriptionDO.getId())
+                  || descriptionDO.getIsPublic() == 1 || userSessionDTO.userIdEquals(descriptionDO.getUserId()),
+               ApiExceptionEnum.PROBLEM_NOT_FOUND, "非public非default非自己所属的题面无法查看");
         }
-        ProblemDescriptionDO problemDescriptionDO = query.eq(ProblemDescriptionDO::getId, id).one();
-        return problemDescriptionConverter.to(problemDescriptionDO);
+        return problemDescriptionConverter.to(descriptionDO);
     }
 
     public List<ProblemDescriptionListDTO> queryDescriptionList(String problemCode, UserSessionDTO userSessionDTO) {
         long problemId = problemService.problemCodeToProblemId(problemCode);
-        ProblemDO problemDO = problemDao.lambdaQuery().select(ProblemDO::getDefaultDescriptionId).eq(ProblemDO::getProblemId, problemId).one();
+        Long defaultDescriptionId = Optional.ofNullable(problemDao.lambdaQuery().select(ProblemDO::getDefaultDescriptionId)
+                                                                                .eq(ProblemDO::getProblemId, problemId).one())
+                                            .map(ProblemDO::getDefaultDescriptionId).orElse(null);
         LambdaQueryChainWrapper<ProblemDescriptionDO> query = problemDescriptionDao.lambdaQuery().select(
                 ProblemDescriptionDO::getId,
                 ProblemDescriptionDO::getIsPublic,
@@ -275,7 +278,7 @@ public class ProblemManageService {
             query.and(o1 -> o1.eq(ProblemDescriptionDO::getIsPublic, 1)
                               .or(o2 -> o2.eq(ProblemDescriptionDO::getIsPublic, 0)
                                           .and(o3 -> o3.eq(ProblemDescriptionDO::getUserId, userId)))
-                              .or(o4 -> o4.eq(ProblemDescriptionDO::getId, problemDO.getDefaultDescriptionId())));
+                              .or(o4 -> o4.eq(ProblemDescriptionDO::getId, defaultDescriptionId)));
         }
         List<ProblemDescriptionDO> problemDescriptionDOList = query.eq(ProblemDescriptionDO::getProblemId, problemId).list();
         List<ProblemDescriptionListDTO> problemDescriptionDTOList = problemDescriptionListConverter.to(problemDescriptionDOList);
@@ -284,5 +287,14 @@ public class ProblemManageService {
             o.setUsername(userClient.userIdToUsername(o.getUserId()));
         });
         return problemDescriptionDTOList;
+    }
+
+    public void deleteDescription(long id, UserSessionDTO userSessionDTO) {
+        if (PermissionEnum.SUPERADMIN.notIn(userSessionDTO)) {
+            AssertUtils.isTrue(1 == problemDescriptionDao.lambdaQuery().eq(ProblemDescriptionDO::getId, id)
+                    .eq(ProblemDescriptionDO::getUserId, userSessionDTO.getUserId())
+                    .count(), ApiExceptionEnum.DESCRIPTION_NOT_FOUND, "或 非自己所属的题面");
+        }
+        AssertUtils.isTrue(problemDescriptionDao.removeById(id), ApiExceptionEnum.UNKNOWN_ERROR);
     }
 }
