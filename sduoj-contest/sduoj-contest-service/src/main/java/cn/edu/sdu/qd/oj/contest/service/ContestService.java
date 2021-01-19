@@ -289,7 +289,6 @@ public class ContestService {
                 .markdownDescription(problemDescriptionDTO.getMarkdownDescription())
                 .build();
         ContestProblemDTO contestProblemDTO = ContestProblemDTO.builder()
-                .languages(problemDTO.getLanguages())
                 .judgeTemplates(problemDTO.getJudgeTemplates())
                 .timeLimit(problemDTO.getTimeLimit())
                 .memoryLimit(problemDTO.getMemoryLimit())
@@ -339,7 +338,6 @@ public class ContestService {
         String problemCode = contestProblemListDTO.getProblemCode();
         SubmissionCreateReqDTO submissionCreateReqDTO = SubmissionCreateReqDTO.builder()
                 .problemCode(problemCode)
-                .language(reqDTO.getLanguage())
                 .judgeTemplateId(reqDTO.getJudgeTemplateId())
                 .code(reqDTO.getCode())
                 .userId(reqDTO.getUserId())
@@ -383,7 +381,6 @@ public class ContestService {
                 .ascending(reqDTO.getAscending())
                 .judgeResult(reqDTO.getJudgeResult())
                 .judgeTemplateId(reqDTO.getJudgeTemplateId())
-                .language(reqDTO.getLanguage())
                 .problemCode(problemCode)
                 .username(reqDTO.getUsername())
                 .problemCodeList(problemCodeList)

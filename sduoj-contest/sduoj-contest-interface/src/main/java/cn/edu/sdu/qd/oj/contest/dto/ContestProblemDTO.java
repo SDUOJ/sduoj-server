@@ -32,8 +32,6 @@ public class ContestProblemDTO extends BaseDTO {
 
     private String problemTitle;
 
-    private List<String> languages;
-
     private Integer memoryLimit;
 
     private Integer timeLimit;

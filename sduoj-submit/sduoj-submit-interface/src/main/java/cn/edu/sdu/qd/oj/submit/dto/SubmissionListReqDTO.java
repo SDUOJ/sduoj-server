@@ -31,7 +31,6 @@ public class SubmissionListReqDTO extends BaseDTO {
     private Long problemId;
     private Long userId;
 
-    private String language;
     private Long judgeTemplateId;
     private Integer judgeResult;
 

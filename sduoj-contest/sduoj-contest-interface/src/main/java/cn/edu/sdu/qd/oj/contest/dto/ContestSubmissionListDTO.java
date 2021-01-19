@@ -40,8 +40,6 @@ public class ContestSubmissionListDTO extends BaseDTO {
 
     private Long userId;
 
-    private String language;
-
     private Long judgeTemplateId;
 
     private Integer judgeResult;

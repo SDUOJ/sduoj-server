@@ -24,7 +24,6 @@ public class SubmissionDOField {
     public static final String CONTEST_ID = "ct_id";
     public static final String JUDGE_TEMPLATE_ID = "jt_id";
     public static final String ZIP_FILE_ID = "f_id";
-    public static final String LANGUAGE = "s_language";
     public static final String IPV4 = "s_ipv4";
     public static final String JUDGER_ID = "s_judger_id";
     public static final String JUDGE_RESULT = "s_judge_result";

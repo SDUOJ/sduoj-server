@@ -34,7 +34,6 @@ public class ContestSubmissionListReqDTO extends BaseDTO {
     private Integer problemIndex;
     private Long userId;
 
-    private String language;
     private Long judgeTemplateId;
     private Integer judgeResult;
 }

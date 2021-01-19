@@ -61,9 +61,6 @@ public class SubmissionDO extends BaseDO {
     @TableField(SubmissionDOField.ZIP_FILE_ID)
     private Long zipFileId;
 
-    @TableField(SubmissionDOField.LANGUAGE)
-    private String language;
-
     @TableField(SubmissionDOField.IPV4)
     private String ipv4;
 

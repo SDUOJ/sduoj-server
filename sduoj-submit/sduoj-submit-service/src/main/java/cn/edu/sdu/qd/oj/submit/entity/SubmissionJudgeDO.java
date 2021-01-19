@@ -43,9 +43,6 @@ public class SubmissionJudgeDO extends BaseDO {
     @TableField(SubmissionDOField.ZIP_FILE_ID)
     private Long zipFileId;
 
-    @TableField(SubmissionDOField.LANGUAGE)
-    private String language;
-
     @TableField(value = SubmissionDOField.GMT_CREATE, fill = FieldFill.INSERT)
     private Date gmtCreate;
 

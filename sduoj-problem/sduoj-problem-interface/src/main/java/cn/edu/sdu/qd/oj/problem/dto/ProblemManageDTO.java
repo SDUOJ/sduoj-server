@@ -63,8 +63,6 @@ public class ProblemManageDTO extends BaseDTO {
     @JsonProperty(access = JsonProperty.Access.READ_ONLY)
     private Integer acceptNum;
 
-    private List<String> languages;
-
     private Integer memoryLimit;
 
     private Integer timeLimit;

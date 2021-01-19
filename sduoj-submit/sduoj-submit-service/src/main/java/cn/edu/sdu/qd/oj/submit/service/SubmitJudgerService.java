@@ -71,7 +71,6 @@ public class SubmitJudgerService {
                 SubmissionDO::getSubmissionId,
                 SubmissionDO::getProblemId,
                 SubmissionDO::getUserId,
-                SubmissionDO::getLanguage,
                 SubmissionDO::getJudgeTemplateId,
                 SubmissionDO::getZipFileId,
                 SubmissionDO::getGmtCreate,

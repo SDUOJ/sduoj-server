@@ -39,8 +39,6 @@ public class SubmissionJudgeDTO extends BaseDTO {
 
     private Long zipFileId;
 
-    private String language;
-
     private Date gmtCreate;
 
     private String code;

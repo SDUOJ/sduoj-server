@@ -103,7 +103,6 @@ public class SubmitService {
                 .ipv4(reqDTO.getIpv4())
                 .codeLength(reqDTO.getCode().length())
                 .judgeTemplateId(reqDTO.getJudgeTemplateId())
-                .language(reqDTO.getLanguage())
                 .problemId(problemId)
                 .userId(reqDTO.getUserId())
                 .contestId(contestId)
@@ -178,7 +177,6 @@ public class SubmitService {
             SubmissionDO::getSubmissionId,
             SubmissionDO::getProblemId,
             SubmissionDO::getUserId,
-            SubmissionDO::getLanguage,
             SubmissionDO::getJudgeTemplateId,
             SubmissionDO::getGmtCreate,
             SubmissionDO::getGmtModified,
@@ -211,9 +209,6 @@ public class SubmitService {
         }
 
         // 等值字段
-        Optional.of(reqDTO).map(SubmissionListReqDTO::getLanguage).filter(StringUtils::isNotBlank).ifPresent(language -> {
-            query.eq(SubmissionDO::getLanguage, language);
-        });
         Optional.of(reqDTO).map(SubmissionListReqDTO::getJudgeResult).ifPresent(judgeResult -> {
             query.eq(SubmissionDO::getJudgeResult, judgeResult);
         });

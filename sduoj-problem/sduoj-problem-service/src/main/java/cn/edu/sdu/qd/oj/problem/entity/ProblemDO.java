@@ -72,9 +72,6 @@ public class ProblemDO extends BaseDO {
     @TableField(ProblemDOField.ACCEPT_NUM)
     private Integer acceptNum;
 
-    @TableField(ProblemDOField.LANGUAGES)
-    private String languages;
-
     @TableField(ProblemDOField.MEMORY_LIMIT)
     private Integer memoryLimit;
 

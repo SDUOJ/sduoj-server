@@ -52,8 +52,6 @@ public class ProblemManageListDTO extends BaseDTO {
 
     private Integer acceptNum;
 
-    private List<String> languages;
-
     private Integer memoryLimit;
 
     private Integer timeLimit;

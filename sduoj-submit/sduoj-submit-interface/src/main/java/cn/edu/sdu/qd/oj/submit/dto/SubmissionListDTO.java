@@ -50,8 +50,6 @@ public class SubmissionListDTO extends BaseDTO {
 
     private Long judgeTemplateId;
 
-    private String language;
-
     private Integer judgeResult;
 
     private Integer judgeScore;

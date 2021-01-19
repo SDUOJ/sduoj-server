@@ -43,8 +43,6 @@ public class ProblemDTO extends BaseDTO {
 
     private Integer acceptNum;
 
-    private List<String> languages;
-
     private Integer memoryLimit;
 
     private Integer timeLimit;

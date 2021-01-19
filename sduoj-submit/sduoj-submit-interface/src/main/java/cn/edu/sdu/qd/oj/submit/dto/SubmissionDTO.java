@@ -52,8 +52,6 @@ public class SubmissionDTO extends BaseDTO {
 
     private Long zipFileId;
 
-    private String language;
-
     private Integer judgeResult;
 
     private Integer judgeScore;
