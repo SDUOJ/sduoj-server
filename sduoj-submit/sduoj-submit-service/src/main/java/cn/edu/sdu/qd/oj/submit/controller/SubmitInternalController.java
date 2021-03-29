@@ -20,6 +20,7 @@ import cn.edu.sdu.qd.oj.submit.service.SubmitService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.RestController;
 
+import javax.validation.Valid;
 import java.util.List;
 
 @RestController
@@ -74,5 +75,10 @@ public class SubmitInternalController implements SubmissionApi {
     @Override
     public boolean invalidateSubmission(long submissionId, long contestId) {
         return this.submitService.invalidateSubmission(submissionId, contestId);
+    }
+
+    @Override
+    public List<SubmissionExportResultDTO> exportSubmission(@Valid SubmissionExportReqDTO reqDTO) {
+        return submitService.exportSubmission(reqDTO);
     }
 }

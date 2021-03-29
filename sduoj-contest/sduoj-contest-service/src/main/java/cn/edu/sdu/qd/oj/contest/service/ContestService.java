@@ -54,6 +54,7 @@ import org.springframework.cache.annotation.Cacheable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import javax.validation.constraints.NotNull;
 import java.util.*;
 import java.util.function.Function;
 import java.util.stream.Collectors;
@@ -86,6 +87,9 @@ public class ContestService {
     @Autowired
     private RedisUtils redisUtils;
 
+    @Autowired
+    private ContestCommonService contestCommonService;
+
     /**
     * @Description 查询比赛，同时对用户和比赛开始时间进行校验
     **/
@@ -98,8 +102,8 @@ public class ContestService {
         contestDO.setFeatures(null);
         // 鉴权
         if (!contestDO.containsUserIdInParticipants(userId) && ContestOpennessEnum.PRIVATE.equals(featureDTO.getOpenness())) {
-            contestDO.setProblems(null);
-            contestDO.setMarkdownDescription(null);
+                contestDO.setProblems(null);
+                contestDO.setMarkdownDescription(null);
         }
         // 比赛未开始无法查题
         if (contestDO.getGmtStart().after(new Date())) {
@@ -192,7 +196,7 @@ public class ContestService {
                     problem.setJudgeResult(submission.getJudgeResult());
                 }
                 // 根据 infoOpenness 将各题的 submitNum acceptNum 脱敏
-                if (!(PermissionEnum.SUPERADMIN.in(userSessionDTO) || userSessionDTO.userIdEquals(contestDTO.getUserId()))) {
+                if (!(contestCommonService.isContestManager(contestDTO, userSessionDTO))) {
                     if (infoOpenness.getDisplayRank() == 0 && infoOpenness.getDisplayPeerSubmission() == 0) {
                         problem.setSubmitNum(problem.getJudgeResult() != null ? 1 : 0);
                         problem.setAcceptNum(SubmissionJudgeResult.AC.equals(problem.getJudgeResult()) ? 1 : 0);
@@ -239,7 +243,7 @@ public class ContestService {
         userClient.addUserParticipateContest(userId, contestId);
     }
 
-    public PageResult<ContestListDTO> page(ContestListReqDTO reqDTO, UserSessionDTO userSessionDTO) {
+    public PageResult<ContestListDTO> page(@NotNull ContestListReqDTO reqDTO, UserSessionDTO userSessionDTO) {
         LambdaQueryChainWrapper<ContestListDO> query = contestListDao.lambdaQuery()
                 .orderByDesc(ContestListDO::getGmtStart);
         if (userSessionDTO != null) {
@@ -251,8 +255,7 @@ public class ContestService {
         } else {
             query.and(o1 -> o1.eq(ContestListDO::getIsPublic, 1));
         }
-
-        // TODO: 修改掉临时的暴力 feature 匹配
+        // mode 查询  TODO: 修改掉临时的暴力 feature 匹配
         Optional.ofNullable(reqDTO).map(ContestListReqDTO::getMode).filter(StringUtils::isNotBlank).ifPresent(mode -> {
             query.like(ContestListDO::getFeatures, String.format("mode\":\"%s", mode));
         });
@@ -265,11 +268,11 @@ public class ContestService {
     * @Description 查询一个最近的比赛
     **/
     public ContestListDTO queryUpcomingContest() {
-        ContestListDO contestListDO = contestListDao.lambdaQuery()
+        LambdaQueryChainWrapper<ContestListDO> query = contestListDao.lambdaQuery()
                 .orderByAsc(ContestListDO::getGmtStart)
                 .eq(ContestListDO::getIsPublic, 1)
-                .ge(ContestListDO::getGmtStart, new Date()).last("limit 1").one();
-        return contestListConverter.to(contestListDO);
+                .ge(ContestListDO::getGmtStart, new Date()).last("limit 1");
+        return contestListConverter.to(query.one());
     }
 
     public ContestProblemDTO queryProblem(long contestId, int problemIndex, long userId) {
@@ -340,6 +343,7 @@ public class ContestService {
                 .problemCode(problemCode)
                 .judgeTemplateId(reqDTO.getJudgeTemplateId())
                 .code(reqDTO.getCode())
+                .zipFileId(reqDTO.getZipFileId())
                 .userId(reqDTO.getUserId())
                 .ipv4(reqDTO.getIpv4())
                 .build();
@@ -350,12 +354,12 @@ public class ContestService {
     public PageResult<ContestSubmissionListDTO> listSubmission(ContestSubmissionListReqDTO reqDTO, UserSessionDTO userSessionDTO) {
         ContestDO contestDO = queryContestAndValidate(reqDTO.getContestId(), userSessionDTO.getUserId());
 
-        // 脱敏, 但超级管理员/出题者能查所有的提交
+        // 脱敏, 但超级管理员/出题者/权限用户组成员能查所有的提交
         ContestFeatureDTO contestFeatureDTO = ContestConvertUtils.featuresTo(contestDO.getFeatures());
         ContestFeatureDTO.InfoOpenness infoOpenness = contestDO.getGmtEnd().after(new Date()) ? contestFeatureDTO.getContestRunning() : contestFeatureDTO.getContestEnd();
         if (infoOpenness.getDisplayPeerSubmission() == 0 &&
-           !(PermissionEnum.SUPERADMIN.in(userSessionDTO) || userSessionDTO.userIdEquals(contestDO.getUserId()))) {
-            reqDTO.setUsername(userClient.userIdToUsername(userSessionDTO.getUserId()));
+           !(contestCommonService.isContestManager(contestDO, userSessionDTO))) {
+            reqDTO.setUsername(userSessionDTO.getUsername());
         }
 
 
@@ -442,14 +446,15 @@ public class ContestService {
             }
         }
 
-        // 超级管理员/出题者 直接看所有代码
-        if (PermissionEnum.SUPERADMIN.in(userSessionDTO) || userSessionDTO.userIdEquals(contestDO.getUserId())) {
+        // 比赛管理员 直接看所有代码
+        if (contestCommonService.isContestManager(contestDO, userSessionDTO)) {
             return submissionDTO;
         }
 
         // 观看他人代码脱敏
         if (!submissionDTO.getUserId().equals(userSessionDTO.getUserId())) {
             submissionDTO.setCode(null);
+            submissionDTO.setZipFileId(null);
             submissionDTO.setCheckpointResults(null);
             submissionDTO.setCheckpointNum(null);
         }
@@ -484,8 +489,8 @@ public class ContestService {
         Set<Long> unofficialParticipantIds = new HashSet<>(ContestConvertUtils.participantsToUserIdList(contestDO.getUnofficialParticipants()));
         contestRankDTOList.stream().filter(o -> unofficialParticipantIds.contains(o.getUserId())).forEach(o -> o.setOfficial(false));
 
-        // 超级管理员/出题者 直接获取所有榜单，无封榜无脱敏
-        if (PermissionEnum.SUPERADMIN.in(userSessionDTO) || userSessionDTO.userIdEquals(contestDO.getUserId())) {
+        // 比赛管理员 直接获取所有榜单，无封榜无脱敏
+        if (contestCommonService.isContestManager(contestDO, userSessionDTO)) {
             return contestRankDTOList;
         }
 
@@ -563,8 +568,8 @@ public class ContestService {
     public void invalidateSubmission(long contestId, long submissionId, UserSessionDTO userSessionDTO) {
         // 查比赛
         ContestDO contestDO = queryContestAndValidate(contestId, userSessionDTO.getUserId());
-        // 超级管理员/出题者才可
-        AssertUtils.isTrue(PermissionEnum.SUPERADMIN.in(userSessionDTO) || userSessionDTO.userIdEquals(contestDO.getUserId()), ApiExceptionEnum.USER_NOT_MATCHING);
+        // 判比赛管理员
+        AssertUtils.isTrue(contestCommonService.isContestManager(contestDO, userSessionDTO), ApiExceptionEnum.USER_NOT_MATCHING);
         // 取消成绩
         AssertUtils.isTrue(this.submissionClient.invalidateSubmission(submissionId, contestId), ApiExceptionEnum.SERVER_BUSY);
     }

@@ -38,7 +38,7 @@ public class CommonCacheTypeManager extends AbstractCacheTypeManager {
                 new CacheType(RedisConstants.JUDGE_TEMPLATE_ID_TO_TITLE, 60 * 5),
                 new CacheType(RedisConstants.JUDGE_TEMPLATE_ID_TO_TYPE, 60 * 5)
 
-                );
+        );
     }
 
 }

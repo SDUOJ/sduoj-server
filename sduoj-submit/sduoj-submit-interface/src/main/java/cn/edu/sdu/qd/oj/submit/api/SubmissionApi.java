@@ -42,7 +42,7 @@ public interface SubmissionApi {
     List<SubmissionResultDTO> listResult(@RequestParam("contestId") long contestId,
                                          @RequestParam(value = "userId", required = false) Long userId) throws InternalApiException;
 
-    @GetMapping("query")
+    @GetMapping("/query")
     SubmissionDTO query(@RequestParam("submissionId") long submissionId,
                         @RequestParam("contestId") long contestId) throws InternalApiException;
 
@@ -72,7 +72,11 @@ public interface SubmissionApi {
     /**
     * @Description 使得提交无效
     **/
-    @GetMapping("invalidateSubmission")
+    @GetMapping("/invalidateSubmission")
     boolean invalidateSubmission(@RequestParam("submissionId") long submissionId,
                                  @RequestParam("contestId") long contestId);
+
+    @PostMapping("/exportSubmission")
+    List<SubmissionExportResultDTO> exportSubmission(@RequestBody @Valid SubmissionExportReqDTO reqDTO);
+
 }

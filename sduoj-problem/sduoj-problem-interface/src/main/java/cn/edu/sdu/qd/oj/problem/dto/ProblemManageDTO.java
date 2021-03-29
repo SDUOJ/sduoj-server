@@ -79,6 +79,7 @@ public class ProblemManageDTO extends BaseDTO {
     @Size(max = 20)
     private List<Long> checkpointCases;
 
+    @Size(max = 20)
     private List<Long> judgeTemplates;
 
     // ------------------------------------------

@@ -8,12 +8,11 @@
  *      https://www.gnu.org/licenses/gpl-3.0.en.html
  */
 
-package cn.edu.sdu.qd.oj.submit.dto;
+package cn.edu.sdu.qd.oj.contest.dto;
 
 import cn.edu.sdu.qd.oj.common.entity.BaseDTO;
 import lombok.*;
 
-import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.NotNull;
 
 @Data
@@ -21,19 +20,17 @@ import javax.validation.constraints.NotNull;
 @NoArgsConstructor
 @AllArgsConstructor
 @EqualsAndHashCode(callSuper = true)
-public class SubmissionCreateReqDTO extends BaseDTO {
+public class ContestSubmissionExportReqDTO extends BaseDTO {
 
-    @NotNull
+    @NotNull(message = "contestId should not be null")
+    private Long contestId;
+
+    private String username;
+
+    private Integer problemIndex;
+
     private Long judgeTemplateId;
 
-    private String code;
+    private Integer judgeResult;
 
-    private Long zipFileId;
-
-    @NotBlank
-    private String problemCode;
-
-    private String ipv4;
-
-    private Long userId;
 }

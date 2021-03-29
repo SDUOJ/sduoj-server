@@ -36,7 +36,6 @@ import java.util.stream.Collectors;
 
 /**
  * @ClassName checkpointManageService
- * @Description TODO
  * @Author zhangt2333
  * @Date 2020/4/3 21:28
  * @Version V1.0
@@ -117,11 +116,17 @@ public class CheckpointManageService {
     }
 
     public List<CheckpointDTO> listByIdList(List<Long> checkpointIdList) {
-        List<CheckpointDO> checkpointDOList = checkpointDao.lambdaQuery().select(
-            CheckpointDO::getCheckpointId,
-            CheckpointDO::getInputFileId,
-            CheckpointDO::getOutputFileId
-        ).in(CheckpointDO::getCheckpointId, checkpointIdList).list();
+        Map<Long, CheckpointDO> idToCheckpointDO = checkpointDao.lambdaQuery().select(
+                CheckpointDO::getCheckpointId,
+                CheckpointDO::getInputFileId,
+                CheckpointDO::getOutputFileId
+        ).in(CheckpointDO::getCheckpointId, checkpointIdList)
+         .list().stream().collect(Collectors.toMap(CheckpointDO::getCheckpointId, Function.identity()));
+        List<CheckpointDO> checkpointDOList = checkpointIdList
+                .stream()
+                .map(idToCheckpointDO::get)
+                .filter(Objects::nonNull)
+                .collect(Collectors.toList());
         List<PlainFileDownloadDTO> downloadDTOList = new ArrayList<>(checkpointDOList.size() * 2);
         checkpointDOList.forEach(o -> {
             downloadDTOList.add(PlainFileDownloadDTO.builder().fileId(o.getInputFileId()).build());

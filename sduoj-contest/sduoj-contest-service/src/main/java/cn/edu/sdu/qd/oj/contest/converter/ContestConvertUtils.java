@@ -38,7 +38,7 @@ import java.util.stream.Collectors;
 public class ContestConvertUtils extends BaseConvertUtils {
 
     public static String userIdToUsername(Long userId) {
-        return SpringContextUtils.getBean(UserClient.class).userIdToUsername(userId);
+        return userId == null ? null : SpringContextUtils.getBean(UserClient.class).userIdToUsername(userId);
     }
 
     public static List<ContestProblemListDTO> problemsTo(String problems) {

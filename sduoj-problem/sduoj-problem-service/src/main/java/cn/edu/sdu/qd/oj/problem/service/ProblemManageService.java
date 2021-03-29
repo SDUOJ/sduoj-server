@@ -130,7 +130,7 @@ public class ProblemManageService {
         if (PermissionEnum.SUPERADMIN.notIn(userSessionDTO)) {
             Long userId = Optional.ofNullable(userSessionDTO).map(UserSessionDTO::getUserId).orElse(null);
             query.and(o1 -> o1.eq(ProblemManageListDO::getIsPublic, 1)
-                              .or(o2 -> o2.eq(ProblemManageListDO::getIsPublic, 0)
+                  .or(o2 -> o2.eq(ProblemManageListDO::getIsPublic, 0)
                                           .and(o3 -> o3.eq(ProblemManageListDO::getUserId, userId))));
         }
         // 置排序条件
@@ -196,13 +196,15 @@ public class ProblemManageService {
 
         // 构造更新器
         ProblemDO problemUpdateDO = problemManageConverter.from(problem);
+        problemUpdateDO.setProblemId(originalProblemDO.getProblemId());
         problemUpdateDO.setVersion(originalProblemDO.getVersion());
-
         log.info("{} -> {}", problem, problemUpdateDO);
 
         // 更新题目
         AssertUtils.isTrue(problemDao.updateById(problemUpdateDO), ApiExceptionEnum.UNKNOWN_ERROR);
+
         // 如果传的 caseList 不为 null，则更新 checkpointCase (增量更新和全量更新区别开)
+        problem.setProblemId(originalProblemDO.getProblemId());
         if (problem.getCheckpointCases() != null) {
             if (problemUpdateDO.getCheckpointCases() == null) {
                 problemDao.lambdaUpdate()
@@ -235,35 +237,55 @@ public class ProblemManageService {
         return problemDescriptionDO.getId();
     }
 
-    public void updateDescription(ProblemDescriptionDTO problemDescriptionDTO) {
-        ProblemDescriptionDO problemDescriptionDO = problemDescriptionConverter.from(problemDescriptionDTO);
-        LambdaUpdateChainWrapper<ProblemDescriptionDO> updater = problemDescriptionDao.lambdaUpdate()
-                .eq(ProblemDescriptionDO::getId, problemDescriptionDO.getId());
-        Optional.of(problemDescriptionDO).map(ProblemDescriptionDO::getUserId).ifPresent(userId -> {
-            updater.eq(ProblemDescriptionDO::getUserId, userId);
-        });
-        AssertUtils.isTrue(updater.update(problemDescriptionDO), ApiExceptionEnum.UNKNOWN_ERROR, "或 修改他人题面出错");
+    public void updateDescription(ProblemDescriptionDTO problemDescriptionDTO, UserSessionDTO userSessionDTO) {
+        ProblemDescriptionDO descriptionDO = problemDescriptionDao.lambdaQuery().select(
+                ProblemDescriptionDO::getProblemId,
+                ProblemDescriptionDO::getUserId,
+                ProblemDescriptionDO::getVersion
+        ).eq(ProblemDescriptionDO::getId, problemDescriptionDTO.getId()).one();
+        AssertUtils.notNull(descriptionDO, ApiExceptionEnum.DESCRIPTION_NOT_FOUND);
+        // 鉴权
+        AssertUtils.isTrue(problemCommonService.isProblemManager(descriptionDO.getProblemId(), userSessionDTO) ||
+                           userSessionDTO.userIdEquals(descriptionDO.getUserId()),
+                           ApiExceptionEnum.USER_NOT_MATCHING);
+        // 更新
+        ProblemDescriptionDO update = problemDescriptionConverter.from(problemDescriptionDTO);
+        update.setVersion(descriptionDO.getVersion());
+        AssertUtils.isTrue(problemDescriptionDao.updateById(update), ApiExceptionEnum.UNKNOWN_ERROR, "或 修改他人题面出错");
     }
 
     public ProblemDescriptionDTO queryDescription(long id, UserSessionDTO userSessionDTO) {
         ProblemDescriptionDO descriptionDO = problemDescriptionDao.lambdaQuery().eq(ProblemDescriptionDO::getId, id).one();
         AssertUtils.notNull(descriptionDO, ApiExceptionEnum.DESCRIPTION_NOT_FOUND);
-        if (PermissionEnum.SUPERADMIN.notIn(userSessionDTO)) {
-            Long defaultDescriptionId = Optional.ofNullable(problemDao.lambdaQuery().select(ProblemDO::getDefaultDescriptionId)
-                                                                                    .eq(ProblemDO::getProblemId, descriptionDO.getProblemId()).one())
-                                                .map(ProblemDO::getDefaultDescriptionId).orElse(null);
-            AssertUtils.isTrue(Objects.equals(defaultDescriptionId, descriptionDO.getId())
-                  || descriptionDO.getIsPublic() == 1 || userSessionDTO.userIdEquals(descriptionDO.getUserId()),
-               ApiExceptionEnum.PROBLEM_NOT_FOUND, "非public非default非自己所属的题面无法查看");
+
+        ProblemDO problemDO = problemDao.lambdaQuery().select(
+                ProblemDO::getProblemId,
+                ProblemDO::getDefaultDescriptionId,
+                ProblemDO::getUserId
+        ).eq(ProblemDO::getProblemId, descriptionDO.getProblemId()).one();
+        AssertUtils.notNull(problemDO, ApiExceptionEnum.PROBLEM_NOT_FOUND);
+
+        if (!problemCommonService.isProblemManager(descriptionDO.getProblemId(), userSessionDTO)) {
+            Long defaultDescriptionId = problemDO.getDefaultDescriptionId();
+            AssertUtils.isTrue(Objects.equals(defaultDescriptionId, descriptionDO.getId()) ||
+                               descriptionDO.getIsPublic() == 1 ||
+                               userSessionDTO.userIdEquals(descriptionDO.getUserId()),
+                               ApiExceptionEnum.PROBLEM_NOT_FOUND,
+                      "非public非default非自己所属的题面无法查看");
         }
+
         return problemDescriptionConverter.to(descriptionDO);
     }
 
     public List<ProblemDescriptionListDTO> queryDescriptionList(String problemCode, UserSessionDTO userSessionDTO) {
-        long problemId = problemService.problemCodeToProblemId(problemCode);
-        Long defaultDescriptionId = Optional.ofNullable(problemDao.lambdaQuery().select(ProblemDO::getDefaultDescriptionId)
-                                                                                .eq(ProblemDO::getProblemId, problemId).one())
-                                            .map(ProblemDO::getDefaultDescriptionId).orElse(null);
+        ProblemDO problemDO = problemDao.lambdaQuery().select(
+                ProblemDO::getProblemId,
+                ProblemDO::getDefaultDescriptionId,
+                ProblemDO::getUserId
+        ).eq(ProblemDO::getProblemCode, problemCode).one();
+        AssertUtils.notNull(problemDO, ApiExceptionEnum.PROBLEM_NOT_FOUND);
+        Long defaultDescriptionId = problemDO.getDefaultDescriptionId();
+
         LambdaQueryChainWrapper<ProblemDescriptionDO> query = problemDescriptionDao.lambdaQuery().select(
                 ProblemDescriptionDO::getId,
                 ProblemDescriptionDO::getIsPublic,
@@ -272,15 +294,15 @@ public class ProblemManageService {
                 ProblemDescriptionDO::getUserId,
                 ProblemDescriptionDO::getTitle
         );
-        // superadmin 能看到所有，admin 只能看到公开/默认/自己的题面
-        if (PermissionEnum.SUPERADMIN.notIn(userSessionDTO)) {
+        // 题目管理员能看到所有，admin 只能看到公开/默认/自己的题面
+        if (!problemCommonService.isProblemManager(problemDO, userSessionDTO)) {
             Long userId = Optional.ofNullable(userSessionDTO).map(UserSessionDTO::getUserId).orElse(null);
             query.and(o1 -> o1.eq(ProblemDescriptionDO::getIsPublic, 1)
                               .or(o2 -> o2.eq(ProblemDescriptionDO::getIsPublic, 0)
-                                          .and(o3 -> o3.eq(ProblemDescriptionDO::getUserId, userId)))
-                              .or(o4 -> o4.eq(ProblemDescriptionDO::getId, defaultDescriptionId)));
+                                          .eq(ProblemDescriptionDO::getUserId, userId))
+                              .or(o3 -> o3.eq(ProblemDescriptionDO::getId, defaultDescriptionId)));
         }
-        List<ProblemDescriptionDO> problemDescriptionDOList = query.eq(ProblemDescriptionDO::getProblemId, problemId).list();
+        List<ProblemDescriptionDO> problemDescriptionDOList = query.eq(ProblemDescriptionDO::getProblemId, problemDO.getProblemId()).list();
         List<ProblemDescriptionListDTO> problemDescriptionDTOList = problemDescriptionListConverter.to(problemDescriptionDOList);
         problemDescriptionDTOList.forEach(o -> {
             o.setProblemCode(problemCode);

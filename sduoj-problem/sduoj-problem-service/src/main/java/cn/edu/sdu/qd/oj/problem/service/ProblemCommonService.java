@@ -10,7 +10,10 @@
 
 package cn.edu.sdu.qd.oj.problem.service;
 
+import cn.edu.sdu.qd.oj.auth.enums.PermissionEnum;
 import cn.edu.sdu.qd.oj.common.converter.BaseConvertUtils;
+import cn.edu.sdu.qd.oj.common.entity.UserSessionDTO;
+import cn.edu.sdu.qd.oj.problem.dao.ProblemDao;
 import cn.edu.sdu.qd.oj.tag.converter.TagConverter;
 import cn.edu.sdu.qd.oj.tag.dao.TagDao;
 import cn.edu.sdu.qd.oj.tag.dto.TagDTO;
@@ -35,7 +38,6 @@ public class ProblemCommonService {
 
     @Autowired
     private TagConverter tagConverter;
-
 
 
     public Map<Long, TagDTO> getTagDTOMapByProblemDOList(List<ProblemDO> problemDOList) {
@@ -96,4 +98,17 @@ public class ProblemCommonService {
                                               .collect(Collectors.toList()))
                        .orElse(Lists.newArrayList());
     }
+
+    public boolean isProblemManager(ProblemDO problemDO, UserSessionDTO userSessionDTO) {
+        return isProblemManager(problemDO.getUserId(), userSessionDTO);
+    }
+
+    public boolean isProblemManager(Long problemOwnerId, UserSessionDTO userSessionDTO) {
+        if (userSessionDTO == null) {
+            return false;
+        }
+        return PermissionEnum.SUPERADMIN.in(userSessionDTO) ||
+                userSessionDTO.userIdEquals(problemOwnerId);
+    }
+
 }

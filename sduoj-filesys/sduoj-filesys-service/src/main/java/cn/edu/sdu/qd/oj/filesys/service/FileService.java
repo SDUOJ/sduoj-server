@@ -26,7 +26,7 @@ public interface FileService {
     /**
     * @Description 上传单文件
     **/
-    FileDTO upload(MultipartFile file);
+    FileDTO upload(MultipartFile file, Long userId);
 
     /**
     * @Description 批量上传文件
@@ -67,4 +67,9 @@ public interface FileService {
     * @Description 对输出流写出文件二进制
     **/
     void downloadToStream(long fileId, OutputStream outputStream) throws IOException;
+
+    /**
+    * @Description 根据fileId查源文件名
+    **/
+    String fileIdToFilename(long fileId);
 }

@@ -13,27 +13,27 @@ package cn.edu.sdu.qd.oj.submit.dto;
 import cn.edu.sdu.qd.oj.common.entity.BaseDTO;
 import lombok.*;
 
-import javax.validation.constraints.NotBlank;
-import javax.validation.constraints.NotNull;
+import java.util.Date;
+
 
 @Data
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
 @EqualsAndHashCode(callSuper = true)
-public class SubmissionCreateReqDTO extends BaseDTO {
+public class SubmissionExportResultDTO extends BaseDTO {
 
-    @NotNull
-    private Long judgeTemplateId;
+    private Long submissionId;
 
-    private String code;
-
-    private Long zipFileId;
-
-    @NotBlank
-    private String problemCode;
-
-    private String ipv4;
+    private Date gmtCreate;
 
     private Long userId;
+
+    private Long problemId;
+
+    private Integer judgeTemplateId;
+
+    private Integer judgeResult;
+
+    private String code;
 }

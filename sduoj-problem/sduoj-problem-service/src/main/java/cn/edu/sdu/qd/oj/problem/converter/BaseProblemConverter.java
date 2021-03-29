@@ -36,11 +36,11 @@ public interface BaseProblemConverter<S, T> extends BaseConverter<S, T> {
     }
 
     default List<Long> judgeTemplateIdsTo(String judgeTemplates) {
-        return ProblemConverterUtils.judgeTemplateIdsTo(judgeTemplates);
+        return ProblemConverterUtils.stringToLongList(judgeTemplates);
     }
 
     default String judgeTemplateIdsFrom(List<Long> judgeTemplates) {
-        return ProblemConverterUtils.judgeTemplateIdsFrom(judgeTemplates);
+        return ProblemConverterUtils.longListToString(judgeTemplates);
     }
 
     default List<Long> checkpointCasesTo(byte[] checkpointCases) {

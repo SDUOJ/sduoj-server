@@ -18,11 +18,12 @@ import cn.edu.sdu.qd.oj.common.entity.UserSessionDTO;
 import cn.edu.sdu.qd.oj.common.enums.ApiExceptionEnum;
 import cn.edu.sdu.qd.oj.common.exception.ApiException;
 import cn.edu.sdu.qd.oj.common.exception.InternalApiException;
+import cn.edu.sdu.qd.oj.common.util.AssertUtils;
 import cn.edu.sdu.qd.oj.common.util.CollectionUtils;
 import cn.edu.sdu.qd.oj.contest.dto.*;
 import cn.edu.sdu.qd.oj.contest.service.ContestService;
 import cn.edu.sdu.qd.oj.submit.dto.SubmissionDTO;
-import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.*;
@@ -34,6 +35,7 @@ import java.util.Date;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.Objects;
 
 @Controller
 @RequestMapping("/contest")
@@ -46,7 +48,7 @@ public class ContestController {
     @GetMapping("/list")
     @ApiResponseBody
     public PageResult<ContestListDTO> list(ContestListReqDTO reqDTO,
-                                          @UserSession(nullable=true) UserSessionDTO userSessionDTO) {
+                                           @UserSession(nullable=true) UserSessionDTO userSessionDTO) {
         return contestService.page(reqDTO, userSessionDTO);
     }
 
@@ -96,6 +98,9 @@ public class ContestController {
     public String submitCode(@RequestBody @Valid ContestSubmissionCreateReqDTO reqDTO,
                              @RealIp String ipv4,
                              @UserSession UserSessionDTO userSessionDTO) {
+        // 特判 代码或文件 仅一个不空
+        AssertUtils.isTrue(1 == (StringUtils.isNotBlank(reqDTO.getCode()) ? 1 : 0) + (Objects.nonNull(reqDTO.getZipFileId()) ? 1 : 0),
+                ApiExceptionEnum.SUBMISSION_PARAM_ERROR);
         // 增补数据
         reqDTO.setIpv4(ipv4);
         reqDTO.setUserId(userSessionDTO.getUserId());

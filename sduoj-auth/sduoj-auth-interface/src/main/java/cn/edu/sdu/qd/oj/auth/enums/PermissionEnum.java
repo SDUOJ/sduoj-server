@@ -12,6 +12,7 @@ package cn.edu.sdu.qd.oj.auth.enums;
 
 import cn.edu.sdu.qd.oj.common.entity.UserSessionDTO;
 import lombok.AllArgsConstructor;
+import org.apache.commons.lang3.StringUtils;
 
 import java.util.List;
 
@@ -47,5 +48,12 @@ public enum PermissionEnum {
             }
         }
         return false;
+    }
+
+    public boolean in(String roles) {
+        if (StringUtils.isBlank(roles)) {
+            return false;
+        }
+        return roles.contains(this.name);
     }
 }

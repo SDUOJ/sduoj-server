@@ -20,10 +20,7 @@ import cn.edu.sdu.qd.oj.problem.dto.ProblemListDTO;
 import cn.edu.sdu.qd.oj.submit.client.JudgeTemplateClient;
 import cn.edu.sdu.qd.oj.submit.client.ProblemClient;
 import cn.edu.sdu.qd.oj.submit.client.UserClient;
-import cn.edu.sdu.qd.oj.submit.converter.SubmissionConverter;
-import cn.edu.sdu.qd.oj.submit.converter.SubmissionConverterUtils;
-import cn.edu.sdu.qd.oj.submit.converter.SubmissionListConverter;
-import cn.edu.sdu.qd.oj.submit.converter.SubmissionResultConverter;
+import cn.edu.sdu.qd.oj.submit.converter.*;
 import cn.edu.sdu.qd.oj.submit.dao.SubmissionDao;
 import cn.edu.sdu.qd.oj.submit.dto.*;
 import cn.edu.sdu.qd.oj.submit.entity.SubmissionDO;
@@ -69,6 +66,9 @@ public class SubmitService {
     private SubmissionResultConverter submissionResultConverter;
 
     @Autowired
+    private SubmissionExportResultConverter submissionExportResultConverter;
+
+    @Autowired
     private RedisUtils redisUtils;
 
     // TODO: 临时采用 IP+PID 格式, 生产时加配置文件 Autowired
@@ -99,9 +99,10 @@ public class SubmitService {
         long snowflaskId = snowflakeIdWorker.nextId();
         SubmissionDO submissionDO = SubmissionDO.builder()
                 .submissionId(snowflaskId)
+                .zipFileId(reqDTO.getZipFileId())
                 .code(reqDTO.getCode())
                 .ipv4(reqDTO.getIpv4())
-                .codeLength(reqDTO.getCode().length())
+                .codeLength(Optional.ofNullable(reqDTO.getCode()).map(String::length).orElse(0))
                 .judgeTemplateId(reqDTO.getJudgeTemplateId())
                 .problemId(problemId)
                 .userId(reqDTO.getUserId())
@@ -226,8 +227,9 @@ public class SubmitService {
         });
 
         // 非比赛场景，需要过滤不 public 的题目
-        List<Long> privateProblemIdList = contestId == 0 ? problemClient.queryPrivateProblemIdList(
-                Optional.ofNullable(userSessionDTO).map(UserSessionDTO::getUserId).orElse(null)) : Lists.newArrayList();
+        List<Long> privateProblemIdList = contestId != 0 ? Lists.newArrayList() :
+            problemClient.queryPrivateProblemIdList(Optional.ofNullable(userSessionDTO).map(UserSessionDTO::getUserId).orElse(null));
+
         if (CollectionUtils.isNotEmpty(privateProblemIdList) && PermissionEnum.SUPERADMIN.notIn(userSessionDTO)) {
             query.notIn(SubmissionDO::getProblemId, privateProblemIdList);
         }
@@ -296,9 +298,11 @@ public class SubmitService {
                 .groupBy(SubmissionDO::getProblemId)
                 .list();
         List<String> problemCodeList = submissionDOList.stream().map(SubmissionDO::getProblemId).map(problemClient::problemIdToProblemCode).collect(Collectors.toList());
-        boolean succ = redisUtils.sSetAndTime(key, RedisConstants.ACPROBLEM_EXPIRE, problemCodeList.toArray()) == problemCodeList.size();
-        if (!succ) {
-           log.error("addACProblem Error! {} {}", contestId, userId);
+        if (CollectionUtils.isNotEmpty(problemCodeList)) {
+            boolean succ = redisUtils.sSetAndTime(key, RedisConstants.ACPROBLEM_EXPIRE, problemCodeList.toArray()) == problemCodeList.size();
+            if (!succ) {
+               log.error("addACProblem Error! {} {}", contestId, userId);
+            }
         }
         return problemCodeList;
     }
@@ -385,5 +389,22 @@ public class SubmitService {
                 .eq(SubmissionDO::getContestId, contestId)
                 .ge(SubmissionDO::getJudgeResult, SubmissionJudgeResult.RESULT_CODE_DIVIDING)
                 .update();
+    }
+
+    public List<SubmissionExportResultDTO> exportSubmission(SubmissionExportReqDTO reqDTO) {
+        LambdaQueryChainWrapper<SubmissionDO> query = submissionDao.lambdaQuery().select(
+                SubmissionDO::getSubmissionId,
+                SubmissionDO::getGmtCreate,
+                SubmissionDO::getUserId,
+                SubmissionDO::getProblemId,
+                SubmissionDO::getJudgeTemplateId,
+                SubmissionDO::getJudgeResult,
+                SubmissionDO::getCode
+        ).eq(SubmissionDO::getContestId, reqDTO.getContestId());
+        Optional.ofNullable(reqDTO.getUserId()).ifPresent(o -> query.eq(SubmissionDO::getUserId, o));
+        Optional.ofNullable(reqDTO.getProblemId()).ifPresent(o -> query.eq(SubmissionDO::getProblemId, o));
+        Optional.ofNullable(reqDTO.getJudgeTemplateId()).ifPresent(o -> query.eq(SubmissionDO::getJudgeTemplateId, o));
+        Optional.ofNullable(reqDTO.getJudgeResult()).ifPresent(o -> query.eq(SubmissionDO::getJudgeResult, o));
+        return submissionExportResultConverter.to(query.list());
     }
 }

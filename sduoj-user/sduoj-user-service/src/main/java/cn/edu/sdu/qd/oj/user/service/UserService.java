@@ -79,11 +79,6 @@ public class UserService {
     @Autowired
     private EmailUtil emailUtil;
 
-    public UserDTO verify(Long userId) {
-        UserDO userDO = userDao.getById(userId);
-        AssertUtils.notNull(userDO, ApiExceptionEnum.USER_NOT_FOUND);
-        return userConverter.to(userDO);
-    }
 
     public UserDTO verify(String username, String password) throws ApiException {
         return userConverter.to(verifyAndGetDO(username, password));
@@ -189,7 +184,17 @@ public class UserService {
     }
 
     public UserDTO queryByUserId(Long userId) {
-        UserDO userDO = userDao.getById(userId);
+        UserDO userDO = userDao.lambdaQuery().select(
+            UserDO::getUserId,
+            UserDO::getUsername,
+            UserDO::getNickname,
+            UserDO::getEmail,
+            UserDO::getEmailVerified,
+            UserDO::getStudentId,
+            UserDO::getPhone,
+            UserDO::getGender,
+            UserDO::getRoles
+        ).eq(UserDO::getUserId, userId).one();
         AssertUtils.notNull(userDO, ApiExceptionEnum.USER_NOT_FOUND);
         return userConverter.to(userDO);
     }

@@ -101,25 +101,21 @@ public class ProblemManageController {
     public Void updateDescription(@RequestBody @NotNull ProblemDescriptionDTO problemDescriptionDTO,
                                   @UserSession UserSessionDTO userSessionDTO) {
         AssertUtils.notNull(problemDescriptionDTO.getId(), ApiExceptionEnum.PARAMETER_ERROR);
-        // 超级管理员一定可以改
-        if (PermissionEnum.SUPERADMIN.notIn(userSessionDTO)) {
-            problemDescriptionDTO.setUserId(userSessionDTO.getUserId());
-        }
-        problemManageService.updateDescription(problemDescriptionDTO);
+        problemManageService.updateDescription(problemDescriptionDTO, userSessionDTO);
         return null;
     }
 
     @GetMapping("/queryDescription")
     @ApiResponseBody
     public ProblemDescriptionDTO queryDescription(@RequestParam("descriptionId") long id,
-                                                  @UserSession(nullable = true) UserSessionDTO userSessionDTO) {
+                                                  @UserSession UserSessionDTO userSessionDTO) {
         return problemManageService.queryDescription(id, userSessionDTO);
     }
 
     @GetMapping("/queryDescriptionList")
     @ApiResponseBody
     public List<ProblemDescriptionListDTO> queryDescriptionList(@RequestParam("problemCode") String problemCode,
-                                                                @UserSession(nullable = true) UserSessionDTO userSessionDTO) {
+                                                                @UserSession UserSessionDTO userSessionDTO) {
         return problemManageService.queryDescriptionList(problemCode, userSessionDTO);
     }
 

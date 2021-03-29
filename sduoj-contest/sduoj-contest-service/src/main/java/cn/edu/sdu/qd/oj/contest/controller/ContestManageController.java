@@ -10,7 +10,6 @@
 
 package cn.edu.sdu.qd.oj.contest.controller;
 
-import cn.edu.sdu.qd.oj.auth.enums.PermissionEnum;
 import cn.edu.sdu.qd.oj.common.annotation.UserSession;
 import cn.edu.sdu.qd.oj.common.entity.ApiResponseBody;
 import cn.edu.sdu.qd.oj.common.entity.PageResult;
@@ -20,21 +19,28 @@ import cn.edu.sdu.qd.oj.common.exception.ApiException;
 import cn.edu.sdu.qd.oj.common.util.AssertUtils;
 import cn.edu.sdu.qd.oj.contest.client.ProblemClient;
 import cn.edu.sdu.qd.oj.contest.dto.*;
+import cn.edu.sdu.qd.oj.contest.service.ContestCommonService;
 import cn.edu.sdu.qd.oj.contest.service.ContestManageService;
 import cn.edu.sdu.qd.oj.contest.service.ContestService;
 import com.google.common.collect.Lists;
+import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpHeaders;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.*;
 
+import javax.servlet.http.HttpServletResponse;
 import javax.validation.Valid;
+import java.io.IOException;
+import java.net.URLEncoder;
 import java.util.Date;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
+import java.util.zip.ZipOutputStream;
 
-
+@Slf4j
 @Controller
 @RequestMapping("/manage/contest")
 public class ContestManageController {
@@ -47,6 +53,9 @@ public class ContestManageController {
 
     @Autowired
     private ProblemClient problemClient;
+
+    @Autowired
+    private ContestCommonService contestCommonService;
 
     @PostMapping("/create")
     @ApiResponseBody
@@ -94,14 +103,9 @@ public class ContestManageController {
     public ContestManageDTO query(@RequestParam("contestId") long contestId,
                                   @UserSession UserSessionDTO userSessionDTO) {
         ContestManageDTO contestManageDTO = contestManageService.query(contestId);
-        // 超级管理员一定可以查到比赛详情
-        if (PermissionEnum.SUPERADMIN.in(userSessionDTO)) {
-            return contestManageDTO;
-        }
-        // 非比赛出题者看不到
-        if (userSessionDTO.userIdNotEquals(contestManageDTO.getUserId())) {
-            throw new ApiException(ApiExceptionEnum.USER_NOT_MATCHING);
-        }
+        // 超级管理员、创建者 可查到比赛详情
+        AssertUtils.isTrue(contestCommonService.isContestManager(contestManageDTO, userSessionDTO),
+                        ApiExceptionEnum.USER_NOT_MATCHING, "非比赛创建人");
         return contestManageDTO;
     }
 
@@ -109,6 +113,7 @@ public class ContestManageController {
     @ApiResponseBody
     public Void update(@RequestBody @Valid ContestManageDTO reqDTO,
                        @UserSession UserSessionDTO userSessionDTO) {
+        log.info("{}", reqDTO);
         // 校验 开始时间<结束时间
         AssertUtils.isTrue(reqDTO.getGmtStart().before(reqDTO.getGmtEnd()), ApiExceptionEnum.CONTEST_TIME_ERROR);
 
@@ -123,5 +128,16 @@ public class ContestManageController {
         return null;
     }
 
-
+    @GetMapping("/exportSubmission")
+    public void exportSubmission(@Valid ContestSubmissionExportReqDTO reqDTO,
+                                 @UserSession UserSessionDTO userSessionDTO,
+                                 HttpServletResponse response) throws IOException {
+        log.warn("exportSubmission: {}", reqDTO);
+        response.addHeader(HttpHeaders.CONTENT_DISPOSITION, "attachment;filename=" +
+                URLEncoder.encode(String.valueOf(System.currentTimeMillis()), "UTF-8") + ".zip");
+        response.setContentType("application/zip; charset=utf-8");
+        response.setCharacterEncoding("UTF-8");
+        response.setStatus(HttpServletResponse.SC_OK);
+        contestManageService.exportSubmission(reqDTO, userSessionDTO, new ZipOutputStream(response.getOutputStream()));
+    }
 }

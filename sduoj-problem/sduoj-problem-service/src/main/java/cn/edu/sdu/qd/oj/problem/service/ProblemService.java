@@ -15,6 +15,7 @@ import cn.edu.sdu.qd.oj.common.entity.UserSessionDTO;
 import cn.edu.sdu.qd.oj.common.util.AssertUtils;
 import cn.edu.sdu.qd.oj.common.entity.PageResult;
 import cn.edu.sdu.qd.oj.common.enums.ApiExceptionEnum;
+import cn.edu.sdu.qd.oj.common.util.CollectionUtils;
 import cn.edu.sdu.qd.oj.common.util.RedisUtils;
 import cn.edu.sdu.qd.oj.problem.client.UserClient;
 import cn.edu.sdu.qd.oj.problem.converter.*;
@@ -40,7 +41,6 @@ import org.assertj.core.util.Lists;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
-import org.springframework.util.CollectionUtils;
 
 import java.util.*;
 import java.util.stream.Collectors;
@@ -98,9 +98,10 @@ public class ProblemService {
                 .eq(ProblemDescriptionDO::getId, descriptionId != null ? descriptionId : problemDO.getDefaultDescriptionId())
                 .one();
         // 若非 superadmin 则进行过滤，过滤掉非公开且非默认且非自己的题面
-        if (problemDescriptionDO != null && problemDescriptionDO.getIsPublic() == 0 &&
-                !problemDescriptionDO.getId().equals(problemDO.getDefaultDescriptionId()) &&
-                !problemDescriptionDO.getUserId().equals(userId) &&
+        if (problemDescriptionDO != null &&
+            problemDescriptionDO.getIsPublic() == 0 &&
+            !problemDescriptionDO.getId().equals(problemDO.getDefaultDescriptionId()) &&
+            !problemDescriptionDO.getUserId().equals(userId) &&
                  PermissionEnum.SUPERADMIN.notIn(userSessionDTO)) {
             problemDescriptionDO = null;
         }
@@ -163,7 +164,7 @@ public class ProblemService {
         if (PermissionEnum.SUPERADMIN.notIn(userSessionDTO)) {
             if (userSessionDTO != null) {
                 query.and(o1 -> o1.eq(ProblemDO::getIsPublic, 1)
-                                  .or(o2 -> o2.eq(ProblemDO::getIsPublic, 0)
+                      .or(o2 -> o2.eq(ProblemDO::getIsPublic, 0)
                                               .and(o3 -> o3.eq(ProblemDO::getUserId, userSessionDTO.getUserId()))));
             } else {
                 query.eq(ProblemDO::getIsPublic, 1);
@@ -281,13 +282,12 @@ public class ProblemService {
         LambdaQueryChainWrapper<ProblemDO> query = problemDao.lambdaQuery();
         if (exclusiveUserId != null) {
             query.select(ProblemDO::getProblemId)
-                    .and(o1 -> o1.eq(ProblemDO::getIsPublic, 0)
-                                 .and(o3 -> o3.ne(ProblemDO::getUserId, exclusiveUserId)));
+                 .and(o1 -> o1.eq(ProblemDO::getIsPublic, 0)
+                              .ne(ProblemDO::getUserId, exclusiveUserId));
         } else {
             query.select(ProblemDO::getProblemId).eq(ProblemDO::getIsPublic, 0);
         }
-        List<ProblemDO> problemDOList = query.list();
-        return problemDOList.stream().map(ProblemDO::getProblemId).collect(Collectors.toList());
+        return query.list().stream().map(ProblemDO::getProblemId).collect(Collectors.toList());
     }
 
     public String problemIdToProblemTitle(long problemId) {

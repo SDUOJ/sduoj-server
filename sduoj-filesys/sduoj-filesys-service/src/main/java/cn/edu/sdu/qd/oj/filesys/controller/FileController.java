@@ -13,6 +13,8 @@ package cn.edu.sdu.qd.oj.filesys.controller;
 import cn.edu.sdu.qd.oj.common.annotation.UserSession;
 import cn.edu.sdu.qd.oj.common.entity.ApiResponseBody;
 import cn.edu.sdu.qd.oj.common.entity.UserSessionDTO;
+import cn.edu.sdu.qd.oj.common.enums.ApiExceptionEnum;
+import cn.edu.sdu.qd.oj.common.util.AssertUtils;
 import cn.edu.sdu.qd.oj.dto.FileDTO;
 import cn.edu.sdu.qd.oj.dto.FileDownloadReqDTO;
 import cn.edu.sdu.qd.oj.filesys.service.FileService;
@@ -40,11 +42,12 @@ public class FileController {
     @Autowired
     private FileService fileService;
 
-//    @PostMapping(value = "/upload", headers = "content-type=multipart/form-data")
-//    @ApiResponseBody
-//    public FileDTO upload(@RequestParam("file") @NotNull MultipartFile file) {
-//        return fileService.upload(file);
-//    }
+    @PostMapping(value = "/upload", headers = "content-type=multipart/form-data")
+    @ApiResponseBody
+    public FileDTO upload(@RequestParam("file") @NotNull MultipartFile file,
+                          @UserSession UserSessionDTO userSessionDTO) {
+        return fileService.upload(file, userSessionDTO.getUserId());
+    }
 
     @PostMapping(value = "/uploadFiles", headers = "content-type=multipart/form-data")
     @ApiResponseBody
@@ -73,6 +76,11 @@ public class FileController {
                          HttpServletResponse response) throws IOException {
         log.info("download: {}", fileId);
 
+        if ("source".equals(filename)) {
+            filename = fileService.fileIdToFilename(fileId);
+            AssertUtils.notNull(filename, ApiExceptionEnum.FILE_NOT_EXISTS);
+        }
+
         // 从 filename 获取 contentType
         String contentType = null;
         try {
@@ -81,13 +89,9 @@ public class FileController {
             log.warn("", e);
         }
 
-        // 设置 header
-        if (contentType == null) {
-            response.setHeader(HttpHeaders.CONTENT_DISPOSITION, "attachment;filename=" + URLEncoder.encode(filename, "UTF-8"));
-            response.setContentType("application/octet-stream; charset=utf-8");
-        } else {
-            response.setContentType(contentType);
-        }
+        // 设置 response
+        response.setHeader(HttpHeaders.CONTENT_DISPOSITION, "attachment;filename=" + URLEncoder.encode(filename, "UTF-8"));
+        response.setContentType(contentType != null ? contentType : "application/octet-stream; charset=utf-8");
         response.setCharacterEncoding("UTF-8");
         response.setStatus(HttpServletResponse.SC_OK);
 

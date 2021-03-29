@@ -13,6 +13,7 @@ package cn.edu.sdu.qd.oj.contest.entity;
 import cn.edu.sdu.qd.oj.common.entity.BaseDO;
 import cn.edu.sdu.qd.oj.contest.converter.ContestConvertUtils;
 import cn.edu.sdu.qd.oj.contest.dto.ContestProblemListDTO;
+import com.alibaba.fastjson.JSON;
 import com.baomidou.mybatisplus.annotation.*;
 import lombok.*;
 
@@ -118,5 +119,19 @@ public class ContestDO extends BaseDO {
             return null;
         }
         return contestProblemListDTOList.get(problemIndex-1);
+    }
+
+    /**
+     * @Description 通过下标获取比赛中题目的 problemId，下标从 1 开始算
+     */
+    public Long getProblemIdByIndex(Integer problemIndex) {
+        if (problemIndex == null) {
+            return null;
+        }
+        try {
+            return Long.parseLong(JSON.parseArray(problems).getJSONArray(problemIndex - 1).getString(0));
+        } catch (Throwable ignore) {
+            return null;
+        }
     }
 }

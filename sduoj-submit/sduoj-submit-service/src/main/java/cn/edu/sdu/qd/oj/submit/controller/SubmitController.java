@@ -56,7 +56,8 @@ public class SubmitController {
                                    @RealIp String ipv4,
                                    @UserSession UserSessionDTO userSessionDTO) {
         // 特判 代码或文件 仅一个不空
-        AssertUtils.isTrue(StringUtils.isNotBlank(reqDTO.getCode()) || Objects.nonNull(reqDTO.getZipFileId()), ApiExceptionEnum.SUBMISSION_PARAM_ERROR);
+        AssertUtils.isTrue(1 == (StringUtils.isNotBlank(reqDTO.getCode()) ? 1 : 0) + (Objects.nonNull(reqDTO.getZipFileId()) ? 1 : 0),
+                ApiExceptionEnum.SUBMISSION_PARAM_ERROR);
         // 置入参
         reqDTO.setIpv4(ipv4);
         reqDTO.setUserId(userSessionDTO.getUserId());
@@ -78,6 +79,7 @@ public class SubmitController {
         if (submissionDTO != null &&
           !Optional.ofNullable(userSessionDTO).map(o -> o.userIdEquals(submissionDTO.getUserId())).orElse(false)) {
             submissionDTO.setCode(null);
+            submissionDTO.setZipFileId(null);
             submissionDTO.setJudgeLog(null);
         }
         return submissionDTO;

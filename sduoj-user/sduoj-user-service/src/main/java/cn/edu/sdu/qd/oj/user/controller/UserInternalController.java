@@ -48,11 +48,6 @@ public class UserInternalController implements UserApi {
     }
 
     @Override
-    public UserDTO query(Long userId) throws InternalApiException {
-        return this.userService.verify(userId);
-    }
-
-    @Override
     public Long usernameToUserId(String username) {
         return this.userService.usernameToUserId(username);
     }

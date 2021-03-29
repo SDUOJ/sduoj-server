@@ -26,8 +26,9 @@ public class ContestSubmissionCreateReqDTO extends BaseDTO {
     @NotNull
     private Long judgeTemplateId;
 
-    @NotBlank
     private String code;
+
+    private Long zipFileId;
 
     @NotBlank
     private String problemCode;

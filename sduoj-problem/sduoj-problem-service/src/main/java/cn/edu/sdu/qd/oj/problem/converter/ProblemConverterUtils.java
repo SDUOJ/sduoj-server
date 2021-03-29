@@ -75,19 +75,19 @@ public class ProblemConverterUtils extends BaseConvertUtils{
         return BaseConvertUtils.listToString(judgeTemplates.stream().map(JudgeTemplateListDTO::getId).map(String::valueOf).collect(Collectors.toList()));
     }
 
-    public static List<Long> judgeTemplateIdsTo(String judgeTemplates) {
-        List<String> judgeTemplateIdStrList = BaseConvertUtils.stringToList(judgeTemplates);
-        if (judgeTemplateIdStrList == null) {
+    public static List<Long> stringToLongList(String idListString) {
+        List<String> stringList = BaseConvertUtils.stringToList(idListString);
+        if (stringList == null) {
             return null;
         }
-        return judgeTemplateIdStrList.stream().map(Long::parseLong).collect(Collectors.toList());
+        return stringList.stream().map(Long::parseLong).collect(Collectors.toList());
     }
 
-    public static String judgeTemplateIdsFrom(List<Long> judgeTemplates) {
-        if (judgeTemplates == null) {
+    public static String longListToString(List<Long> longList) {
+        if (longList == null) {
             return null;
         }
-        return BaseConvertUtils.listToString(judgeTemplates.stream().map(Object::toString).collect(Collectors.toList()));
+        return BaseConvertUtils.listToString(longList.stream().map(Object::toString).collect(Collectors.toList()));
     }
 
 

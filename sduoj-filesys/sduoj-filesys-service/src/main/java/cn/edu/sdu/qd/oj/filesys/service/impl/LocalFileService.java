@@ -66,7 +66,7 @@ public class LocalFileService implements FileService {
 
     @Transactional
     @Override
-    public FileDTO upload(MultipartFile file) {
+    public FileDTO upload(MultipartFile file, Long userId) {
         // 计算文件 md5
         String md5;
         try {
@@ -83,6 +83,7 @@ public class LocalFileService implements FileService {
         Long id = snowflakeIdWorker.nextId();
         fileDO = FileDO.builder()
                 .id(id)
+                .userId(userId)
                 .name(file.getOriginalFilename())
                 .extensionName(Files.getFileExtension(file.getOriginalFilename()))
                 .md5(md5)
@@ -269,5 +270,12 @@ public class LocalFileService implements FileService {
     public void downloadToStream(long fileId, OutputStream outputStream) throws IOException {
         FileSystemResource file = new FileSystemResource(Paths.get(fileSystemProperties.getBaseDir(), String.valueOf(fileId)).toString());
         StreamUtils.copy(file.getInputStream(), outputStream);
+    }
+
+    @Override
+    public String fileIdToFilename(long fileId) {
+        return Optional.ofNullable(fileDao.lambdaQuery().select(FileDO::getName).eq(FileDO::getId, fileId).one())
+                       .map(FileDO::getName)
+                       .orElse(null);
     }
 }

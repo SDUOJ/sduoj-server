@@ -12,28 +12,27 @@ package cn.edu.sdu.qd.oj.submit.dto;
 
 import cn.edu.sdu.qd.oj.common.entity.BaseDTO;
 import lombok.*;
+import org.hibernate.validator.constraints.Range;
 
-import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.NotNull;
+
 
 @Data
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
 @EqualsAndHashCode(callSuper = true)
-public class SubmissionCreateReqDTO extends BaseDTO {
+public class SubmissionExportReqDTO extends BaseDTO {
 
-    @NotNull
-    private Long judgeTemplateId;
-
-    private String code;
-
-    private Long zipFileId;
-
-    @NotBlank
-    private String problemCode;
-
-    private String ipv4;
+    @NotNull(message = "contestId should not be null")
+    @Range(min = 1)
+    private Long contestId;
 
     private Long userId;
+
+    private Long problemId;
+
+    private Long judgeTemplateId;
+
+    private Integer judgeResult;
 }

@@ -70,13 +70,6 @@ public interface UserApi {
     UserDTO verify(@RequestBody Map<String, String> map) throws InternalApiException;
 
     /**
-     * 根据用户id查询用户
-     * @param userId
-     */
-    @GetMapping("/queryById")
-    UserDTO query(@RequestParam("userId") Long userId) throws InternalApiException;
-
-    /**
      * 查询 userId->username 的全量 map
      */
     @GetMapping("/queryIdToUsernameMap")
