@@ -11,10 +11,10 @@ RUN apt-get update \
 RUN ln -sf /usr/lib/jvm/java-8-openjdk-amd64/bin/java /usr/bin/java \
  && ln -sf /usr/lib/jvm/java-8-openjdk-amd64/bin/javac /usr/bin/javac \
  && mkdir /sduoj \
- && wget -O /sduoj/server.zip https://codeload.github.com/SDUOJ/sduoj-server/zip/master \
+ && wget -O /sduoj/server.zip https://codeload.github.com/SDUOJ/sduoj-server/zip/stable \
  && unzip -o -q -d /sduoj /sduoj/server.zip \
  && mkdir /usr/share/maven/conf/logging \
- && cd /sduoj/sduoj-server-master \
+ && cd /sduoj/sduoj-server-stable \
  && mvn package \
  && mv sduoj-gateway/target/sduoj-gateway.jar ../sduoj-gateway.jar \
  && mv sduoj-auth/sduoj-auth-service/target/sduoj-auth.jar ../sduoj-auth.jar \
