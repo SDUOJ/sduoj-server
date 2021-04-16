@@ -61,4 +61,6 @@ public class ContestSubmissionListDTO extends BaseDTO {
     private String judgeTemplateTitle;
 
     private String username;
+
+    private Integer checkpointNum;
 }
