@@ -29,7 +29,8 @@ import java.net.SocketException;
 import java.util.regex.Pattern;
 
 /**
-* @Description 对出错 response 进行规整，未出错的业务返回无需处理
+* 对出错 response 进行规整、打日志，未出错的业务返回无需处理
+* @author zhangt2333
 **/
 @Slf4j
 @Order(-1)
@@ -51,6 +52,9 @@ public class GlobalExceptionHandler implements ErrorWebExceptionHandler {
         response.getHeaders().setContentType(MediaType.APPLICATION_JSON);
         int statusCode = t instanceof ResponseStatusException ? ((ResponseStatusException) t).getStatus().value() : 500;
         String message = t instanceof SocketException ? PATTERN_REPLACE_HOST.matcher(t.getMessage()).replaceFirst(""): t.getMessage();
+        if (!(t instanceof ResponseStatusException) && !(t instanceof SocketException)) {
+            log.error("", t);
+        }
         return response.writeWith(Mono.fromSupplier(() -> {
             DataBufferFactory bufferFactory = response.bufferFactory();
             try {

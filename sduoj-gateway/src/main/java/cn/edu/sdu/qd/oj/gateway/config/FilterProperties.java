@@ -15,13 +15,11 @@ import lombok.Setter;
 import org.springframework.boot.context.properties.ConfigurationProperties;
 
 import java.util.List;
+import java.util.Map;
 
 /**
- * @ClassName FilterProperties
- * @Description TODO
- * @Author zhangt2333
- * @Date 2020/3/1 14:35
- * @Version V1.0
+ * 过滤器配置类
+ * @author zhangt2333
  **/
 
 @ConfigurationProperties(prefix = "sduoj.filter")
@@ -29,4 +27,8 @@ import java.util.List;
 @Setter
 public class FilterProperties {
     private List<String> allowPaths;
+
+    private Map<String, Integer> globalLimitPaths;
+
+    private Map<String, Integer> userLimitPaths;
 }
