@@ -1,9 +1,11 @@
 FROM ubuntu:18.04
 MAINTAINER SDUOJ-dev
 
+ENV LANG C.UTF-8
+
 COPY docker/sources.list /etc/apt/sources.list
 COPY docker/mavenSettings.xml /usr/share/maven/conf/settings.xml
-ADD https://github.com/ufoscout/docker-compose-wait/releases/download/2.7.3/wait /wait
+ADD https://github.com/SDUOJ/docker-compose-wait/releases/download/2.7.3/wait /wait
 
 RUN apt-get update \
  && apt-get install -y wget curl unzip openjdk-8-jdk maven
@@ -48,4 +50,4 @@ CMD /wait \
    --sduoj.config.nacos-addr=$NACOS_ADDR \
    --sduoj.config.active=$ACTIVE \
    --sduoj.config.port=$PORT \
-   > /sduoj/sduoj.log
+   >> /sduoj/sduoj.log
