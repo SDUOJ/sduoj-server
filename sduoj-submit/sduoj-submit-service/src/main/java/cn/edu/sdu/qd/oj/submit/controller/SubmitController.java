@@ -35,12 +35,10 @@ import java.util.Optional;
 import java.util.stream.Collectors;
 
 /**
- * @ClassName SubmitController
- * @Description TODO
- * @Author zhangt2333
- * @Date 2020/3/6 16:03
- * @Version V1.0
- **/
+ * The Entrance of submission biz
+ *
+ * @author zhangt2333
+ */
 
 @Controller
 @RequestMapping("/submit")
@@ -79,6 +77,7 @@ public class SubmitController {
         if (submissionDTO != null &&
           !Optional.ofNullable(userSessionDTO).map(o -> o.userIdEquals(submissionDTO.getUserId())).orElse(false)) {
             submissionDTO.setCode(null);
+            submissionDTO.setCheckpointResults(null);
             submissionDTO.setZipFileId(null);
             submissionDTO.setJudgeLog(null);
         }

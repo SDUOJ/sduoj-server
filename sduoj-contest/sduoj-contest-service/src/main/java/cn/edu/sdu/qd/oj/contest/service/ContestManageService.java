@@ -24,8 +24,10 @@ import cn.edu.sdu.qd.oj.contest.dto.ContestCreateReqDTO;
 import cn.edu.sdu.qd.oj.contest.dto.ContestManageDTO;
 import cn.edu.sdu.qd.oj.contest.dto.ContestSubmissionExportReqDTO;
 import cn.edu.sdu.qd.oj.contest.entity.ContestDO;
+import cn.edu.sdu.qd.oj.contest.entity.ContestDOField;
 import cn.edu.sdu.qd.oj.submit.dto.SubmissionExportReqDTO;
 import cn.edu.sdu.qd.oj.submit.dto.SubmissionExportResultDTO;
+import com.baomidou.mybatisplus.core.conditions.update.UpdateWrapper;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -38,6 +40,11 @@ import java.util.Objects;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipOutputStream;
 
+/**
+ * some service methods for managing contest
+ *
+ * @author zhangt2333
+ */
 @Service
 public class ContestManageService {
 
@@ -86,8 +93,9 @@ public class ContestManageService {
         ContestDO contestUpdateDO = contestManageConverter.from(reqDTO);
         contestUpdateDO.setParticipantNum(contestUpdateDO.getParticipants().length / 8);
         contestUpdateDO.setVersion(contestDO.getVersion());
-
-        if (!contestDao.updateById(contestUpdateDO)) {
+        UpdateWrapper<ContestDO> updater = new UpdateWrapper<>();
+        updater.eq(ContestDOField.ID, contestUpdateDO.getContestId());
+        if (!contestDao.update(contestUpdateDO, updater)) {
             throw new ApiException(ApiExceptionEnum.SERVER_BUSY);
         }
     }
