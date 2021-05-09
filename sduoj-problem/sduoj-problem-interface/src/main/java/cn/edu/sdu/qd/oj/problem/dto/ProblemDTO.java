@@ -45,6 +45,8 @@ public class ProblemDTO extends BaseDTO {
 
     private Integer memoryLimit;
 
+    private Integer outputLimit;
+
     private Integer timeLimit;
 
     private Long defaultDescriptionId;

@@ -67,6 +67,8 @@ public class ProblemManageDTO extends BaseDTO {
 
     private Integer timeLimit;
 
+    private Integer outputLimit;
+
     private Long defaultDescriptionId;
 
     @JsonProperty(access = JsonProperty.Access.READ_ONLY)

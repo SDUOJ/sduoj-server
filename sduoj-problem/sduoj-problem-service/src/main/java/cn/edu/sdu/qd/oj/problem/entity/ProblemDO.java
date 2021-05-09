@@ -78,6 +78,9 @@ public class ProblemDO extends BaseDO {
     @TableField(ProblemDOField.TIME_LIMIT)
     private Integer timeLimit;
 
+    @TableField(ProblemDOField.OUTPUT_LIMIT)
+    private Integer outputLimit;
+
     @TableField(ProblemDOField.DEFAULT_DESCRIPTION_ID)
     private Long defaultDescriptionId;
 

@@ -39,6 +39,7 @@ public class ProblemJudgerService {
             ProblemDO::getIsPublic,
             ProblemDO::getTimeLimit,
             ProblemDO::getMemoryLimit,
+            ProblemDO::getOutputLimit,
             ProblemDO::getCheckpointNum,
             ProblemDO::getCheckpoints
         ).eq(ProblemDO::getProblemId, problemId).one();

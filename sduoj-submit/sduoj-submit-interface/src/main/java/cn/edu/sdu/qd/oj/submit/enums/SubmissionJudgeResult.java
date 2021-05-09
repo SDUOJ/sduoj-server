@@ -32,8 +32,9 @@ public enum SubmissionJudgeResult {
     WA(6,"Wrong Answer"),
     PR(7,"Presentation Error"),
     CE(8,"Compilation Error"),
-    CAN(9,"Canceled"),
+    OLE(9, "Output Limit Exceeded"),
 
+    CAN(99, "Canceled"),
 
     ;
 
@@ -53,6 +54,8 @@ public enum SubmissionJudgeResult {
             WA.code,
             PR.code,
             CE.code,
+            OLE.code,
+
             CAN.code
     );
 

@@ -29,6 +29,7 @@ public class ProblemDOField {
     public static final String ACCEPT_NUM = "p_accept_num";
     public static final String MEMORY_LIMIT = "p_memory_limit";
     public static final String TIME_LIMIT = "p_time_limit";
+    public static final String OUTPUT_LIMIT = "p_output_limit";
     public static final String DEFAULT_DESCRIPTION_ID = "p_default_pd_id";
     public static final String CHECKPOINT_NUM = "p_checkpoint_num";
     public static final String CHECKPOINTS = "p_checkpoints";
