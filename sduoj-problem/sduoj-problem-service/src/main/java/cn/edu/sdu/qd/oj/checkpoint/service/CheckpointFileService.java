@@ -15,6 +15,7 @@ import cn.edu.sdu.qd.oj.checkpoint.converter.CheckpointConverter;
 import cn.edu.sdu.qd.oj.checkpoint.dao.CheckpointDao;
 import cn.edu.sdu.qd.oj.checkpoint.entity.CheckpointDO;
 import cn.edu.sdu.qd.oj.checkpoint.dto.CheckpointDTO;
+import cn.edu.sdu.qd.oj.checkpoint.util.Dos2UnixUtils;
 import cn.edu.sdu.qd.oj.common.enums.ApiExceptionEnum;
 import cn.edu.sdu.qd.oj.common.exception.ApiException;
 import cn.edu.sdu.qd.oj.common.util.AssertUtils;
@@ -32,17 +33,17 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
 /**
- * @ClassName CheckpointFileService
- * @Description TODO
- * @Author zhangt2333
- * @Date 2020/4/6 14:02
- * @Version V1.0
- **/
+ * CheckpointFileService
+ * @author zhangt2333
+ */
 
 @Slf4j
 @Service
@@ -61,12 +62,13 @@ public class CheckpointFileService {
     private FilesysClient filesysClient;
 
     /**
-     * @param files
+     * 批量上传成对的测试点文件，如果不配对或者写入到文件系统中出现错误，则全部回滚
+     * @param files files
+     * @param mode mode
      * @return cn.edu.sdu.qd.oj.checkpoint.pojo.Checkpoint[]
-     * @Description 批量上传成对的测试点文件，如果不配对或者写入到文件系统中出现错误，则全部回滚
-     **/
+     */
     @Transactional
-    public List<CheckpointDTO> uploadCheckpointFiles(MultipartFile[] files, Long userId) {
+    public List<CheckpointDTO> uploadCheckpointFiles(MultipartFile[] files, String mode, Long userId) {
         List<CheckpointDO> checkpointDOList = new ArrayList<>(files.length / 2 + 1);
         Map<String, MultipartFile> map = new HashMap<>();
         for (MultipartFile file : files) {
@@ -84,7 +86,7 @@ public class CheckpointFileService {
             // 调用文件系统api，上传文件
             List<BinaryFileUploadReqDTO> uploadReqDTOList = new ArrayList<>(files.length);
             for (MultipartFile file : files) {
-                byte[] bytes = file.getBytes();
+                byte[] bytes = Dos2UnixUtils.handle(file.getBytes(), mode);
                 uploadReqDTOList.add(
                     BinaryFileUploadReqDTO.builder().bytes(bytes).size((long) bytes.length).filename(file.getOriginalFilename()).build()
                 );
@@ -101,8 +103,8 @@ public class CheckpointFileService {
                     FileDTO inputFileDTO = fileDTOMap.get(input.getOriginalFilename());
                     FileDTO outputFileDTO = fileDTOMap.get(output.getOriginalFilename());
 
-                    byte[] inputBytes = input.getBytes();
-                    byte[] outputBytes = output.getBytes();
+                    byte[] inputBytes = Dos2UnixUtils.handle(input.getBytes(), mode);
+                    byte[] outputBytes = Dos2UnixUtils.handle(output.getBytes(), mode);
                     long snowflaskId = snowflakeIdWorker.nextId();
                     CheckpointDO checkpointDO = CheckpointDO.builder()
                             .checkpointId(snowflaskId)
@@ -131,10 +133,14 @@ public class CheckpointFileService {
      * @Description 上传单对文本文件作为测试点文件
      * @param input
      * @param output
+     * @param mode dos2unix, unix2dos, null
      * @return cn.edu.sdu.qd.oj.checkpoint.pojo.Checkpoint
-     **/
+     */
     @Transactional
-    public CheckpointDTO updateCheckpointFile(String input, String output, Long userId) {
+    public CheckpointDTO updateCheckpointFile(String input, String output, String mode, Long userId) {
+        input = Dos2UnixUtils.handle(input, mode);
+        output = Dos2UnixUtils.handle(output, mode);
+
         long snowflaskId = snowflakeIdWorker.nextId();
 
         byte[] inputBytes = input.getBytes();
@@ -160,16 +166,15 @@ public class CheckpointFileService {
             checkpointDO.setOutputFileId(fileDTOMap.get(outputMd5).getId());
             checkpointDao.save(checkpointDO);
         } catch (Exception e) {
-            log.error("{}", e);
+            log.error("", e);
             throw new ApiException(ApiExceptionEnum.FILE_WRITE_ERROR);
         }
         return checkpointConverter.to(checkpointDO);
     }
 
     /**
-    * @Description 读取文件系统中的 checkpoint 内容
-    * @param checkpointId
-    **/
+     * 读取文件系统中的 checkpoint 内容
+     */
     public CheckpointDTO queryCheckpointFileContent(Long checkpointId) throws IOException {
         CheckpointDO checkpointDO = checkpointDao.getById(checkpointId);
 

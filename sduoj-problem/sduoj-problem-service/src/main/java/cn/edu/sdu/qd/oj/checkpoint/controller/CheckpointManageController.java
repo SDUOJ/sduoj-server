@@ -30,12 +30,9 @@ import java.io.IOException;
 import java.util.*;
 
 /**
- * @ClassName checkpointManageController
- * @Description TODO
- * @Author zhangt2333
- * @Date 2020/4/3 21:29
- * @Version V1.0
- **/
+ * checkpointManageController
+ * @author zhangt2333
+ */
 
 @Controller
 @RequestMapping("/manage/checkpoint")
@@ -61,29 +58,34 @@ public class CheckpointManageController {
 
 
     /**
+     * 上传单对文本文件作为测试点文件
+     * json.mode maybe dos2unix, unix2dos or null
+     * @param json {"input": "...", "output": "...", "mode": ""}
      * @return cn.edu.sdu.qd.oj.checkpoint.pojo.Checkpoint
-     * @Description 上传单对文本文件作为测试点文件
-     **/
+     */
     @PostMapping(value = "/upload", headers = "content-type=application/json")
     @ApiResponseBody
     public CheckpointDTO upload(@RequestBody Map<String, String> json,
                                 @UserSession UserSessionDTO userSessionDTO) {
         String input = json.get("input");
         String output = json.get("output");
+        String mode = json.get("mode");
         AssertUtils.isTrue(StringUtils.isNotBlank(input) || StringUtils.isNotBlank(output), ApiExceptionEnum.CONTENT_IS_BLANK);
-        return checkpointFileService.updateCheckpointFile(input, output, userSessionDTO.getUserId());
+        return checkpointFileService.updateCheckpointFile(input, output, mode, userSessionDTO.getUserId());
     }
 
     /**
-     * @param files
+     * 批量上传成对的测试点文件，如果不配对或者写入到文件系统中出现错误，则全部回滚
+     * @param files files
+     * @param mode dos2unix, unix2dos or null
      * @return cn.edu.sdu.qd.oj.checkpoint.pojo.Checkpoint[]
-     * @Description 批量上传成对的测试点文件，如果不配对或者写入到文件系统中出现错误，则全部回滚
-     **/
+     */
     @PostMapping(value = "/uploadFiles", headers = "content-type=multipart/form-data")
     @ApiResponseBody
     public List<CheckpointDTO> upload(@RequestParam("files") MultipartFile[] files,
+                                      @RequestParam(value = "mode", required = false) String mode,
                                       @UserSession UserSessionDTO userSessionDTO) {
-        return checkpointFileService.uploadCheckpointFiles(files, userSessionDTO.getUserId());
+        return checkpointFileService.uploadCheckpointFiles(files, mode, userSessionDTO.getUserId());
     }
 
     @GetMapping(value = "/list")
