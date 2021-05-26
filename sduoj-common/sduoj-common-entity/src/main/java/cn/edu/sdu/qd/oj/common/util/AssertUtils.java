@@ -18,6 +18,9 @@ import java.text.MessageFormat;
 
 public class AssertUtils {
 
+    /**
+     * @param message 必须符合 "{0} {1}" 即 {ArgumentIndex} 的格式
+     */
     public static ApiException newException(ApiExceptionEnum exceptionEnum, String message, Object... args) {
         if (StringUtils.isNotBlank(message)) {
             return new ApiException(exceptionEnum, MessageFormat.format(message, args));
@@ -29,6 +32,9 @@ public class AssertUtils {
         isTrue(expression, exceptionEnum, null);
     }
 
+    /**
+     * @param message 必须符合 "{0} {1}" 即 {ArgumentIndex} 的格式
+     */
     public static void isTrue(boolean expression, ApiExceptionEnum exceptionEnum, String message, Object... args) {
         if (!expression) {
             throw newException(exceptionEnum, message, args);
@@ -39,6 +45,9 @@ public class AssertUtils {
         notNull(obj, exceptionEnum, null);
     }
 
+    /**
+     * @param message 必须符合 "{0} {1}" 即 {ArgumentIndex} 的格式
+     */
     public static void notNull(Object obj, ApiExceptionEnum exceptionEnum, String message, Object... args) {
         if (obj == null) {
             throw newException(exceptionEnum, message, args);

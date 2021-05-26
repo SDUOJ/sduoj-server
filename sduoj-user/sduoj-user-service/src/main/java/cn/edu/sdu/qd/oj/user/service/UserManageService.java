@@ -47,19 +47,23 @@ public class UserManageService {
         LambdaQueryChainWrapper<UserDO> query = userDao.lambdaQuery();
 
         Optional.of(reqDTO).map(UserListReqDTO::getUsername).ifPresent(username -> {
-            query.likeRight(UserDO::getUsername, username);
+            query.like(UserDO::getUsername, username);
         });
 
         Optional.of(reqDTO).map(UserListReqDTO::getStudentId).ifPresent(studentId -> {
-            query.likeRight(UserDO::getStudentId, studentId);
+            query.like(UserDO::getStudentId, studentId);
         });
 
         Optional.of(reqDTO).map(UserListReqDTO::getPhone).ifPresent(phone -> {
-            query.likeRight(UserDO::getPhone, phone);
+            query.like(UserDO::getPhone, phone);
         });
 
         Optional.of(reqDTO).map(UserListReqDTO::getEmail).ifPresent(email -> {
-            query.likeRight(UserDO::getEmail, email);
+            query.like(UserDO::getEmail, email);
+        });
+
+        Optional.of(reqDTO).map(UserListReqDTO::getSduId).ifPresent(sduId -> {
+            query.like(UserDO::getSduId, sduId);
         });
 
         Page<UserDO> pageResult = query.page(new Page<>(reqDTO.getPageNow(), reqDTO.getPageSize()));

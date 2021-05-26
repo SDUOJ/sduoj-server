@@ -14,11 +14,8 @@ import lombok.AllArgsConstructor;
 import lombok.Getter;
 
 /**
- * @ClassName ExceptionEnum
- * @Description API异常枚举类，需要客户端处理
- * @Author zhangt2333
- * @Date 2020/2/26 11:29
- * @Version V1.0
+ * API异常枚举类
+ * @author zhangt2333
  **/
 
 @Getter
@@ -66,7 +63,11 @@ public enum ApiExceptionEnum {
     CAPTCHA_NOT_FOUND(400, "验证码不存在"),
     CAPTCHA_NOT_MATCHING(400, "验证码不匹配"),
 
-    USER_EXIST(400, "用户名已存在或邮箱已被使用"),
+    USER_EXIST(400, "用户名已存在或邮箱已被使用或对应第三方账号已存在"),
+    THIRD_PARTY_NOT_EXIST(400, "第三方登录不存在"),
+    THIRD_PARTY_ERROR(500, "第三方登录/创建/绑定出错"),
+    THIRD_PARTY_BOUND(400, "第三方已绑定"),
+
     EMAIL_EXIST(400, "邮箱已存在"),
     NONE_EMAIL_SENDER(500, "服务器没有配置邮件发送者"),
 

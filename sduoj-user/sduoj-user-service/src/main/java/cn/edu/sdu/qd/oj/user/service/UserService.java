@@ -17,19 +17,26 @@ import cn.edu.sdu.qd.oj.common.util.RedisConstants;
 import cn.edu.sdu.qd.oj.common.enums.ApiExceptionEnum;
 import cn.edu.sdu.qd.oj.common.exception.ApiException;
 import cn.edu.sdu.qd.oj.common.util.RedisUtils;
+import cn.edu.sdu.qd.oj.common.util.RegexUtils;
 import cn.edu.sdu.qd.oj.user.config.UserServiceProperties;
 import cn.edu.sdu.qd.oj.user.converter.UserConverter;
 import cn.edu.sdu.qd.oj.user.converter.UserSessionConverter;
 import cn.edu.sdu.qd.oj.user.dao.UserDao;
 import cn.edu.sdu.qd.oj.user.dao.UserSessionDao;
+import cn.edu.sdu.qd.oj.user.dto.UserThirdPartyBindingReqDTO;
+import cn.edu.sdu.qd.oj.user.dto.UserThirdPartyLoginRespDTO;
+import cn.edu.sdu.qd.oj.user.dto.UserThirdPartyRegisterReqDTO;
 import cn.edu.sdu.qd.oj.user.dto.UserUpdateReqDTO;
 import cn.edu.sdu.qd.oj.user.entity.UserDO;
 import cn.edu.sdu.qd.oj.user.dto.UserDTO;
 import cn.edu.sdu.qd.oj.user.entity.UserSessionDO;
 import cn.edu.sdu.qd.oj.common.util.CodecUtils;
+import cn.edu.sdu.qd.oj.user.enums.ThirdPartyEnum;
 import cn.edu.sdu.qd.oj.user.utils.EmailUtil;
+import com.alibaba.fastjson.JSON;
 import com.baomidou.mybatisplus.extension.conditions.query.LambdaQueryChainWrapper;
 import com.baomidou.mybatisplus.extension.conditions.update.LambdaUpdateChainWrapper;
+import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -37,6 +44,7 @@ import org.springframework.boot.context.properties.EnableConfigurationProperties
 import org.springframework.dao.DuplicateKeyException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.client.RestTemplate;
 
 import javax.mail.MessagingException;
 import javax.validation.constraints.NotNull;
@@ -47,13 +55,11 @@ import java.util.UUID;
 import java.util.stream.Collectors;
 
 /**
- * @ClassName UserService
- * @Description TODO
- * @Author zhangt2333
- * @Date 2020/2/26 11:29
- * @Version V1.0
- **/
+ * @author zhangt2333
+ * @author zhaoyifan
+ */
 
+@Slf4j
 @Service
 @EnableConfigurationProperties({UserServiceProperties.class})
 public class UserService {
@@ -80,18 +86,18 @@ public class UserService {
     private EmailUtil emailUtil;
 
 
+    @Autowired
+    private RestTemplate restTemplate;
+
     public UserDTO verify(String username, String password) throws ApiException {
         return userConverter.to(verifyAndGetDO(username, password));
     }
 
     /**
-     * @param username
-     * @param password
-     * @return UserDO notnull
-     * @Description 校验用户账号密码并返回 DO
-     **/
+     * 校验用户账号密码并返回 DO
+     */
     public @NotNull UserDO verifyAndGetDO(String username, String password) throws ApiException {
-        // 查询
+        // 查找对应用户后验证密码
         LambdaQueryChainWrapper<UserDO> query = userDao.lambdaQuery();
         if (username.indexOf('@') != -1) {
             query.eq(UserDO::getEmail, username);
@@ -193,7 +199,8 @@ public class UserService {
             UserDO::getStudentId,
             UserDO::getPhone,
             UserDO::getGender,
-            UserDO::getRoles
+            UserDO::getRoles,
+            UserDO::getSduId
         ).eq(UserDO::getUserId, userId).one();
         AssertUtils.notNull(userDO, ApiExceptionEnum.USER_NOT_FOUND);
         return userConverter.to(userDO);
@@ -292,7 +299,182 @@ public class UserService {
         }
     }
 
+    /**
+     * 通过 SDU-CAS 服务器进行 validate 随后查询对应用户存在则登录返回
+     */
+    @Transactional
+    public UserThirdPartyLoginRespDTO thirdPartyLoginBySduCas(String ticket, String ipv4, String userAgent) {
+        AssertUtils.isTrue(userServiceProperties.isEnableThirdPartySduCas(), ApiExceptionEnum.THIRD_PARTY_ERROR,
+                "SDUCAS 认证未打开");
+        // validate by sdu cas server
+        String service = userServiceProperties.getSduCasServiceUrl();
+        String url = String.format("https://pass.sdu.edu.cn/cas/serviceValidate?ticket=%s&service=%s", ticket, service);
+        String html = null;
+        // retry 3 times
+        for (int i = 0; i < 3; i++) {
+            try {
+                html = restTemplate.getForEntity(url, String.class).getBody();
+            } catch (Exception e) {
+                log.error("sducas login ticket:{} ERROR", ticket, e);
+            }
+            if (html != null && html.contains("cas")) {
+                break;
+            }
+        }
+        String sduId = RegexUtils.regexFind(html, "<cas:ID_NUMBER>(.*?)</cas:ID_NUMBER>");
+        String realName = RegexUtils.regexFind(html, "<cas:USER_NAME>(.*?)</cas:USER_NAME>");
+        log.info("ticket:{} ipv4:{} sduId:{}", ticket, ipv4, sduId);
+        AssertUtils.isTrue(StringUtils.isNotBlank(sduId), ApiExceptionEnum.THIRD_PARTY_ERROR);
+        UserThirdPartyLoginRespDTO respDTO = UserThirdPartyLoginRespDTO.builder()
+                                                                       .sduId(sduId)
+                                                                       .sduRealName(realName)
+                                                                       .thirdParty(ThirdPartyEnum.SDUCAS)
+                                                                       .build();
+        // query db
+        UserDO userDO = userDao.lambdaQuery().eq(UserDO::getSduId, sduId).one();
+        if (userDO != null) {
+            respDTO.setUser(bindingLogin(userDO, ipv4, userAgent));
+            // 临时代码，每次登录后把 nickname 改成 realName
+            userDao.lambdaUpdate().set(UserDO::getNickname, realName).eq(UserDO::getUserId, userDO.getUserId()).update();
+            userDO.setNickname(realName);
+        } else {
+            // 缓存到 redis 以备后续操作
+            String uuid = UUID.randomUUID().toString();
+            respDTO.setToken(uuid);
+            redisUtils.set(RedisConstants.getThirdPartyToken(uuid), JSON.toJSONString(respDTO), RedisConstants.SDU_CAS_EXPIRE);
+        }
+        return respDTO;
+    }
 
+    /**
+     * 处理第三方登录自动创建
+     */
+    @Transactional
+    public UserSessionDTO thirdPartyRegister(UserThirdPartyRegisterReqDTO reqDTO, String ipv4, String userAgent) {
+        AssertUtils.isTrue(!isExistUsername(reqDTO.getEmail()), ApiExceptionEnum.EMAIL_EXIST);
+        // 取 redis 中的 token
+        UserThirdPartyLoginRespDTO respDTO = JSON.parseObject((String) redisUtils.get(RedisConstants.getThirdPartyToken(reqDTO.getToken())),
+                UserThirdPartyLoginRespDTO.class);
+        AssertUtils.notNull(respDTO, ApiExceptionEnum.THIRD_PARTY_NOT_EXIST);
+        // 验证用户名和邮箱存在性
+        AssertUtils.isTrue(!isExistUsername(reqDTO.getUsername()), ApiExceptionEnum.USER_EXIST);
+        // 创建账号方式
+        UserDO userDO = UserDO.builder()
+                              .username(reqDTO.getUsername())
+                              .email(reqDTO.getEmail())
+                              .password(reqDTO.getPassword())
+                              .emailVerified(1)
+                              .roles(PermissionEnum.USER.name)
+                              .build();
+        switch (respDTO.getThirdParty()) {
+            case SDUCAS:
+                thirdPartyRegisterBySduCas(userDO, respDTO);
+                break;
+            case QQ:
+            case WECHAT:
+                throw new ApiException(ApiExceptionEnum.THIRD_PARTY_ERROR, "暂不支持这种第三方认证");
+        }
+        try {
+            AssertUtils.isTrue(userDao.save(userDO), ApiExceptionEnum.UNKNOWN_ERROR);
+        } catch (DuplicateKeyException e) {
+            log.error("{}", respDTO, e);
+            throw new ApiException(ApiExceptionEnum.USER_EXIST);
+        } catch (Exception e) {
+            log.error("{}", respDTO, e);
+            throw new ApiException(ApiExceptionEnum.UNKNOWN_ERROR);
+        }
+        // 账户生成成功, 删除 redis 中对应的 token
+        redisUtils.del(RedisConstants.getThirdPartyToken(reqDTO.getToken()));
+        // 登录
+        return bindingLogin(userDO, ipv4, userAgent);
+    }
+
+    /**
+     * 处理第三方登录创建账号的 userDO (sducas)
+     */
+    private void thirdPartyRegisterBySduCas(UserDO userDO, UserThirdPartyLoginRespDTO tokenDTO) {
+        // 取 redis 中的 token
+        AssertUtils.isTrue(null == userDao.lambdaQuery().eq(UserDO::getSduId, tokenDTO.getSduId()).one(),
+                ApiExceptionEnum.USER_EXIST);
+        // 生成用户
+        userDO.setSduId(tokenDTO.getSduId());
+        userDO.setNickname(tokenDTO.getSduRealName());
+        userDO.setSalt(CodecUtils.generateSalt());
+        userDO.setPassword(UUID.randomUUID().toString().replace("-", "").substring(0, 12));
+        userDO.setPassword(CodecUtils.md5Hex(userDO.getPassword(), userDO.getSalt()));
+    }
+
+
+    /**
+     * 第三方登录绑定已有账号
+     */
+    @Transactional
+    public UserSessionDTO thirdPartyBinding(UserThirdPartyBindingReqDTO reqDTO, String ipv4, String userAgent) {
+        // 取 redis 中的 token
+        UserThirdPartyLoginRespDTO respDTO = JSON.parseObject((String) redisUtils.get(RedisConstants.getThirdPartyToken(reqDTO.getToken())),
+                UserThirdPartyLoginRespDTO.class);
+        AssertUtils.notNull(respDTO, ApiExceptionEnum.THIRD_PARTY_NOT_EXIST);
+        ThirdPartyEnum thirdParty = respDTO.getThirdParty();
+        // 调用具体的第三方绑定方式
+        UserDO userDO = null;
+        switch (thirdParty) {
+            case SDUCAS:
+                userDO = thirdPartyBindingBySduCas(reqDTO, respDTO);
+                break;
+            case QQ:
+            case WECHAT:
+                throw new ApiException(ApiExceptionEnum.THIRD_PARTY_ERROR, "暂不支持这种第三方认证");
+        }
+        // 删除 redis 中对应的 token
+        redisUtils.del(RedisConstants.getThirdPartyToken(reqDTO.getToken()));
+        // 登录
+        return bindingLogin(userDO, ipv4, userAgent);
+    }
+
+    /**
+     * 校验并第三方绑定已有账号
+     */
+    private UserDO thirdPartyBindingBySduCas(UserThirdPartyBindingReqDTO reqDTO, UserThirdPartyLoginRespDTO tokenDTO) {
+        // 取账号并且校验
+        UserDO userDO = userDao.lambdaQuery().eq(UserDO::getSduId, tokenDTO.getSduId()).one();
+        AssertUtils.isTrue(userDO == null, ApiExceptionEnum.USER_EXIST);
+        userDO = verifyAndGetDO(reqDTO.getUsername(), reqDTO.getPassword());
+        AssertUtils.isTrue(StringUtils.isBlank(userDO.getSduId()), ApiExceptionEnum.THIRD_PARTY_BOUND);
+        // 更新绑定关系
+        AssertUtils.isTrue(userDao.lambdaUpdate().eq(UserDO::getUserId, userDO.getUserId())
+                                  .set(UserDO::getSduId, tokenDTO.getSduId())
+                                  .update(), ApiExceptionEnum.THIRD_PARTY_ERROR);
+        userDO.setSduId(tokenDTO.getSduId());
+        return userDO;
+    }
+
+    /**
+     * 第三方认证中登录并写 session 的代码抽取
+     */
+    private UserSessionDTO bindingLogin(UserDO userDO, String ipv4, String userAgent) {
+        UserSessionDO userSessionDO = UserSessionDO.builder()
+                                                   .username(userDO.getUsername())
+                                                   .ipv4(ipv4)
+                                                   .userAgent(userAgent)
+                                                   .success(1)
+                                                   .build();
+        userSessionDao.save(userSessionDO);
+        return userSessionConverter.to(userDO, userSessionDO);
+    }
+
+    public void thirdPartyUnbinding(ThirdPartyEnum thirdParty, UserSessionDTO userSessionDTO) {
+        switch (thirdParty) {
+            case SDUCAS:
+                AssertUtils.isTrue(userDao.lambdaUpdate()
+                                          .set(UserDO::getSduId, null)
+                                          .eq(UserDO::getUserId, userSessionDTO.getUserId())
+                                          .update(), ApiExceptionEnum.THIRD_PARTY_ERROR);
+                break;
+            case QQ:
+            case WECHAT:
+                throw new ApiException(ApiExceptionEnum.THIRD_PARTY_ERROR, "暂不支持这种第三方认证");
+        }
+    }
 
     public Long usernameToUserId(String username) {
         return userDao.getBaseMapper().usernameToUserId(username);

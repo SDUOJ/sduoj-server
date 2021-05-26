@@ -11,12 +11,9 @@
 package cn.edu.sdu.qd.oj.common.util;
 
 /**
- * @ClassName RedisConstant
- * @Description TODO
- * @Author zhangt2333
- * @Date 2020/5/3 18:03
- * @Version V1.0
- **/
+ * some constants for redis
+ * @author zhangt2333
+ */
 
 public class RedisConstants {
 
@@ -40,6 +37,8 @@ public class RedisConstants {
     public static final int CAPTCHA_EXPIRE = 60 * 5;
     public static final int ACPROBLEM_EXPIRE = 60 * 60 * 5;
     public static final int CONTEST_SUBMISSION_NUM_EXPIRE = 60 * 60 * 5;
+
+    public static final int SDU_CAS_EXPIRE = 60 * 60;
 
     // ------------- 验证码 ----------------------
     public static String getCaptchaKey(String uuid) {
@@ -78,4 +77,8 @@ public class RedisConstants {
         return "su:" + problemCode;
     }
 
+    // ------------- 第三方认证相关 ----------------------
+    public static String getThirdPartyToken(String uuid) {
+        return "ThirdParty:" + uuid;
+    }
 }

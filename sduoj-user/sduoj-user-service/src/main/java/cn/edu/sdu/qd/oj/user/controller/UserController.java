@@ -22,7 +22,11 @@ import cn.edu.sdu.qd.oj.common.util.RedisConstants;
 import cn.edu.sdu.qd.oj.common.util.RedisUtils;
 import cn.edu.sdu.qd.oj.user.dto.UserDTO;
 import cn.edu.sdu.qd.oj.common.entity.UserSessionDTO;
+import cn.edu.sdu.qd.oj.user.dto.UserThirdPartyBindingReqDTO;
+import cn.edu.sdu.qd.oj.user.dto.UserThirdPartyLoginRespDTO;
+import cn.edu.sdu.qd.oj.user.dto.UserThirdPartyRegisterReqDTO;
 import cn.edu.sdu.qd.oj.user.dto.UserUpdateReqDTO;
+import cn.edu.sdu.qd.oj.user.enums.ThirdPartyEnum;
 import cn.edu.sdu.qd.oj.user.service.UserExtensionService;
 import cn.edu.sdu.qd.oj.user.service.UserService;
 import com.alibaba.fastjson.JSON;
@@ -35,19 +39,21 @@ import org.springframework.web.bind.annotation.*;
 
 import javax.annotation.Nullable;
 import javax.mail.MessagingException;
+import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import javax.validation.Valid;
 import javax.validation.constraints.Email;
 import javax.validation.constraints.NotNull;
-import java.util.*;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Optional;
+import java.util.UUID;
 
 /**
- * @ClassName UserController
- * @Description TODO
- * @Author zhangt2333
- * @Date 2020/2/26 11:29
- * @Version V1.0
- **/
+ * @author zhangt2333
+ * @author zhaoyifan
+ */
 
 @Controller
 @RequestMapping("/user")
@@ -93,14 +99,7 @@ public class UserController {
     @ApiResponseBody
     public String forgetPassword(@RequestBody Map<String, String> json) throws Exception {
         verifyCaptcha(json.get("captchaId"), json.get("captcha"));
-
-        String username = null, email = null;
-        try {
-            username = json.get("username");
-            email = json.get("email");
-        }catch (Exception ignore) {
-        }
-        return this.userService.forgetPassword(username, email);
+        return this.userService.forgetPassword(json.get("username"), json.get("email"));
     }
 
     @PostMapping("/resetPassword")
@@ -177,13 +176,13 @@ public class UserController {
                                                 @RequestBody @NotNull Map<String, String> json,
                                                 @RealIp String ipv4,
                                                 @RequestHeader("user-agent") String userAgent) throws ApiException {
+
         String username = null, password = null;
         try {
             username = json.get("username");
             password = json.get("password");
         } catch (Exception ignore) {
         }
-
         log.info("{} login from {} by {}", username, ipv4, userAgent);
         if (StringUtils.isNotBlank(username) && StringUtils.isNotBlank(password)) {
             // 登录校验
@@ -192,6 +191,70 @@ public class UserController {
             return ResponseResult.ok(userSessionDTO);
         }
         return ResponseResult.error();
+    }
+
+    @GetMapping("/thirdPartyLogin")
+    @ResponseBody
+    public ResponseResult<UserThirdPartyLoginRespDTO> thirdPartyLogin(HttpServletRequest request,
+                                                                      HttpServletResponse response,
+                                                                      @RealIp String ipv4,
+                                                                      @RequestHeader("user-agent") String userAgent) {
+        ThirdPartyEnum thirdParty = ThirdPartyEnum.of(request.getParameter("thirdParty"));
+        AssertUtils.notNull(thirdParty, ApiExceptionEnum.THIRD_PARTY_NOT_EXIST);
+
+        UserThirdPartyLoginRespDTO respDTO = null;
+        switch (thirdParty) {
+            case SDUCAS:
+                respDTO = userService.thirdPartyLoginBySduCas(request.getParameter("ticket"), ipv4, userAgent);
+                break;
+            case QQ:
+            case WECHAT:
+                throw new ApiException(ApiExceptionEnum.THIRD_PARTY_ERROR, "暂不支持这种第三方认证");
+        }
+
+        Optional.ofNullable(respDTO).map(UserThirdPartyLoginRespDTO::getUser).ifPresent(user -> {
+            response.setHeader(UserSessionDTO.HEADER_KEY, JSON.toJSONString(user));
+        });
+
+        return respDTO != null ? ResponseResult.ok(respDTO) : ResponseResult.error();
+    }
+
+    @PostMapping("/thirdPartyRegister")
+    @ResponseBody
+    public ResponseResult<UserSessionDTO> thirdPartyRegister(@RequestBody UserThirdPartyRegisterReqDTO reqDTO,
+                                                             HttpServletResponse response,
+                                                             @RealIp String ipv4,
+                                                             @RequestHeader("user-agent") String userAgent) {
+        UserSessionDTO userSessionDTO = userService.thirdPartyRegister(reqDTO, ipv4, userAgent);
+        if (userSessionDTO != null) {
+            response.setHeader(UserSessionDTO.HEADER_KEY, JSON.toJSONString(userSessionDTO));
+            return ResponseResult.ok(userSessionDTO);
+        }
+        return ResponseResult.error();
+    }
+
+    @PostMapping("/thirdPartyBinding")
+    @ResponseBody
+    public ResponseResult<UserSessionDTO> thirdPartyBinding(@RequestBody UserThirdPartyBindingReqDTO reqDTO,
+                                                            HttpServletResponse response,
+                                                            @RealIp String ipv4,
+                                                            @RequestHeader("user-agent") String userAgent) {
+        UserSessionDTO userSessionDTO = userService.thirdPartyBinding(reqDTO, ipv4, userAgent);
+        if (userSessionDTO != null) {
+            response.setHeader(UserSessionDTO.HEADER_KEY, JSON.toJSONString(userSessionDTO));
+            return ResponseResult.ok(userSessionDTO);
+        }
+        return ResponseResult.error();
+    }
+
+    @GetMapping("/thirdPartyUnbinding")
+    @ApiResponseBody
+    public Void thirdPartyUnbinding(@RequestParam("thirdParty") String thirdPartyStr,
+                                    @UserSession UserSessionDTO userSessionDTO) {
+        ThirdPartyEnum thirdParty = ThirdPartyEnum.of(thirdPartyStr);
+        AssertUtils.notNull(thirdParty, ApiExceptionEnum.THIRD_PARTY_NOT_EXIST);
+        userService.thirdPartyUnbinding(thirdParty, userSessionDTO);
+        return null;
     }
 
     @GetMapping("/logout")
@@ -203,10 +266,11 @@ public class UserController {
 
 
     /**
-    * @Description 进行验证码验证
-    * @exception  ApiException CAPTCHA_NOT_MATCHING
-    * @exception  ApiException CAPTCHA_NOT_FOUND
-    **/
+     * 进行验证码验证
+     *
+     * @throws ApiException CAPTCHA_NOT_MATCHING
+     * @throws ApiException CAPTCHA_NOT_FOUND
+     */
     private void verifyCaptcha(String captchaId, String inputCaptcha) {
         AssertUtils.notNull(captchaId, ApiExceptionEnum.CAPTCHA_NOT_FOUND);
         AssertUtils.notNull(inputCaptcha, ApiExceptionEnum.CAPTCHA_NOT_FOUND);
@@ -218,8 +282,8 @@ public class UserController {
     }
 
     /**
-     * @Description 查询用户参加过的比赛
-     **/
+     * 查询用户参加过的比赛
+     */
     @GetMapping("/queryParticipateContest")
     @ApiResponseBody
     public List<Long> queryParticipateContest(@UserSession UserSessionDTO userSessionDTO) {

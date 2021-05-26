@@ -63,4 +63,14 @@ public class UserServiceProperties {
      * 重设邮箱邮件内容
      **/
     private String resetEmailPattern;
+
+    /**
+     * SDUCAS 第三方登录开启
+     */
+    private boolean enableThirdPartySduCas = false;
+
+    /**
+     * SDU CAS service URL
+     */
+    private String sduCasServiceUrl;
 }

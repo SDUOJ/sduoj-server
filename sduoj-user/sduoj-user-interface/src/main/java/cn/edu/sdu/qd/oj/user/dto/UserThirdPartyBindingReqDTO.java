@@ -11,24 +11,30 @@
 package cn.edu.sdu.qd.oj.user.dto;
 
 import cn.edu.sdu.qd.oj.common.entity.BaseDTO;
-import lombok.*;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
+import lombok.Data;
+import lombok.EqualsAndHashCode;
+import lombok.NoArgsConstructor;
 
+import javax.validation.constraints.NotBlank;
 
+/**
+ * @author zhangt2333
+ */
 @Data
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
 @EqualsAndHashCode(callSuper = true)
-public class UserListReqDTO extends BaseDTO {
-    private int pageNow;
-    private int pageSize;
+public class UserThirdPartyBindingReqDTO extends BaseDTO {
 
+    @NotBlank
+    private String token;
+
+    @NotBlank
     private String username;
-    private String nickname;
-    private String studentId;
-    private String phone;
-    private String email;
-    private String sduId;
 
-
+    @NotBlank
+    private String password;
 }

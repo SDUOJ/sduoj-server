@@ -11,12 +11,8 @@
 package cn.edu.sdu.qd.oj.user.entity;
 
 /**
- * @ClassName UserDOField
- * @Description TODO
- * @Author zhangt2333
- * @Date 2020/9/7 16:54
- * @Version V1.0
- **/
+ * @author zhangt2333
+ */
 
 public class UserDOField {
     public static final String TABLE_NAME = "oj_user";
@@ -36,4 +32,5 @@ public class UserDOField {
     public static final String GENDER = "u_gender";
     public static final String STUDENT_ID = "u_student_id";
     public static final String ROLES = "u_roles";
+    public static final String SDU_ID = "u_sdu_id";
 }

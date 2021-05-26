@@ -79,4 +79,7 @@ public class UserDO extends BaseDO {
 
     @TableField(UserDOField.ROLES)
     private String roles;
+
+    @TableField(UserDOField.SDU_ID)
+    private String sduId;
 }
