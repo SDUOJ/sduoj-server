@@ -13,6 +13,7 @@ package cn.edu.sdu.qd.oj.user.service;
 import cn.edu.sdu.qd.oj.auth.enums.PermissionEnum;
 import cn.edu.sdu.qd.oj.common.entity.UserSessionDTO;
 import cn.edu.sdu.qd.oj.common.util.AssertUtils;
+import cn.edu.sdu.qd.oj.common.util.CaptchaUtils;
 import cn.edu.sdu.qd.oj.common.util.RedisConstants;
 import cn.edu.sdu.qd.oj.common.enums.ApiExceptionEnum;
 import cn.edu.sdu.qd.oj.common.exception.ApiException;
@@ -32,7 +33,7 @@ import cn.edu.sdu.qd.oj.user.dto.UserDTO;
 import cn.edu.sdu.qd.oj.user.entity.UserSessionDO;
 import cn.edu.sdu.qd.oj.common.util.CodecUtils;
 import cn.edu.sdu.qd.oj.user.enums.ThirdPartyEnum;
-import cn.edu.sdu.qd.oj.user.utils.EmailUtil;
+import cn.edu.sdu.qd.oj.user.sender.RabbitSender;
 import com.alibaba.fastjson.JSON;
 import com.baomidou.mybatisplus.extension.conditions.query.LambdaQueryChainWrapper;
 import com.baomidou.mybatisplus.extension.conditions.update.LambdaUpdateChainWrapper;
@@ -47,6 +48,8 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.client.RestTemplate;
 
 import javax.mail.MessagingException;
+import javax.validation.constraints.Email;
+import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.NotNull;
 import java.util.List;
 import java.util.Map;
@@ -83,7 +86,7 @@ public class UserService {
     private UserSessionConverter userSessionConverter;
 
     @Autowired
-    private EmailUtil emailUtil;
+    private RabbitSender rabbitSender;
 
 
     @Autowired
@@ -137,17 +140,15 @@ public class UserService {
     }
 
     @Transactional
-    public void register(UserDTO userDTO) throws Exception {
+    public UserSessionDTO register(UserDTO userDTO, String ipv4, String userAgent) {
+        validateEmailCode(userDTO.getEmail(), userDTO.getEmailCode());
+
         UserDO userDO = userConverter.from(userDTO);
         userDO.setSalt(CodecUtils.generateSalt());
         userDO.setPassword(CodecUtils.md5Hex(userDO.getPassword(), userDO.getSalt()));
+        userDO.setRoles(PermissionEnum.USER.name);
         if (StringUtils.isBlank(userDO.getNickname())) {
             userDO.setNickname(userDO.getUsername());
-        }
-
-        if (!emailUtil.isEmailEnable()) {
-            userDO.setEmailVerified(1);
-            userDO.setRoles(PermissionEnum.USER.name);
         }
 
         // TODO: username 重复时插入失败的异常处理器
@@ -158,11 +159,8 @@ public class UserService {
         } catch (Exception e) {
             throw new ApiException(ApiExceptionEnum.UNKNOWN_ERROR);
         }
-
-
-        if (emailUtil.isEmailEnable()) {
-            sendVerificationEmail(userDTO.getUsername(), userDTO.getEmail());
-        }
+        consumeEmailCode(userDTO.getEmail(), userDTO.getEmailCode());
+        return loginWithWritingSession(userDO, ipv4, userAgent);
     }
 
     public Map<Long, String> queryIdToUsernameMap() {
@@ -175,27 +173,12 @@ public class UserService {
         return Optional.ofNullable(userDO).map(userConverter::to).map(UserDTO::getRoles).orElse(null);
     }
 
-    public void emailVerify(String token) {
-        String username = (String) Optional.ofNullable(redisUtils.get(RedisConstants.getEmailVerificationKey(token))).orElse(null);
-        AssertUtils.notNull(username, ApiExceptionEnum.TOKEN_EXPIRE);
-        UserDO userDO = userDao.lambdaQuery().eq(UserDO::getUsername, username).select(
-                UserDO::getUserId,
-                UserDO::getVersion,
-                UserDO::getRoles
-        ).one();
-        userDO.setEmailVerified(1);
-        // 有角色时不更新 roles, 无时更新为 USER
-        userDO.setRoles(StringUtils.isNotBlank(userDO.getRoles()) ? null : PermissionEnum.USER.name);
-        AssertUtils.isTrue(userDao.updateById(userDO), ApiExceptionEnum.UNKNOWN_ERROR);
-    }
-
     public UserDTO queryByUserId(Long userId) {
         UserDO userDO = userDao.lambdaQuery().select(
             UserDO::getUserId,
             UserDO::getUsername,
             UserDO::getNickname,
             UserDO::getEmail,
-            UserDO::getEmailVerified,
             UserDO::getStudentId,
             UserDO::getPhone,
             UserDO::getGender,
@@ -206,18 +189,29 @@ public class UserService {
         return userConverter.to(userDO);
     }
 
-    public void sendVerificationEmail(String username, String email) throws MessagingException {
-        // 发送验证邮件
-        String uuid = UUID.randomUUID().toString();
-        redisUtils.set(RedisConstants.getEmailVerificationKey(uuid), username, userServiceProperties.getVerificationExpire());
-        emailUtil.sendVerificationEmail(username, email, uuid);
-    }
-
-    public String sendVerificationEmail(String username) throws MessagingException {
-        UserDO userDO = userDao.lambdaQuery().select(UserDO::getEmail).eq(UserDO::getUsername, username).one();
-        AssertUtils.notNull(userDO, ApiExceptionEnum.USER_NOT_FOUND);
-        sendVerificationEmail(username, userDO.getEmail());
-        return userDO.getEmail();
+    /**
+     * 发送邮箱验证码到用户邮箱
+     * @return send email interval
+     */
+    public Integer sendVerificationEmail(@Email(message = "parameter is not an email") String email) throws MessagingException {
+        AssertUtils.isTrue(0 == userDao.lambdaQuery().eq(UserDO::getEmail, email).count(),
+                ApiExceptionEnum.EMAIL_EXIST);
+        // 特判邮件验证未开启
+        if (!userServiceProperties.isEnableSendingEmailCode()) {
+            throw new ApiException(ApiExceptionEnum.NONE_EMAIL_SENDER,
+                    userServiceProperties.isEnableEmailVerification() ? " 请联系管理员" : " 邮件验证码或可以随便输入");
+        }
+        // 判断验证码是否未到期
+        validateSendEmailInterval(email);
+        // 邮箱验证码存在则沿用
+        String redisKey = RedisConstants.getEmailCodeKey(email);
+        String emailCode = Optional.ofNullable((String) redisUtils.get(redisKey)).orElseGet(() -> CaptchaUtils.getRandomString(6));
+        // 发送邮件
+        rabbitSender.sendEmailCode(email, emailCode);
+        AssertUtils.isTrue(redisUtils.set(redisKey, emailCode, userServiceProperties.getVerificationExpire()),
+                ApiExceptionEnum.UNKNOWN_ERROR);
+        setSendEmailInterval(email);
+        return userServiceProperties.getSendEmailInterval();
     }
 
     public String forgetPassword(String username, String email) throws Exception {
@@ -233,12 +227,12 @@ public class UserService {
         // 发送验证邮件
         String uuid = UUID.randomUUID().toString();
         redisUtils.set(RedisConstants.getForgetPasswordKey(uuid), userDO.getUsername(), userServiceProperties.getVerificationExpire());
-        emailUtil.sendForgetPasswordEmail(userDO.getUsername(), userDO.getEmail(), uuid);
+        rabbitSender.sendForgetPasswordEmail(userDO.getUsername(), userDO.getEmail(), uuid);
         return email;
     }
 
     public void resetPassword(String token, String password) {
-        String username = Optional.ofNullable(redisUtils.get(RedisConstants.getForgetPasswordKey(token))).map(o -> (String) o).orElse(null);
+        String username = (String) redisUtils.get(RedisConstants.getForgetPasswordKey(token));
         AssertUtils.notNull(username, ApiExceptionEnum.TOKEN_EXPIRE);
 
         String salt = CodecUtils.generateSalt();
@@ -259,44 +253,98 @@ public class UserService {
         return userDao.lambdaQuery().eq(UserDO::getEmail, email).count() > 0;
     }
 
-    @Transactional
-    public void updateProfile(UserUpdateReqDTO reqDTO) throws MessagingException {
-        // 校验密码逻辑
-        UserDO userDO = userDao.lambdaQuery().select(
-                UserDO::getPassword,
-                UserDO::getUsername,
-                UserDO::getSalt
-        ).eq(UserDO::getUserId, reqDTO.getUserId()).one();
-        AssertUtils.notNull(userDO, ApiExceptionEnum.USER_NOT_FOUND);
-        AssertUtils.isTrue(CodecUtils.md5Hex(reqDTO.getPassword(), userDO.getSalt()).equals(userDO.getPassword()), ApiExceptionEnum.PASSWORD_NOT_MATCHING);
-
+    public void updateProfile(UserUpdateReqDTO reqDTO) {
         // 构造更新参数
-        reqDTO.setPassword(null);
         UserDO updateDTO = new UserDO();
         BeanUtils.copyProperties(reqDTO, updateDTO);
 
         // 更改密码逻辑
         if (StringUtils.isNotBlank(reqDTO.getNewPassword())) {
+            validatePassword(reqDTO.getUserId(), reqDTO.getPassword());
             updateDTO.setPassword(reqDTO.getNewPassword());
             updateDTO.setSalt(CodecUtils.generateSalt());
             updateDTO.setPassword(CodecUtils.md5Hex(updateDTO.getPassword(), updateDTO.getSalt()));
-        }
-
-        // 更改邮箱逻辑
-        if (StringUtils.isNotBlank(reqDTO.getNewEmail())) {
-            AssertUtils.isTrue(!isExistEmail(reqDTO.getNewEmail()), ApiExceptionEnum.EMAIL_EXIST);
-            updateDTO.setEmail(reqDTO.getNewEmail());
-            updateDTO.setEmailVerified(0);
+        } else {
+            updateDTO.setPassword(null);
         }
 
         userDao.updateById(updateDTO);
+    }
 
-        // 邮箱验证邮件
-        if (StringUtils.isNotBlank(reqDTO.getNewEmail())) {
-            String uuid = UUID.randomUUID().toString();
-            redisUtils.set(RedisConstants.getEmailVerificationKey(uuid), userDO.getUsername(), userServiceProperties.getVerificationExpire());
-            emailUtil.sendResetEmailMail(userDO.getUsername(), reqDTO.getNewEmail(), uuid);
+    public void updateEmail(Long userId, String password, @Email(message = "parameter is not an email") @NotBlank String email, String emailCode) {
+        validateEmailCode(email, emailCode);
+        validatePassword(userId, password);
+        // 特判用户标 UserFeatureEnum.BAN_EMAIL_UPDATE
+        UserDO userDO = userDao.lambdaQuery().select(UserDO::getFeatures).eq(UserDO::getUserId, userId).one();
+        if (userConverter.featuresTo(userDO.getFeatures()).isBanEmailUpdate()) {
+            throw new ApiException(ApiExceptionEnum.FEATURE_ERROR, "该用户被禁止更改邮箱");
         }
+        AssertUtils.isTrue(userDao.lambdaUpdate().set(UserDO::getEmail, email).eq(UserDO::getUserId, userId).update(),
+                ApiExceptionEnum.UNKNOWN_ERROR);
+        consumeEmailCode(email, emailCode);
+    }
+
+    /**
+     * 校验账号密码
+     * @exception ApiException ApiExceptionEnum.USER_NOT_FOUND
+     * @exception ApiException ApiExceptionEnum.PASSWORD_NOT_MATCHING
+     */
+    private void validatePassword(Long userId, String password) {
+        UserDO userDO = userDao.lambdaQuery().select(
+                UserDO::getPassword,
+                UserDO::getSalt
+        ).eq(UserDO::getUserId, userId).one();
+        AssertUtils.notNull(userDO, ApiExceptionEnum.USER_NOT_FOUND);
+        AssertUtils.isTrue(CodecUtils.md5Hex(password, userDO.getSalt()).equals(userDO.getPassword()), ApiExceptionEnum.PASSWORD_NOT_MATCHING);
+    }
+
+    /**
+     * 校验邮箱验证码，若邮件服务未开启则不校验
+     * @exception ApiException ApiExceptionEnum.TOKEN_EXPIRE
+     * @exception ApiException ApiExceptionEnum.CAPTCHA_NOT_MATCHING
+     */
+    private void validateEmailCode(String email, String emailCode) {
+        // 验证邮箱码正确性, 注意此时未配置强制验证，则不验证邮箱码
+        if (userServiceProperties.isEnableEmailVerification()) {
+            String realEmailCode = (String) redisUtils.get(RedisConstants.getEmailCodeKey(email));
+            AssertUtils.notNull(realEmailCode, ApiExceptionEnum.TOKEN_EXPIRE);
+            AssertUtils.isTrue(StringUtils.equalsIgnoreCase(realEmailCode, emailCode), ApiExceptionEnum.CAPTCHA_NOT_MATCHING);
+        }
+    }
+
+    /**
+     * 核销邮箱验证码
+     */
+    private void consumeEmailCode(String email, String emailCode) {
+        String realEmailCode = (String) redisUtils.get(RedisConstants.getEmailCodeKey(email));
+        if (StringUtils.equalsIgnoreCase(emailCode, realEmailCode)) {
+            redisUtils.del(RedisConstants.getEmailCodeKey(email));
+        }
+    }
+
+    private void setSendEmailInterval(String email) {
+        redisUtils.set(RedisConstants.getEmailIntervalKey(email), 0, userServiceProperties.getSendEmailInterval());
+    }
+
+    /**
+     * 进行验证码验证
+     * @throws ApiException ApiExceptionEnum.CAPTCHA_NOT_MATCHING
+     * @throws ApiException ApiExceptionEnum.CAPTCHA_NOT_FOUND
+     */
+    public void verifyCaptcha(String captchaId, String inputCaptcha) {
+        AssertUtils.notNull(captchaId, ApiExceptionEnum.CAPTCHA_NOT_FOUND);
+        AssertUtils.notNull(inputCaptcha, ApiExceptionEnum.CAPTCHA_NOT_FOUND);
+
+        String captcha = (String) redisUtils.get(RedisConstants.getCaptchaKey(captchaId));
+
+        AssertUtils.notNull(captcha, ApiExceptionEnum.CAPTCHA_NOT_FOUND);
+        AssertUtils.isTrue(captcha.equalsIgnoreCase(inputCaptcha), ApiExceptionEnum.CAPTCHA_NOT_MATCHING);
+        redisUtils.del(RedisConstants.getCaptchaKey(captchaId));
+    }
+
+    public void validateSendEmailInterval(String email) {
+        AssertUtils.isTrue(0 > redisUtils.getExpire(RedisConstants.getEmailIntervalKey(email)),
+                ApiExceptionEnum.TOO_FREQUENT);
     }
 
     /**
@@ -333,9 +381,17 @@ public class UserService {
         // query db
         UserDO userDO = userDao.lambdaQuery().eq(UserDO::getSduId, sduId).one();
         if (userDO != null) {
-            respDTO.setUser(bindingLogin(userDO, ipv4, userAgent));
+            // 特判用户标 UserFeatureEnum.BAN_THIRD_PARTY
+            if (userConverter.featuresTo(userDO.getFeatures()).isBanThirdParty()) {
+                throw new ApiException(ApiExceptionEnum.FEATURE_ERROR, "该用户被禁止使用第三方认证");
+            }
+            respDTO.setUser(loginWithWritingSession(userDO, ipv4, userAgent));
             // 临时代码，每次登录后把 nickname 改成 realName
-            userDao.lambdaUpdate().set(UserDO::getNickname, realName).eq(UserDO::getUserId, userDO.getUserId()).update();
+            userDao.lambdaUpdate()
+                   .set(UserDO::getNickname, realName)
+                   .set(UserDO::getStudentId, sduId)
+                   .eq(UserDO::getUserId, userDO.getUserId())
+                   .update();
             userDO.setNickname(realName);
         } else {
             // 缓存到 redis 以备后续操作
@@ -351,19 +407,21 @@ public class UserService {
      */
     @Transactional
     public UserSessionDTO thirdPartyRegister(UserThirdPartyRegisterReqDTO reqDTO, String ipv4, String userAgent) {
+        // 验证邮箱存在性
         AssertUtils.isTrue(!isExistUsername(reqDTO.getEmail()), ApiExceptionEnum.EMAIL_EXIST);
         // 取 redis 中的 token
         UserThirdPartyLoginRespDTO respDTO = JSON.parseObject((String) redisUtils.get(RedisConstants.getThirdPartyToken(reqDTO.getToken())),
                 UserThirdPartyLoginRespDTO.class);
         AssertUtils.notNull(respDTO, ApiExceptionEnum.THIRD_PARTY_NOT_EXIST);
-        // 验证用户名和邮箱存在性
+        // 验证 emailCode
+        validateEmailCode(reqDTO.getEmail(), reqDTO.getEmailCode());
+        // 验证用户名存在性
         AssertUtils.isTrue(!isExistUsername(reqDTO.getUsername()), ApiExceptionEnum.USER_EXIST);
         // 创建账号方式
         UserDO userDO = UserDO.builder()
                               .username(reqDTO.getUsername())
                               .email(reqDTO.getEmail())
                               .password(reqDTO.getPassword())
-                              .emailVerified(1)
                               .roles(PermissionEnum.USER.name)
                               .build();
         switch (respDTO.getThirdParty()) {
@@ -385,8 +443,9 @@ public class UserService {
         }
         // 账户生成成功, 删除 redis 中对应的 token
         redisUtils.del(RedisConstants.getThirdPartyToken(reqDTO.getToken()));
+        consumeEmailCode(reqDTO.getEmail(), reqDTO.getEmailCode());
         // 登录
-        return bindingLogin(userDO, ipv4, userAgent);
+        return loginWithWritingSession(userDO, ipv4, userAgent);
     }
 
     /**
@@ -398,6 +457,7 @@ public class UserService {
                 ApiExceptionEnum.USER_EXIST);
         // 生成用户
         userDO.setSduId(tokenDTO.getSduId());
+        userDO.setStudentId(tokenDTO.getSduId());
         userDO.setNickname(tokenDTO.getSduRealName());
         userDO.setSalt(CodecUtils.generateSalt());
         userDO.setPassword(UUID.randomUUID().toString().replace("-", "").substring(0, 12));
@@ -425,10 +485,14 @@ public class UserService {
             case WECHAT:
                 throw new ApiException(ApiExceptionEnum.THIRD_PARTY_ERROR, "暂不支持这种第三方认证");
         }
+        // 特判用户标 UserFeatureEnum.BAN_THIRD_PARTY
+        if (userConverter.featuresTo(userDO.getFeatures()).isBanThirdParty()) {
+            throw new ApiException(ApiExceptionEnum.FEATURE_ERROR, "该用户被禁止使用第三方认证");
+        }
         // 删除 redis 中对应的 token
         redisUtils.del(RedisConstants.getThirdPartyToken(reqDTO.getToken()));
         // 登录
-        return bindingLogin(userDO, ipv4, userAgent);
+        return loginWithWritingSession(userDO, ipv4, userAgent);
     }
 
     /**
@@ -449,9 +513,9 @@ public class UserService {
     }
 
     /**
-     * 第三方认证中登录并写 session 的代码抽取
+     * 登录并写 session
      */
-    private UserSessionDTO bindingLogin(UserDO userDO, String ipv4, String userAgent) {
+    private UserSessionDTO loginWithWritingSession(UserDO userDO, String ipv4, String userAgent) {
         UserSessionDO userSessionDO = UserSessionDO.builder()
                                                    .username(userDO.getUsername())
                                                    .ipv4(ipv4)

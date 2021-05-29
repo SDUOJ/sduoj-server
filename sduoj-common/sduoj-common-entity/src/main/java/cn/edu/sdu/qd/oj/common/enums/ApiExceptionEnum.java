@@ -63,7 +63,15 @@ public enum ApiExceptionEnum {
     CAPTCHA_NOT_FOUND(400, "验证码不存在"),
     CAPTCHA_NOT_MATCHING(400, "验证码不匹配"),
 
+    TOO_FREQUENT(400, "操作太频繁，请稍后重试"),
+
+    ENTITY_EXISTS(400, "创建失败, 相关信息已存在"),
+
     USER_EXIST(400, "用户名已存在或邮箱已被使用或对应第三方账号已存在"),
+
+    FEATURE_ERROR(400, "特性字段限制"),
+
+
     THIRD_PARTY_NOT_EXIST(400, "第三方登录不存在"),
     THIRD_PARTY_ERROR(500, "第三方登录/创建/绑定出错"),
     THIRD_PARTY_BOUND(400, "第三方已绑定"),

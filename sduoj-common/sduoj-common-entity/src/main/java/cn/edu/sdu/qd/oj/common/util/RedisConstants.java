@@ -38,7 +38,7 @@ public class RedisConstants {
     public static final int ACPROBLEM_EXPIRE = 60 * 60 * 5;
     public static final int CONTEST_SUBMISSION_NUM_EXPIRE = 60 * 60 * 5;
 
-    public static final int SDU_CAS_EXPIRE = 60 * 60;
+    public static final int SDU_CAS_EXPIRE = 60 * 5;
 
     // ------------- 验证码 ----------------------
     public static String getCaptchaKey(String uuid) {
@@ -50,9 +50,14 @@ public class RedisConstants {
         return "forgetPassword:" + uuid;
     }
 
+    // ------------- 邮件发送间隔token ----------------------
+    public static String getEmailIntervalKey(String email) {
+        return "emailInterval:" + email;
+    }
+
     // ------------- 邮箱验证token ----------------------
-    public static String getEmailVerificationKey(String uuid) {
-        return "emailVerification:" + uuid;
+    public static String getEmailCodeKey(String email) {
+        return "emailCode:" + email;
     }
 
     public static String getContestRank(long contestId) {

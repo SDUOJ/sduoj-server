@@ -27,7 +27,6 @@ public class UserDOField {
     public static final String SALT = "u_salt";
     public static final String PASSWORD = "u_password";
     public static final String EMAIL = "u_email";
-    public static final String EMAIL_VERIFIED = "u_is_email_verified";
     public static final String PHONE = "u_phone";
     public static final String GENDER = "u_gender";
     public static final String STUDENT_ID = "u_student_id";

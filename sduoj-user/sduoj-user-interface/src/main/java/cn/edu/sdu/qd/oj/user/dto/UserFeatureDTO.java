@@ -16,23 +16,30 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 import lombok.NoArgsConstructor;
+import java.util.Objects;
 
+/**
+ * UserFeatureDTO
+ * 注意 featureDTO 内的字段需要给默认值
+ * @author zhangt2333
+ */
 
 @Data
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
 @EqualsAndHashCode(callSuper = true)
-public class UserListReqDTO extends BaseDTO {
-    private int pageNow;
-    private int pageSize;
+public class UserFeatureDTO extends BaseDTO {
 
-    private String username;
-    private String nickname;
-    private String studentId;
-    private String phone;
-    private String email;
-    private String sduId;
+    private Integer banThirdParty = 0;
 
-    private String searchKey;
+    private Integer banEmailUpdate = 0;
+
+    public boolean isBanThirdParty() {
+        return Objects.equals(1, banThirdParty);
+    }
+
+    public boolean isBanEmailUpdate() {
+        return Objects.equals(1, banEmailUpdate);
+    }
 }

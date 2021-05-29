@@ -65,9 +65,6 @@ public class UserDO extends BaseDO {
     @TableField(UserDOField.EMAIL)
     private String email;
 
-    @TableField(UserDOField.EMAIL_VERIFIED)
-    private Integer emailVerified;
-
     @TableField(UserDOField.PHONE)
     private String phone;
 

@@ -8,7 +8,7 @@
  *      https://www.gnu.org/licenses/gpl-3.0.en.html
  */
 
-package cn.edu.sdu.qd.oj.user.config;
+package cn.edu.sdu.qd.oj.email.config;
 
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
@@ -21,8 +21,10 @@ import java.util.HashMap;
 import java.util.Map;
 
 /**
-* @Description org.springframework.boot.autoconfigure.mail.MailProperties
-**/
+ * 基于 Nacos 可动态配置
+ * from org.springframework.boot.autoconfigure.mail.MailProperties
+ * @author zhangt2333
+ */
 @Getter
 @Setter
 @EqualsAndHashCode

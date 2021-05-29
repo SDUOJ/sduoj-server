@@ -14,7 +14,9 @@ import cn.edu.sdu.qd.oj.common.enums.ApiExceptionEnum;
 import cn.edu.sdu.qd.oj.common.exception.ApiException;
 import cn.edu.sdu.qd.oj.common.entity.ResponseResult;
 import cn.edu.sdu.qd.oj.common.exception.InternalApiException;
+import cn.edu.sdu.qd.oj.common.util.RegexUtils;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.dao.DuplicateKeyException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.http.converter.HttpMessageNotReadableException;
@@ -24,16 +26,15 @@ import org.springframework.web.bind.MissingServletRequestParameterException;
 import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 
+import java.util.Arrays;
+import java.util.List;
 import java.util.stream.Collectors;
 
 /**
- * @ClassName BasicExceptionHandler
- * @Description 通用异常拦截器
- * @Author zhangt2333
- * @Date 2020/2/26 11:29
- * @Version V1.0
- **/
-
+ * 通用异常拦截器
+ *
+ * @author zhangt2333
+ */
 @Slf4j
 @ControllerAdvice
 public class GlobalExceptionHandlerConfig {
@@ -80,4 +81,16 @@ public class GlobalExceptionHandlerConfig {
         log.warn("{} {}", e.getMessage(), e.getStackTrace()[0]);
         throw new ApiException(ApiExceptionEnum.PARAMETER_ERROR);
     }
+
+    @ExceptionHandler(DuplicateKeyException.class)
+    public ResponseEntity<ResponseResult> handleException(DuplicateKeyException e) {
+        List<StackTraceElement> onlyOjStack = Arrays.stream(e.getStackTrace())
+                                                    .filter(stack -> stack.getClassName().contains("cn.edu.sdu.qd.oj"))
+                                                    .collect(Collectors.toList());
+        log.warn("{}\n{}", e.getMessage(), onlyOjStack);
+        String duplicateEntry = RegexUtils.regexFind(e.getMessage(), "Duplicate entry (.*?) for key");
+        return ResponseEntity.status(ApiExceptionEnum.ENTITY_EXISTS.code)
+                             .body(ResponseResult.fail(ApiExceptionEnum.ENTITY_EXISTS.code, duplicateEntry + " 已存在"));
+    }
+
 }

@@ -11,8 +11,11 @@
 package cn.edu.sdu.qd.oj.user.dto;
 
 import cn.edu.sdu.qd.oj.common.entity.BaseDTO;
-import com.fasterxml.jackson.annotation.JsonProperty;
-import lombok.*;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
+import lombok.Data;
+import lombok.EqualsAndHashCode;
+import lombok.NoArgsConstructor;
 import org.hibernate.validator.constraints.Length;
 import org.hibernate.validator.constraints.Range;
 import org.springframework.lang.Nullable;
@@ -21,15 +24,10 @@ import javax.validation.constraints.Email;
 import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.Pattern;
 import java.util.List;
-import java.util.Map;
 
 /**
- * @ClassName User
- * @Description TODO
- * @Author zhangt2333
- * @Date 2020/2/26 11:29
- * @Version V1.0
- **/
+ * @author zhangt2333
+ */
 
 @Data
 @Builder
@@ -40,7 +38,7 @@ public class UserManageUpdateReqDTO extends BaseDTO {
 
     private Long userId;
 
-    private Map<String, String> features;
+    private UserFeatureDTO features;
 
     @Pattern(regexp = "^[A-Za-z0-9_]{4,16}$", message = "用户名必须由英文、数字、'_'构成，且长度为4~16")
     @NotBlank(message = "用户名不能为空")
@@ -55,10 +53,8 @@ public class UserManageUpdateReqDTO extends BaseDTO {
     private String password;
 
     @Email(message = "邮箱不合法")
-    @NotBlank
+    @Nullable
     private String email;
-
-    private Integer emailVerified;
 
     @Length(min = 11, max = 16, message = "手机号码长度不合法")
     @Nullable

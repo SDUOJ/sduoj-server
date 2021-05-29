@@ -26,7 +26,6 @@ public interface UserSessionConverter extends BaseConverter<UserSessionDO, UserS
                 .email(userDO.getEmail())
                 .roles(stringToList(userDO.getRoles()))
                 .studentId(userDO.getStudentId())
-                .emailVerified(userDO.getEmailVerified())
                 .ipv4(userSessionDO.getIpv4())
                 .userAgent(userSessionDO.getUserAgent())
                 .build();

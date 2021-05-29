@@ -48,4 +48,7 @@ public class UserThirdPartyRegisterReqDTO extends BaseDTO {
     @Email(message = "邮箱不合法")
     @NotBlank(message = "邮箱不能为空")
     private String email;
+
+    @NotBlank(message = "emailCode must be not null")
+    private String emailCode;
 }

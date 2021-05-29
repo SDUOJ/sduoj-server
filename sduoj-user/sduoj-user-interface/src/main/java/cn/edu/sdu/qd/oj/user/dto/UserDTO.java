@@ -40,7 +40,7 @@ public class UserDTO extends BaseDTO {
     private Long userId;
 
     @JsonProperty(access = JsonProperty.Access.READ_ONLY)
-    private Map<String, String> features;
+    private UserFeatureDTO features;
 
     @Pattern(regexp = "^[A-Za-z0-9_]{4,16}$", message = "用户名必须由英文、数字、'_'构成，且长度为4~16")
     @NotBlank(message = "用户名不能为空")
@@ -58,8 +58,6 @@ public class UserDTO extends BaseDTO {
     @NotBlank(message = "邮箱不能为空")
     private String email;
 
-    private Integer emailVerified;
-
     @Length(min = 11, max = 16, message = "手机号码长度不合法")
     private String phone;
 
@@ -75,9 +73,7 @@ public class UserDTO extends BaseDTO {
 
     // -----------------------
 
+    // 邮箱验证码，用于注册
     @JsonProperty(access = JsonProperty.Access.WRITE_ONLY)
-    private String captchaId;
-
-    @JsonProperty(access = JsonProperty.Access.WRITE_ONLY)
-    private String captcha;
+    private String emailCode;
 }

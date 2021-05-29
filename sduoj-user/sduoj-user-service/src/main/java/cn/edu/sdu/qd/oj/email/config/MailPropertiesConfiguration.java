@@ -8,7 +8,7 @@
  *      https://www.gnu.org/licenses/gpl-3.0.en.html
  */
 
-package cn.edu.sdu.qd.oj.user.config;
+package cn.edu.sdu.qd.oj.email.config;
 
 import lombok.Getter;
 import lombok.Setter;
@@ -26,9 +26,11 @@ import java.util.Objects;
 import java.util.Properties;
 
 /**
-* @Description Auto-configure a refreshable {@link MailSender} based on properties configuration.
-* from org.springframework.boot.autoconfigure.mail.MailSenderPropertiesConfiguration
-**/
+ * Auto-configure a refreshable {@link MailSender} based on properties configuration.
+ * from org.springframework.boot.autoconfigure.mail.MailSenderPropertiesConfiguration
+ *
+ * @author zhangt2333
+ */
 @Setter
 @Component
 @RefreshScope

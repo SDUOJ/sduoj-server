@@ -10,9 +10,9 @@
 
 package cn.edu.sdu.qd.oj.user.converter;
 
-import cn.edu.sdu.qd.oj.user.dto.UserManageUpdateReqDTO;
+import cn.edu.sdu.qd.oj.user.dto.UserBatchAddDTO;
 import cn.edu.sdu.qd.oj.user.entity.UserDO;
 
 @org.mapstruct.Mapper(componentModel = "spring")
-public interface UserManageUpdateConverter extends BaseUserConverter<UserDO, UserManageUpdateReqDTO> {
+public interface UserBatchAddConverter extends BaseUserConverter<UserDO, UserBatchAddDTO> {
 }

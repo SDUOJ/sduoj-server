@@ -32,7 +32,6 @@ public class UserSessionDTO extends BaseDTO {
     private String nickname;
     private String email;
     private String studentId;
-    private Integer emailVerified;
     private List<String> roles;
 
     private String ipv4;

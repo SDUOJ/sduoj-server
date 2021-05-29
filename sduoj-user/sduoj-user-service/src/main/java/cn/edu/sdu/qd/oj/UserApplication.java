@@ -15,17 +15,12 @@ import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.cloud.client.discovery.EnableDiscoveryClient;
 import org.mybatis.spring.annotation.MapperScan;
-import org.springframework.scheduling.annotation.EnableAsync;
 
 /**
- * @ClassName UserApplication
- * @Description TODO
- * @Author zhangt2333
- * @Date 2020/2/26 11:29
- * @Version V1.0
- **/
+ * UserApplication
+ * @author zhangt2333
+ */
 
-@EnableAsync
 @SpringBootApplication
 @EnableDiscoveryClient
 @MapperScan(basePackages = {"cn.edu.sdu.qd.oj.user.mapper"})

@@ -18,49 +18,81 @@ import java.util.Base64;
 import java.util.Random;
 
 /**
- * @Description 验证码工具类 code from the Internet
- **/
+ * Utils for generating captcha
+ * @author Internet
+ * @author zhangt2333
+ */
 public class CaptchaUtils {
 
-    private static Random random = new Random();
-    private static int width = 165;      // 验证码的宽
-    private static int height = 45;      // 验证码的高
-    private static int lineSize = 30;    // 验证码中夹杂的干扰线数量
-    private static int randomStrNum = 4; // 验证码字符个数
+    private static final Random random = new Random();
 
-    private static String randomString = "0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWSYZ";
+    // 验证码的宽
+    private static final int width = 200;
+
+    // 验证码的高
+    private static final int height = 50;
+
+    // 验证码中夹杂的干扰线数量
+    private static final int lineSize = 30;
+
+    // 验证码中夹杂的干扰点数量
+    private static final int pointSize = 150;
+
+    // 随机串, 去掉了一些肉眼难以识别的字母数字
+    private static final String randomString = "3456789ABCDEFGHJKMNPQRSTUVWXYabcdefghjkmnpqrstuvwxy";
+
+    private static final Color BLANK = new Color(0, 0, 0);
+
+    // 获取验证码字符个数
+    private static int getRandomStrNum() {
+        return 4 + random.nextInt(3);
+    }
 
     // 字体的设置
     private static Font getFont() {
-        return new Font("Times New Roman", Font.ROMAN_BASELINE, 40);
+        return new Font(Font.DIALOG, Font.HANGING_BASELINE, 40);
     }
 
-    // 颜色的设置
+    // 颜色的设置, 已改为了二值验证码
     private static Color getRandomColor(int fc, int bc) {
-        fc = Math.min(fc, 255);
-        bc = Math.min(bc, 255);
-
-        int r = fc + random.nextInt(bc - fc - 16);
-        int g = fc + random.nextInt(bc - fc - 14);
-        int b = fc + random.nextInt(bc - fc - 12);
-
-        return new Color(r, g, b);
+        return BLANK;
+//        fc = Math.min(fc, 255);
+//        bc = Math.min(bc, 255);
+//
+//        int r = fc + random.nextInt(bc - fc - 16);
+//        int g = fc + random.nextInt(bc - fc - 14);
+//        int b = fc + random.nextInt(bc - fc - 12);
+//
+//        return new Color(r, g, b);
     }
 
     // 干扰线的绘制
     private static void drawLine(Graphics g) {
         int x = random.nextInt(width);
         int y = random.nextInt(height);
-        int xl = random.nextInt(20);
+        int xl = random.nextInt(30);
         int yl = random.nextInt(10);
         g.drawLine(x, y, x + xl, y + yl);
+    }
 
+    // 干扰点的绘制
+    private static void drawPoint(Graphics g) {
+        int x = random.nextInt(width);
+        int y = random.nextInt(height);
+        g.drawOval(x, y, 2, 2);
     }
 
     // 随机字符的获取
-    private static String getRandomString(int num) {
-        num = num > 0 ? num : randomString.length();
-        return String.valueOf(randomString.charAt(random.nextInt(num)));
+    public static String getRandomString(int num) {
+        num = num > 0 ? num : 1;
+        if (num == 1) {
+            return String.valueOf(randomString.charAt(random.nextInt(randomString.length())));
+        }
+        StringBuilder sb = new StringBuilder();
+        while (num-- > 0) {
+            sb.append(randomString.charAt(random.nextInt(randomString.length())));
+        }
+        return sb.toString();
     }
 
     // 字符串的绘制
@@ -68,10 +100,10 @@ public class CaptchaUtils {
         g.setFont(getFont());
         g.setColor(getRandomColor(108, 190));
         //System.out.println(random.nextInt(randomString.length()));
-        String rand = getRandomString(random.nextInt(randomString.length()));
+        String rand = getRandomString(1);
         randomStr += rand;
         g.translate(random.nextInt(3), random.nextInt(6));
-        g.drawString(rand, 40 * i + 10, 25);
+        g.drawString(rand, 30 * i + random.nextInt(15), 25 + random.nextInt(5));
         return randomStr;
     }
 
@@ -87,9 +119,13 @@ public class CaptchaUtils {
         for (int i = 0; i < lineSize; i++) {
             drawLine(g);
         }
-        //随机字符
+        // 干扰线
+        for (int i = 0; i < pointSize; i++) {
+            drawPoint(g);
+        }
+        // 随机字符
         String randomStr = "";
-        for (int i = 0; i < randomStrNum; i++) {
+        for (int i = 0, length = getRandomStrNum(); i < length; i++) {
             randomStr = drawString(g, randomStr, i);
         }
         g.dispose();
@@ -109,8 +145,8 @@ public class CaptchaUtils {
     }
 
     public static class CaptchaEntity {
-        private String randomStr;
-        private String base64;
+        private final String randomStr;
+        private final String base64;
 
         public CaptchaEntity(String randomStr, String base64) {
             this.randomStr = randomStr;

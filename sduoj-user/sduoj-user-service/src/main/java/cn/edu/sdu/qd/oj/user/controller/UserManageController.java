@@ -17,6 +17,7 @@ import cn.edu.sdu.qd.oj.common.entity.PageResult;
 import cn.edu.sdu.qd.oj.common.entity.UserSessionDTO;
 import cn.edu.sdu.qd.oj.common.enums.ApiExceptionEnum;
 import cn.edu.sdu.qd.oj.common.util.AssertUtils;
+import cn.edu.sdu.qd.oj.user.dto.UserBatchAddDTO;
 import cn.edu.sdu.qd.oj.user.dto.UserDTO;
 import cn.edu.sdu.qd.oj.user.dto.UserListReqDTO;
 import cn.edu.sdu.qd.oj.user.dto.UserManageUpdateReqDTO;
@@ -59,13 +60,13 @@ public class UserManageController {
             reqDTO.setPassword(null);
             reqDTO.setRoles(null);
         }
-        userManageService.update(reqDTO);
+        userManageService.update(reqDTO, userSessionDTO);
         return null;
     }
 
     @PostMapping("/addUsers")
     @ApiResponseBody
-    public Void addUsers(@RequestBody @Valid List<UserDTO> userDTOList,
+    public Void addUsers(@RequestBody @Valid List<UserBatchAddDTO> userDTOList,
                          @UserSession UserSessionDTO userSessionDTO) {
         userManageService.addUsers(userDTOList);
         return null;
@@ -79,5 +80,4 @@ public class UserManageController {
         userManageService.delete(usernameList);
         return null;
     }
-
 }

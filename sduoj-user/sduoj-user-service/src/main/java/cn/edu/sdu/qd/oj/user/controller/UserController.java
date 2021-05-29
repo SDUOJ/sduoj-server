@@ -42,7 +42,6 @@ import javax.mail.MessagingException;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import javax.validation.Valid;
-import javax.validation.constraints.Email;
 import javax.validation.constraints.NotNull;
 import java.util.HashMap;
 import java.util.List;
@@ -70,35 +69,33 @@ public class UserController {
     private RedisUtils redisUtils;
 
     @PostMapping("/register")
-    @ApiResponseBody
-    public Void register(@Valid @RequestBody UserDTO userDTO) throws Exception {
-        verifyCaptcha(userDTO.getCaptchaId(), userDTO.getCaptcha());
+    @ResponseBody
+    public ResponseResult<UserSessionDTO> register(HttpServletResponse response,
+                                                   @Valid @RequestBody UserDTO userDTO,
+                                                   @RealIp String ipv4,
+                                                   @RequestHeader("user-agent") String userAgent) {
         userDTO.setRoles(null);
-        this.userService.register(userDTO);
-        return null;
+        UserSessionDTO userSessionDTO = this.userService.register(userDTO, ipv4, userAgent);
+        writeSessionToHeader(response, userSessionDTO);
+        return ResponseResult.ok(userSessionDTO);
     }
 
-    @GetMapping("/verifyEmail")
-    @ApiResponseBody
-    public Void emailVerify(@RequestParam("token") String token) {
-        this.userService.emailVerify(token);
-        return null;
-    }
 
+    /**
+     * 发送验证码到邮箱
+     * @return send email interval
+     */
     @PostMapping("/sendVerificationEmail")
     @ApiResponseBody
-    public String verificationEmailSend(@RequestBody Map<String, String> json) throws MessagingException {
-        // TODO: 前端重新发验证邮件需要输验证码
-//        verifyCaptcha(json.get("captchaId"), json.get("captcha"));
-
-        String username = json.get("username");
-        return this.userService.sendVerificationEmail(username);
+    public Integer verificationEmailSend(@RequestBody Map<String, String> json) throws MessagingException {
+        userService.verifyCaptcha(json.get("captchaId"), json.get("captcha"));
+        return this.userService.sendVerificationEmail(json.get("email"));
     }
 
     @PostMapping("/forgetPassword")
     @ApiResponseBody
     public String forgetPassword(@RequestBody Map<String, String> json) throws Exception {
-        verifyCaptcha(json.get("captchaId"), json.get("captcha"));
+        userService.verifyCaptcha(json.get("captchaId"), json.get("captcha"));
         return this.userService.forgetPassword(json.get("username"), json.get("email"));
     }
 
@@ -122,27 +119,28 @@ public class UserController {
     @PostMapping("/updateProfile")
     @ApiResponseBody
     public Void updateProfile(@RequestBody UserUpdateReqDTO reqDTO,
-                              @UserSession UserSessionDTO userSessionDTO) throws MessagingException {
-        // 新密码校验
+                              @UserSession UserSessionDTO userSessionDTO) {
+        // 新密码格式校验
         if (StringUtils.isNotBlank(reqDTO.getNewPassword())) {
-            validatePassword(reqDTO.getNewPassword());
+            validatePasswordFormat(reqDTO.getNewPassword());
         }
-
-        // 新邮箱校验
-        if (StringUtils.isNotBlank(reqDTO.getNewEmail())) {
-            validateEmail(reqDTO.getNewEmail());
-        }
-
         reqDTO.setUserId(userSessionDTO.getUserId());
         this.userService.updateProfile(reqDTO);
         return null;
     }
 
-    private void validateEmail(@Email(message = "邮箱不合法") String email) {
+    private void validatePasswordFormat(@Length(min = 4, max = 32, message = "密码长度必须在4-32位之间") String password) {
     }
 
-    private void validatePassword(@Length(min = 4, max = 32, message = "密码长度必须在4-32位之间") String password) {
-
+    @PostMapping("/updateEmail")
+    @ApiResponseBody
+    public Void updateEmail(@RequestBody Map<String, String> json,
+                            @UserSession UserSessionDTO userSessionDTO) {
+        String password = json.get("password");
+        String email = json.get("email");
+        String emailCode = json.get("emailCode");
+        this.userService.updateEmail(userSessionDTO.getUserId(), password, email, emailCode);
+        return null;
     }
 
     @GetMapping("/getCaptcha")
@@ -159,8 +157,8 @@ public class UserController {
 
     @GetMapping("/isExist")
     @ApiResponseBody
-    public Boolean isExist(@RequestParam("username") @Nullable String username,
-                           @RequestParam("email") @Nullable String email) {
+    public Boolean isExist(@RequestParam(value = "username", required = false) String username,
+                           @RequestParam(value = "email", required = false) String email) {
         if (StringUtils.isNotBlank(username)) {
             return this.userService.isExistUsername(username);
         }
@@ -177,17 +175,13 @@ public class UserController {
                                                 @RealIp String ipv4,
                                                 @RequestHeader("user-agent") String userAgent) throws ApiException {
 
-        String username = null, password = null;
-        try {
-            username = json.get("username");
-            password = json.get("password");
-        } catch (Exception ignore) {
-        }
+        String username = json.get("username");
+        String password = json.get("password");
         log.info("{} login from {} by {}", username, ipv4, userAgent);
         if (StringUtils.isNotBlank(username) && StringUtils.isNotBlank(password)) {
             // 登录校验
             UserSessionDTO userSessionDTO = this.userService.login(username, password, ipv4, userAgent);
-            response.setHeader(UserSessionDTO.HEADER_KEY, JSON.toJSONString(userSessionDTO));
+            writeSessionToHeader(response, userSessionDTO);
             return ResponseResult.ok(userSessionDTO);
         }
         return ResponseResult.error();
@@ -212,8 +206,8 @@ public class UserController {
                 throw new ApiException(ApiExceptionEnum.THIRD_PARTY_ERROR, "暂不支持这种第三方认证");
         }
 
-        Optional.ofNullable(respDTO).map(UserThirdPartyLoginRespDTO::getUser).ifPresent(user -> {
-            response.setHeader(UserSessionDTO.HEADER_KEY, JSON.toJSONString(user));
+        Optional.ofNullable(respDTO).map(UserThirdPartyLoginRespDTO::getUser).ifPresent(userSessionDTO -> {
+            writeSessionToHeader(response, userSessionDTO);
         });
 
         return respDTO != null ? ResponseResult.ok(respDTO) : ResponseResult.error();
@@ -226,11 +220,8 @@ public class UserController {
                                                              @RealIp String ipv4,
                                                              @RequestHeader("user-agent") String userAgent) {
         UserSessionDTO userSessionDTO = userService.thirdPartyRegister(reqDTO, ipv4, userAgent);
-        if (userSessionDTO != null) {
-            response.setHeader(UserSessionDTO.HEADER_KEY, JSON.toJSONString(userSessionDTO));
-            return ResponseResult.ok(userSessionDTO);
-        }
-        return ResponseResult.error();
+        writeSessionToHeader(response, userSessionDTO);
+        return ResponseResult.ok(userSessionDTO);
     }
 
     @PostMapping("/thirdPartyBinding")
@@ -240,11 +231,8 @@ public class UserController {
                                                             @RealIp String ipv4,
                                                             @RequestHeader("user-agent") String userAgent) {
         UserSessionDTO userSessionDTO = userService.thirdPartyBinding(reqDTO, ipv4, userAgent);
-        if (userSessionDTO != null) {
-            response.setHeader(UserSessionDTO.HEADER_KEY, JSON.toJSONString(userSessionDTO));
-            return ResponseResult.ok(userSessionDTO);
-        }
-        return ResponseResult.error();
+        writeSessionToHeader(response, userSessionDTO);
+        return ResponseResult.ok(userSessionDTO);
     }
 
     @GetMapping("/thirdPartyUnbinding")
@@ -266,22 +254,6 @@ public class UserController {
 
 
     /**
-     * 进行验证码验证
-     *
-     * @throws ApiException CAPTCHA_NOT_MATCHING
-     * @throws ApiException CAPTCHA_NOT_FOUND
-     */
-    private void verifyCaptcha(String captchaId, String inputCaptcha) {
-        AssertUtils.notNull(captchaId, ApiExceptionEnum.CAPTCHA_NOT_FOUND);
-        AssertUtils.notNull(inputCaptcha, ApiExceptionEnum.CAPTCHA_NOT_FOUND);
-
-        String captcha = Optional.ofNullable(redisUtils.get(RedisConstants.getCaptchaKey(captchaId))).map(o -> (String) o).orElse(null);
-
-        AssertUtils.notNull(captcha, ApiExceptionEnum.CAPTCHA_NOT_FOUND);
-        AssertUtils.isTrue(captcha.equalsIgnoreCase(inputCaptcha), ApiExceptionEnum.CAPTCHA_NOT_MATCHING);
-    }
-
-    /**
      * 查询用户参加过的比赛
      */
     @GetMapping("/queryParticipateContest")
@@ -290,4 +262,13 @@ public class UserController {
         return userExtensionService.queryParticipateContest(userSessionDTO.getUserId());
     }
 
+    /**
+     * 将 session 写入 header 与 gateway 配合做用户登录
+     */
+    private void writeSessionToHeader(@NotNull HttpServletResponse response,
+                                      @Nullable UserSessionDTO userSessionDTO) {
+        if (userSessionDTO != null) {
+            response.setHeader(UserSessionDTO.HEADER_KEY, JSON.toJSONString(userSessionDTO));
+        }
+    }
 }
