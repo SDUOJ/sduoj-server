@@ -10,6 +10,7 @@
 
 package cn.edu.sdu.qd.oj.problem.controller;
 
+import cn.edu.sdu.qd.oj.auth.enums.PermissionEnum;
 import cn.edu.sdu.qd.oj.common.annotation.UserSession;
 import cn.edu.sdu.qd.oj.common.entity.ApiResponseBody;
 import cn.edu.sdu.qd.oj.common.entity.PageResult;
@@ -47,7 +48,7 @@ public class ProblemManageController {
     @ApiResponseBody
     public ProblemManageDTO queryByCode(@RequestParam("problemCode") String problemCode,
                                         @UserSession UserSessionDTO userSessionDTO) {
-        ProblemManageDTO problemManageDTO = this.problemManageService.queryByCode(problemCode);
+        ProblemManageDTO problemManageDTO = this.problemManageService.queryByCode(problemCode, userSessionDTO);
         // 超级管理员一定能看所有题
         if (PermissionEnum.SUPERADMIN.in(userSessionDTO)) {
             return problemManageDTO;
