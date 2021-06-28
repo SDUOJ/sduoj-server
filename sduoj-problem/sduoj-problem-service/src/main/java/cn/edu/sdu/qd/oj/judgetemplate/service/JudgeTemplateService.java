@@ -27,6 +27,8 @@ import cn.edu.sdu.qd.oj.judgetemplate.dto.JudgeTemplateManageListDTO;
 import cn.edu.sdu.qd.oj.judgetemplate.dto.JudgeTemplatePageReqDTO;
 import cn.edu.sdu.qd.oj.judgetemplate.entity.JudgeTemplateDO;
 import cn.edu.sdu.qd.oj.judgetemplate.entity.JudgeTemplateManageListDO;
+import cn.edu.sdu.qd.oj.judgetemplate.enums.JudgeTemplateTypeEnum;
+import cn.edu.sdu.qd.oj.problem.service.ProblemService;
 import com.baomidou.mybatisplus.extension.conditions.query.LambdaQueryChainWrapper;
 import com.baomidou.mybatisplus.extension.conditions.update.LambdaUpdateChainWrapper;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
@@ -56,6 +58,9 @@ public class JudgeTemplateService {
     @Autowired
     private JudgeTemplateListConverter judgeTemplateListConverter;
 
+    @Autowired
+    private ProblemService problemService;
+
 
     public JudgeTemplateDTO query(Long id) {
         JudgeTemplateDO judgeTemplateDO = judgeTemplateDao.getById(id);
@@ -80,7 +85,34 @@ public class JudgeTemplateService {
         return new PageResult<>(pageResult.getPages(), judgeTemplateManageListDTOList);
     }
 
+    public List<JudgeTemplateListDTO> list(int type, String problemCode, UserSessionDTO userSessionDTO) {
+        LambdaQueryChainWrapper<JudgeTemplateDO> query = judgeTemplateDao.lambdaQuery().select(
+                JudgeTemplateDO::getId,
+                JudgeTemplateDO::getType,
+                JudgeTemplateDO::getTitle,
+                JudgeTemplateDO::getComment,
+                JudgeTemplateDO::getAcceptFileExtensions
+        );
+        query.eq(JudgeTemplateDO::getType, type);
+        // 超级管理员能查所有的，其他只查 public 或自己的
+        if (PermissionEnum.SUPERADMIN.notIn(userSessionDTO)) {
+            Long userId = Optional.ofNullable(userSessionDTO).map(UserSessionDTO::getUserId).orElse(null);
+            query.and(o1 -> o1.eq(JudgeTemplateDO::getIsPublic, 1)
+                              .or(o2 -> o2.eq(JudgeTemplateDO::getIsPublic, 0)
+                                          .and(o3 -> o3.eq(JudgeTemplateDO::getUserId, userId))));
+        }
+        if (JudgeTemplateTypeEnum.ADVANCED.code == type) {
+            Long problemId = problemService.problemCodeToProblemId(problemCode);
+            query.eq(JudgeTemplateDO::getProblemId, problemId);
+        }
+        return judgeTemplateListConverter.to(query.list());
+    }
+
     public Long create(JudgeTemplateDTO judgeTemplateDTO, UserSessionDTO userSessionDTO) {
+        Optional.ofNullable(judgeTemplateDTO.getProblemCode())
+                .map(problemService::problemCodeToProblemId)
+                .ifPresent(judgeTemplateDTO::setProblemId);
+
         JudgeTemplateDO judgeTemplateDO = judgeTemplateConverter.from(judgeTemplateDTO);
         AssertUtils.isTrue(judgeTemplateDao.save(judgeTemplateDO), ApiExceptionEnum.SERVER_BUSY);
 

@@ -14,15 +14,21 @@ import cn.edu.sdu.qd.oj.common.converter.BaseConvertUtils;
 import cn.edu.sdu.qd.oj.common.util.SpringContextUtils;
 import cn.edu.sdu.qd.oj.judgetemplate.dto.JudgeTemplateListDTO;
 import cn.edu.sdu.qd.oj.judgetemplate.service.JudgeTemplateService;
+import cn.edu.sdu.qd.oj.problem.dto.ProblemCheckerConfigDTO;
 import cn.edu.sdu.qd.oj.problem.dto.ProblemCheckpointDTO;
+import cn.edu.sdu.qd.oj.problem.dto.ProblemFunctionTemplateDTO;
+import com.alibaba.fastjson.JSON;
+import com.alibaba.fastjson.TypeReference;
 import io.netty.buffer.ByteBuf;
 import io.netty.buffer.Unpooled;
+import org.apache.commons.lang3.StringUtils;
 import org.assertj.core.util.Lists;
 import org.springframework.util.CollectionUtils;
 
 import java.nio.ByteBuffer;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 /**
@@ -90,5 +96,31 @@ public class ProblemConverterUtils extends BaseConvertUtils{
         return BaseConvertUtils.listToString(longList.stream().map(Object::toString).collect(Collectors.toList()));
     }
 
+    public static ProblemCheckerConfigDTO checkerConfigTo(String checkerConfig) {
+        try {
+            return JSON.parseObject(checkerConfig, ProblemCheckerConfigDTO.class);
+        } catch (Exception e) {
+            return null;
+        }
+    }
 
+    public static String checkerConfigFrom(ProblemCheckerConfigDTO checkerConfigDTO) {
+        return JSON.toJSONString(checkerConfigDTO);
+    }
+
+    public static List<ProblemFunctionTemplateDTO> functionTemplatesTo(String functionTemplates) {
+        try {
+            return Optional.ofNullable(JSON.parseObject(functionTemplates, new TypeReference<List<ProblemFunctionTemplateDTO>>() {}))
+                           .orElseGet(Lists::newArrayList);
+        } catch (Exception e) {
+            return Lists.newArrayList();
+        }
+    }
+
+    public static String functionTemplatesFrom(List<ProblemFunctionTemplateDTO> functionTemplates) {
+        if (functionTemplates == null) {
+            functionTemplates = Lists.newArrayList();
+        }
+        return JSON.toJSONString(functionTemplates);
+    }
 }

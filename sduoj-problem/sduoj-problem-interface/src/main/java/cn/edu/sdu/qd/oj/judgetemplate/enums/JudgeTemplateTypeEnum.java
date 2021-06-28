@@ -16,7 +16,10 @@ import lombok.AllArgsConstructor;
 public enum JudgeTemplateTypeEnum {
 
     IO(0),
+
+    @Deprecated
     SPJ(1),
+
     ADVANCED(2),
     ;
 

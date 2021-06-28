@@ -98,11 +98,16 @@ public class ProblemManageService {
     @Autowired
     private UserClient userClient;
 
-    public ProblemManageDTO queryByCode(String problemCode) {
+    public ProblemManageDTO queryByCode(String problemCode, UserSessionDTO userSessionDTO) {
         ProblemDO problemManageDO = problemDao.lambdaQuery().eq(ProblemDO::getProblemCode, problemCode).one();
         AssertUtils.notNull(problemManageDO, ApiExceptionEnum.PROBLEM_NOT_FOUND);
         ProblemManageDTO problemManageDTO = problemManageConverter.to(problemManageDO);
         problemManageDTO.setUsername(userClient.userIdToUsername(problemManageDO.getUserId()));
+        AssertUtils.isTrue(problemCommonService.isProblemManager(problemManageDO, userSessionDTO),
+                           ApiExceptionEnum.USER_NOT_MATCHING);
+        // 查询 judgeTemplate，置入
+        List<Long> judgeTemplateIdList = problemManageDTO.getJudgeTemplates();
+        problemManageDTO.setJudgeTemplateListDTOList(judgeTemplateService.listByIds(judgeTemplateIdList));
         return problemManageDTO;
     }
 
@@ -162,20 +167,6 @@ public class ProblemManageService {
         ));
         // 置入 username
         problemManageListDTOlist.forEach(problemManageListDTO -> problemManageListDTO.setUsername(userClient.userIdToUsername(problemManageListDTO.getUserId())));
-        // 查询 judgeTemplate，置入
-        List<Long> judgeTemplateIdList = problemManageListDTOlist.stream()
-                .map(ProblemManageListDTO::getJudgeTemplates)
-                .filter(Objects::nonNull)
-                .flatMap(List::stream)
-                .distinct()
-                .collect(Collectors.toList());
-        List<JudgeTemplateListDTO> judgeTemplateListDTOList = judgeTemplateService.listByIds(judgeTemplateIdList);
-        Map<Long, JudgeTemplateListDTO> judgeTemplateListDTOMap = judgeTemplateListDTOList.stream().collect(Collectors.toMap(JudgeTemplateListDTO::getId, Function.identity(), (k1, k2) -> k1));
-        problemManageListDTOlist.forEach(problemManageListDTO -> {
-            Optional.ofNullable(problemManageListDTO.getJudgeTemplates()).filter(CollectionUtils::isNotEmpty).ifPresent(ids ->
-                problemManageListDTO.setJudgeTemplateListDTOList(ids.stream().map(judgeTemplateListDTOMap::get).collect(Collectors.toList()))
-            );
-        });
         // 包装, 返回
         return new PageResult<>(pageResult.getPages(), problemManageListDTOlist);
     }
@@ -190,17 +181,19 @@ public class ProblemManageService {
         ).eq(ProblemDO::getProblemCode, problem.getProblemCode()).one();
         // 特判题目权限
         AssertUtils.notNull(originalProblemDO, ApiExceptionEnum.PROBLEM_NOT_FOUND);
-        AssertUtils.isTrue(PermissionEnum.SUPERADMIN.in(userSessionDTO) || userSessionDTO.userIdEquals(originalProblemDO.getUserId()),
-                ApiExceptionEnum.USER_NOT_MATCHING);
-        problem.setProblemId(originalProblemDO.getProblemId());
-
+        // 特判题目权限
+        AssertUtils.isTrue(problemCommonService.isProblemManager(originalProblemDO, userSessionDTO),
+                           ApiExceptionEnum.USER_NOT_MATCHING,
+                           "只有超级管理员、出题者、权限用户组成员才能改题目详情");
         // 构造更新器
         ProblemDO problemUpdateDO = problemManageConverter.from(problem);
         problemUpdateDO.setProblemId(originalProblemDO.getProblemId());
         problemUpdateDO.setVersion(originalProblemDO.getVersion());
-        log.info("{} -> {}", problem, problemUpdateDO);
-
+        if (CollectionUtils.isEmpty(problem.getJudgeTemplates())) {
+            problemUpdateDO.setJudgeTemplates("");
+        }
         // 更新题目
+        log.info("{} -> {}", problem, problemUpdateDO);
         AssertUtils.isTrue(problemDao.updateById(problemUpdateDO), ApiExceptionEnum.UNKNOWN_ERROR);
 
         // 如果传的 caseList 不为 null，则更新 checkpointCase (增量更新和全量更新区别开)

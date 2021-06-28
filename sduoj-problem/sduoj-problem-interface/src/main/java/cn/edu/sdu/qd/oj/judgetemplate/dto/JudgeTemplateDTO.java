@@ -12,7 +12,11 @@ package cn.edu.sdu.qd.oj.judgetemplate.dto;
 
 import cn.edu.sdu.qd.oj.common.entity.BaseDTO;
 import com.fasterxml.jackson.annotation.JsonProperty;
-import lombok.*;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
+import lombok.Data;
+import lombok.EqualsAndHashCode;
+import lombok.NoArgsConstructor;
 
 import javax.validation.constraints.NotNull;
 import java.util.Date;
@@ -60,7 +64,12 @@ public class JudgeTemplateDTO extends BaseDTO {
 
     private String comment;
 
+    @JsonProperty(access = JsonProperty.Access.READ_ONLY)
+    private Long problemId;
+
     // -------------------------
 
     private String username;
+
+    private String problemCode;
 }

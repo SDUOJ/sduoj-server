@@ -10,14 +10,17 @@
 
 package cn.edu.sdu.qd.oj.problem.controller;
 
-import cn.edu.sdu.qd.oj.auth.enums.PermissionEnum;
 import cn.edu.sdu.qd.oj.common.annotation.UserSession;
 import cn.edu.sdu.qd.oj.common.entity.ApiResponseBody;
 import cn.edu.sdu.qd.oj.common.entity.PageResult;
 import cn.edu.sdu.qd.oj.common.entity.UserSessionDTO;
 import cn.edu.sdu.qd.oj.common.enums.ApiExceptionEnum;
 import cn.edu.sdu.qd.oj.common.util.AssertUtils;
-import cn.edu.sdu.qd.oj.problem.dto.*;
+import cn.edu.sdu.qd.oj.problem.dto.ProblemDescriptionDTO;
+import cn.edu.sdu.qd.oj.problem.dto.ProblemDescriptionListDTO;
+import cn.edu.sdu.qd.oj.problem.dto.ProblemListReqDTO;
+import cn.edu.sdu.qd.oj.problem.dto.ProblemManageDTO;
+import cn.edu.sdu.qd.oj.problem.dto.ProblemManageListDTO;
 import cn.edu.sdu.qd.oj.problem.service.ProblemManageService;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -29,12 +32,8 @@ import javax.validation.constraints.NotNull;
 import java.util.List;
 
 /**
- * @ClassName ProblemManageController
- * @Description TODO
- * @Author zhangt2333
- * @Date 2020/4/3 21:30
- * @Version V1.0
- **/
+ * @author zhangt2333
+ */
 
 @Controller
 @RequestMapping("/manage/problem")

@@ -15,6 +15,7 @@ import cn.edu.sdu.qd.oj.common.exception.ApiException;
 import cn.edu.sdu.qd.oj.common.entity.ResponseResult;
 import cn.edu.sdu.qd.oj.common.exception.InternalApiException;
 import cn.edu.sdu.qd.oj.common.util.RegexUtils;
+import com.fasterxml.jackson.databind.JsonMappingException;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.dao.DuplicateKeyException;
 import org.springframework.http.HttpStatus;
@@ -77,9 +78,17 @@ public class GlobalExceptionHandlerConfig {
 
 
     @ExceptionHandler(HttpMessageNotReadableException.class)
-    public void handleException(HttpMessageNotReadableException e) {
+    public ResponseEntity<ResponseResult> handleException(HttpMessageNotReadableException e) {
         log.warn("{} {}", e.getMessage(), e.getStackTrace()[0]);
-        throw new ApiException(ApiExceptionEnum.PARAMETER_ERROR);
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                             .body(ResponseResult.fail(HttpStatus.BAD_REQUEST.value(), "参数错误"));
+    }
+
+    @ExceptionHandler(JsonMappingException.class)
+    public ResponseEntity<ResponseResult> handleException(JsonMappingException e) {
+        log.warn("{} {}", e.getMessage(), e.getStackTrace()[0]);
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                             .body(ResponseResult.fail(HttpStatus.BAD_REQUEST.value(), "JSON 格式有误"));
     }
 
     @ExceptionHandler(DuplicateKeyException.class)

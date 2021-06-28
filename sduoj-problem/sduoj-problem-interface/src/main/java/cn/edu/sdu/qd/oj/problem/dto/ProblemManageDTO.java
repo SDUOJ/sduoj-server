@@ -11,6 +11,7 @@
 package cn.edu.sdu.qd.oj.problem.dto;
 
 import cn.edu.sdu.qd.oj.common.entity.BaseDTO;
+import cn.edu.sdu.qd.oj.judgetemplate.dto.JudgeTemplateListDTO;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.*;
 
@@ -86,7 +87,15 @@ public class ProblemManageDTO extends BaseDTO {
 
     // ------------------------------------------
 
+    @Valid
+    private ProblemCheckerConfigDTO checkerConfig;
+
+    private List<ProblemFunctionTemplateDTO> functionTemplates;
+
+
     private ProblemDescriptionDTO problemDescriptionDTO;
 
     private String username;
+
+    private List<JudgeTemplateListDTO> judgeTemplateListDTOList;
 }

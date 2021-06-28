@@ -35,4 +35,6 @@ public class ProblemDOField {
     public static final String CHECKPOINTS = "p_checkpoints";
     public static final String JUDGE_TEMPLATES = "p_judge_templates";
     public static final String CHECKPOINT_CASES = "p_checkpoint_cases";
+    public static final String CHECKER_CONFIG = "p_checker_config";
+    public static final String FUNCTION_TEMPLATES = "p_function_templates";
 }

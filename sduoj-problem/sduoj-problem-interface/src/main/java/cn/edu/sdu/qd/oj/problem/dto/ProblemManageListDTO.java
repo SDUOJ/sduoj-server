@@ -69,6 +69,4 @@ public class ProblemManageListDTO extends BaseDTO {
     private List<TagDTO> tagDTOList;
 
     private String username;
-
-    private List<JudgeTemplateListDTO> judgeTemplateListDTOList;
 }

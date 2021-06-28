@@ -35,4 +35,8 @@ public class ProblemJudgerDTO extends BaseDTO {
     private Integer checkpointNum;
 
     private List<ProblemCheckpointDTO> checkpoints;
+
+    private ProblemCheckerConfigDTO checkerConfig;
+
+    private List<ProblemFunctionTemplateDTO> functionTemplates;
 }

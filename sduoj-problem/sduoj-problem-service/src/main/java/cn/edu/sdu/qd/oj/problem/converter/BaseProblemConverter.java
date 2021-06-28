@@ -12,7 +12,9 @@ package cn.edu.sdu.qd.oj.problem.converter;
 
 import cn.edu.sdu.qd.oj.common.converter.BaseConverter;
 import cn.edu.sdu.qd.oj.judgetemplate.dto.JudgeTemplateListDTO;
+import cn.edu.sdu.qd.oj.problem.dto.ProblemCheckerConfigDTO;
 import cn.edu.sdu.qd.oj.problem.dto.ProblemCheckpointDTO;
+import cn.edu.sdu.qd.oj.problem.dto.ProblemFunctionTemplateDTO;
 
 import java.util.List;
 
@@ -49,5 +51,21 @@ public interface BaseProblemConverter<S, T> extends BaseConverter<S, T> {
 
     default byte[] checkpointCasesFrom(List<Long> checkpointCases) {
         return ProblemConverterUtils.longListToBytes(checkpointCases);
+    }
+
+    default ProblemCheckerConfigDTO checkerConfigTo(String checkConfig) {
+        return ProblemConverterUtils.checkerConfigTo(checkConfig);
+    }
+
+    default String checkerConfigFrom(ProblemCheckerConfigDTO checkConfigDTO) {
+        return ProblemConverterUtils.checkerConfigFrom(checkConfigDTO);
+    }
+
+    default List<ProblemFunctionTemplateDTO> functionTemplatesTo(String functionTemplates) {
+        return ProblemConverterUtils.functionTemplatesTo(functionTemplates);
+    }
+
+    default String functionTemplatesFrom(List<ProblemFunctionTemplateDTO> functionTemplates) {
+        return ProblemConverterUtils.functionTemplatesFrom(functionTemplates);
     }
 }

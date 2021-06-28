@@ -21,8 +21,8 @@ import java.util.Optional;
 
 
 /**
-* @Description cn.edu.sdu.qd.oj.judgetemplate.dto.JudgeTemplateDTO#shellScript 的 IO 和 SPJ 两种类型的实体类
-**/
+ * cn.edu.sdu.qd.oj.judgetemplate.dto.JudgeTemplateDTO#shellScript 的 IO 和 SPJ 两种类型的实体类
+ */
 @Data
 @Builder
 @NoArgsConstructor
@@ -34,6 +34,11 @@ public class JudgeTemplateConfigDTO extends BaseDTO {
     @NotNull(message = "user must be not null")
     private TemplateConfig user;
 
+    /**
+     * 业务迁移
+     * @see cn.edu.sdu.qd.oj.problem.dto.ProblemCheckerConfigDTO
+     */
+    @Deprecated
     @Valid
     @Nullable
     private TemplateConfig spj;

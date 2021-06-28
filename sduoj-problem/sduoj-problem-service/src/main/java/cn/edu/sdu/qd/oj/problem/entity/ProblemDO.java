@@ -95,4 +95,10 @@ public class ProblemDO extends BaseDO {
 
     @TableField(ProblemDOField.JUDGE_TEMPLATES)
     private String judgeTemplates;
+
+    @TableField(ProblemDOField.CHECKER_CONFIG)
+    private String checkerConfig;
+
+    @TableField(ProblemDOField.FUNCTION_TEMPLATES)
+    private String functionTemplates;
 }

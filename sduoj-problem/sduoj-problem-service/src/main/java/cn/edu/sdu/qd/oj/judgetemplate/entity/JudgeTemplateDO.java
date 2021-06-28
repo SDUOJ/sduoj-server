@@ -12,7 +12,11 @@ package cn.edu.sdu.qd.oj.judgetemplate.entity;
 
 import cn.edu.sdu.qd.oj.common.entity.BaseDO;
 import com.baomidou.mybatisplus.annotation.*;
-import lombok.*;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
+import lombok.Data;
+import lombok.EqualsAndHashCode;
+import lombok.NoArgsConstructor;
 
 import java.util.Date;
 
@@ -50,6 +54,9 @@ public class JudgeTemplateDO extends BaseDO {
 
     @TableField(JudgeTemplateDOField.USER_ID)
     private Long userId;
+
+    @TableField(JudgeTemplateDOField.PROBLEM_ID)
+    private Long problemId;
 
     @TableField(JudgeTemplateDOField.TYPE)
     private Integer type;

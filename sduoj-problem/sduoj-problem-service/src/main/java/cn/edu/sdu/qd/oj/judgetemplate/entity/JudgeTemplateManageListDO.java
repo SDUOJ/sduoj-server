@@ -51,6 +51,9 @@ public class JudgeTemplateManageListDO extends BaseDO {
     @TableField(JudgeTemplateDOField.USER_ID)
     private Long userId;
 
+    @TableField(JudgeTemplateDOField.PROBLEM_ID)
+    private Long problemId;
+
     @TableField(JudgeTemplateDOField.TYPE)
     private Integer type;
 

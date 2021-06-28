@@ -17,20 +17,23 @@ import cn.edu.sdu.qd.oj.common.entity.PageResult;
 import cn.edu.sdu.qd.oj.common.entity.UserSessionDTO;
 import cn.edu.sdu.qd.oj.common.enums.ApiExceptionEnum;
 import cn.edu.sdu.qd.oj.common.exception.ApiException;
-import cn.edu.sdu.qd.oj.common.util.AssertUtils;
 import cn.edu.sdu.qd.oj.judgetemplate.dto.JudgeTemplateConfigDTO;
 import cn.edu.sdu.qd.oj.judgetemplate.dto.JudgeTemplateDTO;
+import cn.edu.sdu.qd.oj.judgetemplate.dto.JudgeTemplateListDTO;
 import cn.edu.sdu.qd.oj.judgetemplate.dto.JudgeTemplateManageListDTO;
 import cn.edu.sdu.qd.oj.judgetemplate.dto.JudgeTemplatePageReqDTO;
 import cn.edu.sdu.qd.oj.judgetemplate.enums.JudgeTemplateTypeEnum;
 import cn.edu.sdu.qd.oj.judgetemplate.service.JudgeTemplateService;
 import com.alibaba.fastjson.JSON;
-import com.alibaba.fastjson.JSONValidator;
 import org.apache.commons.lang3.StringUtils;
 import org.assertj.core.util.Lists;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 
 import java.util.List;
 
@@ -62,6 +65,14 @@ public class JudgeTemplateManageController {
     public PageResult<JudgeTemplateManageListDTO> page(@NotNull JudgeTemplatePageReqDTO reqDTO,
                                                        @UserSession UserSessionDTO userSessionDTO) {
         return judgeTemplateService.page(reqDTO, userSessionDTO);
+    }
+
+    @GetMapping("/list")
+    @ApiResponseBody
+    public List<JudgeTemplateListDTO> list(@RequestParam("type") int type,
+                                           @RequestParam(value = "problemCode", required = false) String problemCode,
+                                           @UserSession UserSessionDTO userSessionDTO) {
+        return judgeTemplateService.list(type, problemCode, userSessionDTO);
     }
 
     @PostMapping("/create")

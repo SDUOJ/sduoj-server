@@ -20,6 +20,7 @@ public class JudgeTemplateDOField {
     public static final String VERSION = "jt_version";
     public static final String IS_PUBLIC = "jt_is_public";
     public static final String USER_ID = "u_id";
+    public static final String PROBLEM_ID = "p_id";
     public static final String TYPE = "jt_type";
     public static final String TITLE = "jt_title";
     public static final String SHELL_SCRIPT = "jt_shell_script";
@@ -28,5 +29,4 @@ public class JudgeTemplateDOField {
     public static final String REMOTE_OJ = "jt_remote_oj";
     public static final String REMOTE_PARAMETERS = "jt_remote_parameters";
     public static final String COMMENT = "jt_comment";
-    public static final String PROBLEM_IDS = "jt_problem_ids";
 }

@@ -51,6 +51,8 @@ public class ProblemDTO extends BaseDTO {
 
     private Long defaultDescriptionId;
 
+    private List<ProblemFunctionTemplateDTO> functionTemplates;
+
     // ------------------------------------------
 
     private ProblemDescriptionDTO problemDescriptionDTO;

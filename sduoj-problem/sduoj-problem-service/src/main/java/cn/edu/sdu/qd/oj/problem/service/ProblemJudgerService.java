@@ -18,12 +18,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 /**
- * @ClassName ProblemJudgerService
- * @Description TODO
- * @Author zhangt2333
- * @Date 2020/4/3 21:33
- * @Version V1.0
- **/
+ * @author zhangt2333
+ */
 
 @Service
 public class ProblemJudgerService {
@@ -41,7 +37,9 @@ public class ProblemJudgerService {
             ProblemDO::getMemoryLimit,
             ProblemDO::getOutputLimit,
             ProblemDO::getCheckpointNum,
-            ProblemDO::getCheckpoints
+            ProblemDO::getCheckpoints,
+            ProblemDO::getCheckerConfig,
+            ProblemDO::getFunctionTemplates
         ).eq(ProblemDO::getProblemId, problemId).one();
         return problemJudgerConverter.to(problemJudgerDO);
     }
