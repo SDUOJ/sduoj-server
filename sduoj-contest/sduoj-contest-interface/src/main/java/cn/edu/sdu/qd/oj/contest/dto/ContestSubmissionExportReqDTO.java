@@ -16,7 +16,6 @@ import lombok.*;
 import javax.validation.constraints.NotNull;
 
 @Data
-@Builder
 @NoArgsConstructor
 @AllArgsConstructor
 @EqualsAndHashCode(callSuper = true)
@@ -33,4 +32,8 @@ public class ContestSubmissionExportReqDTO extends BaseDTO {
 
     private Integer judgeResult;
 
+    /**
+     * 是否过滤出第一个符合条件的
+     */
+    private Integer isFilteringFirstSubmission = 0;
 }

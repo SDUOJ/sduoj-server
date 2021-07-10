@@ -35,4 +35,14 @@ public class SubmissionExportReqDTO extends BaseDTO {
     private Long judgeTemplateId;
 
     private Integer judgeResult;
+
+    /**
+     * 是否导出代码
+     */
+    private Integer isExportingCode;
+
+    /**
+     * 是否导出成绩非 0 的提交
+     */
+    private Integer isExportingScoreNotZero;
 }

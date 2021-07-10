@@ -15,6 +15,7 @@ import cn.edu.sdu.qd.oj.common.entity.UserSessionDTO;
 import cn.edu.sdu.qd.oj.common.enums.ApiExceptionEnum;
 import cn.edu.sdu.qd.oj.common.exception.ApiException;
 import cn.edu.sdu.qd.oj.common.util.AssertUtils;
+import cn.edu.sdu.qd.oj.contest.client.FilesysClient;
 import cn.edu.sdu.qd.oj.contest.client.SubmissionClient;
 import cn.edu.sdu.qd.oj.contest.client.UserClient;
 import cn.edu.sdu.qd.oj.contest.converter.ContestCreateReqConverter;
@@ -28,15 +29,21 @@ import cn.edu.sdu.qd.oj.contest.entity.ContestDOField;
 import cn.edu.sdu.qd.oj.submit.dto.SubmissionExportReqDTO;
 import cn.edu.sdu.qd.oj.submit.dto.SubmissionExportResultDTO;
 import com.baomidou.mybatisplus.core.conditions.update.UpdateWrapper;
+import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.core.io.Resource;
 import org.springframework.stereotype.Service;
 import org.springframework.util.StreamUtils;
 
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
+import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Objects;
+import java.util.Set;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipOutputStream;
 
@@ -45,6 +52,7 @@ import java.util.zip.ZipOutputStream;
  *
  * @author zhangt2333
  */
+@Slf4j
 @Service
 public class ContestManageService {
 
@@ -65,6 +73,9 @@ public class ContestManageService {
 
     @Autowired
     private ContestCommonService contestCommonService;
+
+    @Autowired
+    private FilesysClient filesysClient;
 
     public Long create(ContestCreateReqDTO reqDTO) {
         ContestDO contestDO = contestCreateReqConverter.from(reqDTO);
@@ -118,16 +129,36 @@ public class ContestManageService {
                 .userId(StringUtils.isBlank(reqDTO.getUsername()) ? null : userClient.usernameToUserId(reqDTO.getUsername()))
                 .judgeTemplateId(reqDTO.getJudgeTemplateId())
                 .judgeResult(reqDTO.getJudgeResult())
+                .isExportingCode(1)
+                .isExportingScoreNotZero(1)
                 .build();
-        submissionClient.exportSubmission(exportReqDTO).forEach(resultDTO -> {
-            try {
+
+        List<SubmissionExportResultDTO> submissionExportResultDTOList = submissionClient.exportSubmission(exportReqDTO);
+        submissionExportResultDTOList.sort((o1, o2) -> Objects.equals(o1.getJudgeScore(), o2.getJudgeScore())
+                                                        ? (int) (o1.getSubmissionId() - o2.getSubmissionId())
+                                                        : o2.getJudgeScore() - o1.getJudgeScore());
+        // Map<userId, Set<problemId>> 存储导出第一个提交与否
+        Map<Long, Set<Long>> exportFinished = new HashMap<>();
+        submissionExportResultDTOList.forEach(resultDTO -> {
+            if (0 == reqDTO.getIsFilteringFirstSubmission() || exportFinished.computeIfAbsent(resultDTO.getUserId(), (key) -> new HashSet<>())
+                                                                             .add(resultDTO.getProblemId())) {
                 ZipEntry zipEntry = new ZipEntry(submissionResultDTOToFilename(contestId, resultDTO));
-                zipEntry.setSize(resultDTO.getCode().length());
-                zipOut.putNextEntry(zipEntry);
-                StreamUtils.copy(resultDTO.getCode(), StandardCharsets.UTF_8, zipOut);
-                zipOut.closeEntry();
-            } catch (Exception e) {
-                throw new ApiException(ApiExceptionEnum.UNKNOWN_ERROR);
+                try {
+                    if (resultDTO.getZipFileId() == null) {
+                        zipEntry.setSize(resultDTO.getCode().length());
+                        zipOut.putNextEntry(zipEntry);
+                        StreamUtils.copy(resultDTO.getCode(), StandardCharsets.UTF_8, zipOut);
+                    } else {
+                        Resource resource = filesysClient.download(resultDTO.getZipFileId());
+                        zipEntry.setSize(resource.contentLength());
+                        zipOut.putNextEntry(zipEntry);
+                        StreamUtils.copy(resource.getInputStream(), zipOut);
+                    }
+                    zipOut.closeEntry();
+                } catch (Exception e) {
+
+                    throw new ApiException(e, ApiExceptionEnum.UNKNOWN_ERROR);
+                }
             }
         });
         zipOut.finish();
@@ -135,7 +166,16 @@ public class ContestManageService {
     }
 
     private String submissionResultDTOToFilename(long contestId, SubmissionExportResultDTO resultDTO) {
-        return "" + contestId + '-' + resultDTO.getUserId() + '-' + resultDTO.getProblemId() + '-' +
-                resultDTO.getJudgeTemplateId() + '-' + Long.toHexString(resultDTO.getSubmissionId());
+        StringBuilder sb = new StringBuilder()
+                .append(contestId)
+                .append('-').append(userClient.userIdToUsername(resultDTO.getUserId()))
+                .append('-').append(userClient.userIdToNickname(resultDTO.getUserId()))
+                .append('-').append(resultDTO.getProblemId())
+                .append('-').append(resultDTO.getJudgeTemplateId())
+                .append('-').append(Long.toHexString(resultDTO.getSubmissionId()));
+        if (resultDTO.getZipFileId() != null) {
+            sb.append(".zip");
+        }
+        return sb.toString();
     }
 }

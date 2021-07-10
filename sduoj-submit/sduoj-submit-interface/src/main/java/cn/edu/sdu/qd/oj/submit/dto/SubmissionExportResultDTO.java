@@ -31,9 +31,13 @@ public class SubmissionExportResultDTO extends BaseDTO {
 
     private Long problemId;
 
+    private Long zipFileId;
+
     private Integer judgeTemplateId;
 
     private Integer judgeResult;
+
+    private Integer judgeScore;
 
     private String code;
 }

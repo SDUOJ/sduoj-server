@@ -29,6 +29,7 @@ import org.springframework.web.bind.annotation.ExceptionHandler;
 
 import java.util.Arrays;
 import java.util.List;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 /**
@@ -63,10 +64,9 @@ public class GlobalExceptionHandlerConfig {
 
     @ExceptionHandler(ApiException.class)
     public ResponseEntity<ResponseResult> handleException(ApiException e) {
-//        log.warn("{} {} {}", e.getCode(), e.getMessage(), e.getStackTrace()[0]);
-        log.warn("", e);
+        log.warn("", Optional.ofNullable(e.getException()).orElse(e));
         return ResponseEntity.status(e.code)
-                .body(ResponseResult.fail(e.code, e.message));
+                             .body(ResponseResult.fail(e.code, e.message));
     }
 
     @ExceptionHandler(MethodArgumentNotValidException.class)

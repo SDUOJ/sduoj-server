@@ -392,15 +392,37 @@ public class SubmitService {
     }
 
     public List<SubmissionExportResultDTO> exportSubmission(SubmissionExportReqDTO reqDTO) {
-        LambdaQueryChainWrapper<SubmissionDO> query = submissionDao.lambdaQuery().select(
-                SubmissionDO::getSubmissionId,
-                SubmissionDO::getGmtCreate,
-                SubmissionDO::getUserId,
-                SubmissionDO::getProblemId,
-                SubmissionDO::getJudgeTemplateId,
-                SubmissionDO::getJudgeResult,
-                SubmissionDO::getCode
-        ).eq(SubmissionDO::getContestId, reqDTO.getContestId());
+        LambdaQueryChainWrapper<SubmissionDO> query = submissionDao.lambdaQuery()
+                                                                   .eq(SubmissionDO::getContestId, reqDTO.getContestId());
+        // 是否导出 code
+        if (1 == Optional.ofNullable(reqDTO.getIsExportingCode()).orElse(1)) {
+            query.select(
+                    SubmissionDO::getSubmissionId,
+                    SubmissionDO::getGmtCreate,
+                    SubmissionDO::getUserId,
+                    SubmissionDO::getProblemId,
+                    SubmissionDO::getZipFileId,
+                    SubmissionDO::getJudgeTemplateId,
+                    SubmissionDO::getJudgeResult,
+                    SubmissionDO::getJudgeScore,
+                    SubmissionDO::getCode
+            );
+        } else {
+            query.select(
+                    SubmissionDO::getSubmissionId,
+                    SubmissionDO::getGmtCreate,
+                    SubmissionDO::getUserId,
+                    SubmissionDO::getProblemId,
+                    SubmissionDO::getZipFileId,
+                    SubmissionDO::getJudgeTemplateId,
+                    SubmissionDO::getJudgeResult,
+                    SubmissionDO::getJudgeScore
+            );
+        }
+        // 是否导出非零分
+        if (1 == Optional.ofNullable(reqDTO.getIsExportingScoreNotZero()).orElse(0)) {
+            query.gt(SubmissionDO::getJudgeScore, 0);
+        }
         Optional.ofNullable(reqDTO.getUserId()).ifPresent(o -> query.eq(SubmissionDO::getUserId, o));
         Optional.ofNullable(reqDTO.getProblemId()).ifPresent(o -> query.eq(SubmissionDO::getProblemId, o));
         Optional.ofNullable(reqDTO.getJudgeTemplateId()).ifPresent(o -> query.eq(SubmissionDO::getJudgeTemplateId, o));
