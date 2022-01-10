@@ -18,16 +18,11 @@ import java.util.function.Supplier;
 @Slf4j
 public class NonExceptionOptional<T> {
     public static <T> Optional<T> ofNullable(Supplier<? extends T> supplier) {
-        return ofNullable(true, supplier);
-    }
-    public static <T> Optional<T> ofNullable(boolean logPrint, Supplier<? extends T> supplier) {
         T t = null;
         try {
             t = supplier.get();
-        } catch (Throwable e) {
-            if (logPrint) {
-                log.warn("", e);
-            }
+        } catch (Exception e) {
+            log.warn("", e);
         }
         return Optional.ofNullable(t);
     }

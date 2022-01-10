@@ -25,7 +25,6 @@ public class UserSessionDTO extends BaseDTO {
 
     public static final String HEADER_KEY = "SDUOJUserInfo";
     public static final String HEADER_VALUE_LOGOUT = "logout";
-    public static final String HEADER_KEY_USERID = "SDUOJUserInfo-UserId";
 
     private Long userId;
     private String username;
