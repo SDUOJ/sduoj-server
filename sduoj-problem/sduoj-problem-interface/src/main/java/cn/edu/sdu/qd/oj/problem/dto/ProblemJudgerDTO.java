@@ -30,8 +30,6 @@ public class ProblemJudgerDTO extends BaseDTO {
 
     private Integer memoryLimit;
 
-    private Integer outputLimit;
-
     private Integer checkpointNum;
 
     private List<ProblemCheckpointDTO> checkpoints;

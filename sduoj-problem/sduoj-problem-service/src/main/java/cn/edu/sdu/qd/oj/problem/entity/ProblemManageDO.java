@@ -43,9 +43,6 @@ public class ProblemManageDO extends BaseDO {
     @TableField(ProblemDOField.MEMORY_LIMIT)
     private Integer memoryLimit;
 
-    @TableField(ProblemDOField.OUTPUT_LIMIT)
-    private Integer outputLimit;
-
     @TableField(ProblemDOField.CHECKPOINT_NUM)
     private Integer checkpointNum;
 

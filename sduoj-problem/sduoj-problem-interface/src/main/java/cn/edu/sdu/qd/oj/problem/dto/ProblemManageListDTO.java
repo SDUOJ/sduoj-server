@@ -56,8 +56,6 @@ public class ProblemManageListDTO extends BaseDTO {
 
     private Integer timeLimit;
 
-    private Integer outputLimit;
-
     private Long defaultDescriptionId;
 
     private Integer checkpointNum;
