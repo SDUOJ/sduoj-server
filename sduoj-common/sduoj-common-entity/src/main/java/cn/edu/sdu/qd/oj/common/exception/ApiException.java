@@ -16,12 +16,9 @@ import lombok.Getter;
 import lombok.ToString;
 
 /**
- * @ClassName OJException
- * @Description 自定义异常类
- * @Author zhangt2333
- * @Date 2020/2/26 11:29
- * @Version V1.0
- **/
+ * 自定义异常类
+ * @author zhangt2333
+ */
 
 @Getter
 @ToString
@@ -29,14 +26,21 @@ import lombok.ToString;
 public class ApiException extends RuntimeException {
     public int code;
     public String message;
+    public Throwable exception;
 
-    public ApiException(ApiExceptionEnum e) {
-        this.code = e.code;
-        this.message = e.message;
+    public ApiException(Throwable e, ApiExceptionEnum apiExceptionEnum) {
+        this.exception = e;
+        this.code = apiExceptionEnum.code;
+        this.message = apiExceptionEnum.message;
     }
 
-    public ApiException(ApiExceptionEnum e, String additionalMessage) {
-        this.code = e.code;
-        this.message = e.message + " " + additionalMessage;
+    public ApiException(ApiExceptionEnum apiExceptionEnum) {
+        this.code = apiExceptionEnum.code;
+        this.message = apiExceptionEnum.message;
+    }
+
+    public ApiException(ApiExceptionEnum apiExceptionEnum, String additionalMessage) {
+        this.code = apiExceptionEnum.code;
+        this.message = apiExceptionEnum.message + " " + additionalMessage;
     }
 }

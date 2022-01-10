@@ -10,10 +10,10 @@
 
 package cn.edu.sdu.qd.oj.common.config;
 
-import cn.edu.sdu.qd.oj.common.enums.ApiExceptionEnum;
 import cn.edu.sdu.qd.oj.common.exception.ApiException;
 import cn.edu.sdu.qd.oj.common.entity.ResponseResult;
 import cn.edu.sdu.qd.oj.common.exception.InternalApiException;
+import com.fasterxml.jackson.databind.JsonMappingException;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -27,13 +27,10 @@ import org.springframework.web.bind.annotation.ExceptionHandler;
 import java.util.stream.Collectors;
 
 /**
- * @ClassName BasicExceptionHandler
- * @Description 通用异常拦截器
- * @Author zhangt2333
- * @Date 2020/2/26 11:29
- * @Version V1.0
- **/
-
+ * 通用异常拦截器
+ *
+ * @author zhangt2333
+ */
 @Slf4j
 @ControllerAdvice
 public class GlobalExceptionHandlerConfig {
@@ -76,8 +73,16 @@ public class GlobalExceptionHandlerConfig {
 
 
     @ExceptionHandler(HttpMessageNotReadableException.class)
-    public void handleException(HttpMessageNotReadableException e) {
+    public ResponseEntity<ResponseResult> handleException(HttpMessageNotReadableException e) {
         log.warn("{} {}", e.getMessage(), e.getStackTrace()[0]);
-        throw new ApiException(ApiExceptionEnum.PARAMETER_ERROR);
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                             .body(ResponseResult.fail(HttpStatus.BAD_REQUEST.value(), "参数错误"));
+    }
+
+    @ExceptionHandler(JsonMappingException.class)
+    public ResponseEntity<ResponseResult> handleException(JsonMappingException e) {
+        log.warn("{} {}", e.getMessage(), e.getStackTrace()[0]);
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                             .body(ResponseResult.fail(HttpStatus.BAD_REQUEST.value(), "JSON 格式有误"));
     }
 }

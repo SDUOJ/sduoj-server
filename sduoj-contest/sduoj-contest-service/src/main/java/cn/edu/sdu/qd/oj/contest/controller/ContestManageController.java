@@ -94,7 +94,7 @@ public class ContestManageController {
     @GetMapping("/page")
     @ApiResponseBody
     public PageResult<ContestListDTO> page(ContestListReqDTO reqDTO,
-                                           @UserSession(nullable=true) UserSessionDTO userSessionDTO) {
+                                           @UserSession UserSessionDTO userSessionDTO) {
         return contestService.page(reqDTO, userSessionDTO);
     }
 
@@ -103,9 +103,9 @@ public class ContestManageController {
     public ContestManageDTO query(@RequestParam("contestId") long contestId,
                                   @UserSession UserSessionDTO userSessionDTO) {
         ContestManageDTO contestManageDTO = contestManageService.query(contestId);
-        // 超级管理员、创建者 可查到比赛详情
+        // 超级管理员、创建者、权限组成员 可查到比赛详情
         AssertUtils.isTrue(contestCommonService.isContestManager(contestManageDTO, userSessionDTO),
-                        ApiExceptionEnum.USER_NOT_MATCHING, "非比赛创建人");
+                        ApiExceptionEnum.USER_NOT_MATCHING, "非比赛创建人或权限组成员");
         return contestManageDTO;
     }
 
