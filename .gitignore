@@ -3,6 +3,7 @@ ignore/
 target/
 build/
 out/
+.gradle
 
 *.DS_Store
 *.class
