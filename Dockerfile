@@ -15,7 +15,7 @@ RUN apt-get update \
 RUN ln -sf /usr/lib/jvm/java-8-openjdk-amd64/bin/java /usr/bin/java \
  && ln -sf /usr/lib/jvm/java-8-openjdk-amd64/bin/javac /usr/bin/javac \
 # download
- && wget -O /sduoj/dockerWorkspace/server.zip https://codeload.github.com/SDUOJ/sduoj-server/zip/master \
+ && wget -O /sduoj/dockerWorkspace/server.zip https://codeload.github.com/SDUOJ/sduoj-server/zip/stable \
  && unzip -o -q -d /sduoj/dockerWorkspace /sduoj/dockerWorkspace/server.zip \
 # build
  && cd /sduoj/dockerWorkspace/sduoj-server* \
