@@ -17,7 +17,7 @@ import java.util.stream.Stream;
 @org.mapstruct.MapperConfig
 public interface BaseConverter<S, T> {
 
-    /** 基础 DO、DTO 转换方法 **/
+    /* 基础 DO、DTO 转换方法 */
 
     /**
      * 映射同名属性

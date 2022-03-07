@@ -28,7 +28,8 @@ import org.springframework.cloud.openfeign.EnableFeignClients;
 @EnableDiscoveryClient
 @EnableFeignClients
 @MapperScan(basePackages = {"cn.edu.sdu.qd.oj.auth.mapper"})
-public class AuthApplication {public static void main(String[] args) {
+public class AuthApplication {
+    public static void main(String[] args) {
         SpringApplication.run(AuthApplication.class, args);
     }
 }

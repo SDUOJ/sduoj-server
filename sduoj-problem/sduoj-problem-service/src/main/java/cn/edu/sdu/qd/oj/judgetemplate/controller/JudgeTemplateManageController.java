@@ -101,7 +101,7 @@ public class JudgeTemplateManageController {
             try {
                 JSON.parseObject(judgeTemplateDTO.getShellScript(), JudgeTemplateConfigDTO.class);
             } catch (Exception e) {
-                 throw new ApiException(ApiExceptionEnum.PARAMETER_ERROR, "JSON 格式错误");
+                throw new ApiException(ApiExceptionEnum.PARAMETER_ERROR, "JSON 格式错误");
             }
         }
     }

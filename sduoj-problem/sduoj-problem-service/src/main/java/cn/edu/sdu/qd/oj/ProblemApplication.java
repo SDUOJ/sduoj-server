@@ -29,7 +29,7 @@ import org.springframework.scheduling.annotation.EnableScheduling;
 })
 public class ProblemApplication {
     public static void main(String[] args) {
-        SpringApplication.run(ProblemApplication.class,args);
+        SpringApplication.run(ProblemApplication.class, args);
     }
 
 }

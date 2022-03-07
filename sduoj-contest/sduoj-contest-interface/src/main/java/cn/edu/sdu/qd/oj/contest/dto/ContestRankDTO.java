@@ -21,9 +21,9 @@ import java.util.*;
 import java.util.stream.Collectors;
 
 /**
- * @Description 比赛排行榜 DTO
- * <a href="https://github.com/SDUOJ/sduoj-server/issues/54">Design ranking data structure and interactive flow in contest.</a>.
- **/
+ * 比赛排行榜 DTO
+ * @see <a href="https://github.com/SDUOJ/sduoj-server/issues/54">Design ranking data structure and interactive flow in contest.</a>
+ */
 
 @Data
 @Builder
@@ -44,8 +44,8 @@ public class ContestRankDTO extends BaseDTO {
     public static List<ContestRankDTO> create(Map<Long, List<SubmissionResultDTO>> userIdToSubmissionListMap, int problemNum) {
         return userIdToSubmissionListMap.entrySet().stream().map(entry -> {
             List<OneSubmission> submissions = entry.getValue().stream().filter(submissionResultDTO ->
-                SubmissionJudgeResult.CE.code != submissionResultDTO.getJudgeResult() &&
-                SubmissionJudgeResult.SE.code != submissionResultDTO.getJudgeResult()
+                SubmissionJudgeResult.CE.code != submissionResultDTO.getJudgeResult()
+                        && SubmissionJudgeResult.SE.code != submissionResultDTO.getJudgeResult()
             ).map(OneSubmission::new).collect(Collectors.toList());
             return ContestRankDTO.builder()
                     .userId(entry.getKey())

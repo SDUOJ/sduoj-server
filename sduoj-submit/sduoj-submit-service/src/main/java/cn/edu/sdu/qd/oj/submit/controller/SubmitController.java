@@ -74,8 +74,9 @@ public class SubmitController {
             return submissionDTO;
         }
         // 他人查看脱敏
-        if (submissionDTO != null &&
-          !Optional.ofNullable(userSessionDTO).map(o -> o.userIdEquals(submissionDTO.getUserId())).orElse(false)) {
+        if (submissionDTO != null && !Optional.ofNullable(userSessionDTO)
+                                              .map(o -> o.userIdEquals(submissionDTO.getUserId()))
+                                              .orElse(false)) {
             submissionDTO.setCode(null);
             submissionDTO.setCheckpointResults(null);
             submissionDTO.setZipFileId(null);

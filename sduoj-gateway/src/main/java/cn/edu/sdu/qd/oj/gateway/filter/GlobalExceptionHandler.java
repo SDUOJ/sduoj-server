@@ -1,11 +1,11 @@
 /*
- * Copyright 2020-2021 the original author or authors.
+ * Copyright 2020-2022 the original author or authors.
  *
- * Licensed under the General Public License, Version 3.0 (the "License");
+ * Licensed under the Affero General Public License, Version 3.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
  *
- *      https://www.gnu.org/licenses/gpl-3.0.en.html
+ *      https://www.gnu.org/licenses/agpl-3.0.en.html
  */
 
 package cn.edu.sdu.qd.oj.gateway.filter;
@@ -29,7 +29,8 @@ import java.net.SocketException;
 import java.util.regex.Pattern;
 
 /**
-* @Description 对出错 response 进行规整，未出错的业务返回无需处理
+* 对出错 response 进行规整、打日志，未出错的业务返回无需处理
+* @author zhangt2333
 **/
 @Slf4j
 @Order(-1)
@@ -50,7 +51,12 @@ public class GlobalExceptionHandler implements ErrorWebExceptionHandler {
 
         response.getHeaders().setContentType(MediaType.APPLICATION_JSON);
         int statusCode = t instanceof ResponseStatusException ? ((ResponseStatusException) t).getStatus().value() : 500;
-        String message = t instanceof SocketException ? PATTERN_REPLACE_HOST.matcher(t.getMessage()).replaceFirst(""): t.getMessage();
+        String message = t instanceof SocketException
+                ? PATTERN_REPLACE_HOST.matcher(t.getMessage()).replaceFirst("")
+                : t.getMessage();
+        if (!(t instanceof ResponseStatusException) && !(t instanceof SocketException)) {
+            log.error("", t);
+        }
         return response.writeWith(Mono.fromSupplier(() -> {
             DataBufferFactory bufferFactory = response.bufferFactory();
             try {

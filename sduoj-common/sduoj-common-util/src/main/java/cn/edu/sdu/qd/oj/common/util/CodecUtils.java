@@ -27,14 +27,14 @@ public class CodecUtils {
     public static String md5(File file) {
         FileInputStream fileInputStream = null;
         try {
-            MessageDigest MD5 = MessageDigest.getInstance("MD5");
+            MessageDigest md5 = MessageDigest.getInstance("MD5");
             fileInputStream = new FileInputStream(file);
             byte[] buffer = new byte[8192];
             int length;
             while ((length = fileInputStream.read(buffer)) != -1) {
-                MD5.update(buffer, 0, length);
+                md5.update(buffer, 0, length);
             }
-            return new String(Hex.encodeHex(MD5.digest()));
+            return new String(Hex.encodeHex(md5.digest()));
         } catch (Exception e) {
             e.printStackTrace();
             return null;
@@ -51,9 +51,9 @@ public class CodecUtils {
 
     public static String md5(byte[] bytes) {
         try {
-            MessageDigest MD5 = MessageDigest.getInstance("MD5");
-            MD5.update(bytes, 0, bytes.length);
-            return new String(Hex.encodeHex(MD5.digest()));
+            MessageDigest md5 = MessageDigest.getInstance("MD5");
+            md5.update(bytes, 0, bytes.length);
+            return new String(Hex.encodeHex(md5.digest()));
         } catch (Exception e) {
             e.printStackTrace();
             return null;
@@ -62,13 +62,13 @@ public class CodecUtils {
 
     public static String md5(InputStream fis) {
         try {
-            MessageDigest MD5 = MessageDigest.getInstance("MD5");
+            MessageDigest md5 = MessageDigest.getInstance("MD5");
             byte[] buffer = new byte[8192];
             int length;
             while ((length = fis.read(buffer)) != -1) {
-                MD5.update(buffer, 0, length);
+                md5.update(buffer, 0, length);
             }
-            return new String(Hex.encodeHex(MD5.digest()));
+            return new String(Hex.encodeHex(md5.digest()));
         } catch (Exception e) {
             e.printStackTrace();
             return null;

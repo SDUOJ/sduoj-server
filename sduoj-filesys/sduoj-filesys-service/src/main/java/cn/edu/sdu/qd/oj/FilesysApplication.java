@@ -22,6 +22,6 @@ import org.springframework.cloud.openfeign.EnableFeignClients;
 @MapperScan(basePackages = {"cn.edu.sdu.qd.oj.filesys.mapper"})
 public class FilesysApplication {
     public static void main(String[] args) {
-        SpringApplication.run(FilesysApplication.class,args);
+        SpringApplication.run(FilesysApplication.class, args);
     }
 }

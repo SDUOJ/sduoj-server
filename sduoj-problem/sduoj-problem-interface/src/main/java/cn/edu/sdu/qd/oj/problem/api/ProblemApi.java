@@ -53,7 +53,7 @@ public interface ProblemApi {
     @GetMapping("/queryIdToTitleMap")
     Map<Long, String> queryIdToTitleMap() throws InternalApiException;
 
-    @PostMapping(value = "/validateProblemCodeList",consumes = "application/json")
+    @PostMapping(value = "/validateProblemCodeList", consumes = "application/json")
     boolean validateProblemCodeList(@RequestBody List<String> problemCodeList) throws InternalApiException;
 
     /**

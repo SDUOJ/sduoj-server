@@ -31,14 +31,14 @@ public class SubmissionConverterUtils extends BaseConvertUtils {
 
     public static List<EachCheckpointResult> checkpointResultsTo(byte[] bytes) {
         int size = bytes != null ? bytes.length : 0;
-        if (size == 0 || size % (4*4) != 0) {
+        if (size == 0 || size % (4 * 4) != 0) {
             return Lists.newArrayList();
         }
         ByteBuffer wrap = ByteBuffer.wrap(bytes);
-        List<EachCheckpointResult> checkpointResults = new ArrayList<>(size / (4*4));
+        List<EachCheckpointResult> checkpointResults = new ArrayList<>(size / (4 * 4));
         for (int i = 0; i < size; i += 16) {
             checkpointResults.add(new EachCheckpointResult(
-                    wrap.getInt(i), wrap.getInt(i+4), wrap.getInt(i+8), wrap.getInt(i+12))
+                    wrap.getInt(i), wrap.getInt(i + 4), wrap.getInt(i + 8), wrap.getInt(i + 12))
             );
         }
         return checkpointResults;

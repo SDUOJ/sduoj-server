@@ -9,6 +9,10 @@
  -->
 
 <module name = "Checker">
+    <module name="SuppressionFilter">
+        <property name="file" value="${config_loc}/suppressions.xml"/>
+    </module>
+
     <property name="charset" value="UTF-8"/>
 
     <property name="severity" value="warning"/>
@@ -122,7 +126,7 @@
         <module name="OneStatementPerLine"/>
         <module name="MultipleVariableDeclarations"/>
         <module name="ArrayTypeStyle"/>
-        <module name="MissingSwitchDefault"/>
+<!--        <module name="MissingSwitchDefault"/>-->
         <module name="FallThrough"/>
         <module name="UpperEll"/>
         <module name="ModifierOrder"/>
@@ -243,7 +247,7 @@
             <property name="caseIndent" value="4"/>
             <property name="throwsIndent" value="4"/>
             <property name="lineWrappingIndentation" value="0"/>
-            <property name="arrayInitIndent" value="4"/>
+            <property name="arrayInitIndent" value="8"/>
         </module>
         <module name="AbbreviationAsWordInName">
             <property name="ignoreFinal" value="false"/>
@@ -340,7 +344,7 @@
         </module>
         <module name="SingleLineJavadoc"/>
         <module name="EmptyCatchBlock">
-            <property name="exceptionVariableName" value="expected"/>
+            <property name="exceptionVariableName" value="ignore"/>
         </module>
 <!--        <module name="CommentsIndentation">-->
 <!--            <property name="tokens" value="SINGLE_LINE_COMMENT, BLOCK_COMMENT_BEGIN"/>-->

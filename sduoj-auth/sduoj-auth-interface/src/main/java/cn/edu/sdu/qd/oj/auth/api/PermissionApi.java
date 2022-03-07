@@ -23,10 +23,8 @@ public interface PermissionApi {
     String SERVICE_NAME = "auth-service";
 
     /**
-    * @Description 同步微服务 URL 到权限中心
-    * @param permissionDTOList
-    * @return void
-    **/
+     * 同步微服务 URL 到权限中心
+     */
     @PostMapping(value = "/sync", consumes = "application/json")
     void sync(@RequestBody List<PermissionDTO> permissionDTOList);
 

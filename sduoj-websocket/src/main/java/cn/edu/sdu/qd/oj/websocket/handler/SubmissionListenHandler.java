@@ -51,13 +51,13 @@ public class SubmissionListenHandler {
 
         // 如果是评测开始信息，则清空之前的记录，以免影响重测的场景。若不是，则直接存储该信息。现阶段问题是在短时间内多次重测，可能会消息重复，前端已容错
         try {
-            if (SubmissionJudgeResult.COMPILING.code == (Integer) messageDTO.get(1) ||
-                SubmissionJudgeResult.JUDGING.code == (Integer) messageDTO.get(1)) {
+            if (SubmissionJudgeResult.COMPILING.code == (Integer) messageDTO.get(1)
+                    || SubmissionJudgeResult.JUDGING.code == (Integer) messageDTO.get(1)) {
                 redisUtils.del(SubmissionBizContant.getRedisSubmissionKey(submissionIdHex));
             } else {
                 redisUtils.lSet(SubmissionBizContant.getRedisSubmissionKey(submissionIdHex), msg, SubmissionBizContant.REDIS_SUBMISSION_RESULT_EXPIRE);
             }
-        }catch (Throwable ignore) {
+        } catch (Throwable ignored) {
         }
 
         // 在redis中广播这条消息

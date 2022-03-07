@@ -133,8 +133,8 @@ public class ContestManageController {
                                  @UserSession UserSessionDTO userSessionDTO,
                                  HttpServletResponse response) throws IOException {
         log.warn("exportSubmission: {}", reqDTO);
-        response.addHeader(HttpHeaders.CONTENT_DISPOSITION, "attachment;filename=" +
-                URLEncoder.encode(String.valueOf(System.currentTimeMillis()), "UTF-8") + ".zip");
+        response.addHeader(HttpHeaders.CONTENT_DISPOSITION, "attachment;filename="
+                + URLEncoder.encode(String.valueOf(System.currentTimeMillis()), "UTF-8") + ".zip");
         response.setContentType("application/zip; charset=utf-8");
         response.setCharacterEncoding("UTF-8");
         response.setStatus(HttpServletResponse.SC_OK);

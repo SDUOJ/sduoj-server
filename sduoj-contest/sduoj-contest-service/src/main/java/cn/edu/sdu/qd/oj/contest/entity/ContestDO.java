@@ -118,7 +118,7 @@ public class ContestDO extends BaseDO {
         if (problemIndex > contestProblemListDTOList.size() || problemIndex < 1) {
             return null;
         }
-        return contestProblemListDTOList.get(problemIndex-1);
+        return contestProblemListDTOList.get(problemIndex - 1);
     }
 
     /**

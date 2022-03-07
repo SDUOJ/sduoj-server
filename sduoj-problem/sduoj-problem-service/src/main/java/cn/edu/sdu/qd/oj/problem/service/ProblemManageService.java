@@ -123,6 +123,7 @@ public class ProblemManageService {
         return problemDO.getProblemCode();
     }
 
+    @SuppressWarnings("unchecked")
     public PageResult<ProblemManageListDTO> queryProblemByPage(ProblemListReqDTO reqDTO,
                                                                UserSessionDTO userSessionDTO) {
         LambdaQueryChainWrapper<ProblemManageListDO> query = problemManageListDao.lambdaQuery();
@@ -245,8 +246,8 @@ public class ProblemManageService {
         ).eq(ProblemDescriptionDO::getId, problemDescriptionDTO.getId()).one();
         AssertUtils.notNull(descriptionDO, ApiExceptionEnum.DESCRIPTION_NOT_FOUND);
         // 鉴权
-        AssertUtils.isTrue(problemCommonService.isProblemManager(descriptionDO.getProblemId(), userSessionDTO) ||
-                           userSessionDTO.userIdEquals(descriptionDO.getUserId()),
+        AssertUtils.isTrue(problemCommonService.isProblemManager(descriptionDO.getProblemId(), userSessionDTO)
+                        || userSessionDTO.userIdEquals(descriptionDO.getUserId()),
                            ApiExceptionEnum.USER_NOT_MATCHING);
         // 更新
         ProblemDescriptionDO update = problemDescriptionConverter.from(problemDescriptionDTO);
@@ -267,9 +268,9 @@ public class ProblemManageService {
 
         if (!problemCommonService.isProblemManager(descriptionDO.getProblemId(), userSessionDTO)) {
             Long defaultDescriptionId = problemDO.getDefaultDescriptionId();
-            AssertUtils.isTrue(Objects.equals(defaultDescriptionId, descriptionDO.getId()) ||
-                               descriptionDO.getIsPublic() == 1 ||
-                               userSessionDTO.userIdEquals(descriptionDO.getUserId()),
+            AssertUtils.isTrue(Objects.equals(defaultDescriptionId, descriptionDO.getId())
+                            || descriptionDO.getIsPublic() == 1
+                            || userSessionDTO.userIdEquals(descriptionDO.getUserId()),
                                ApiExceptionEnum.PROBLEM_NOT_FOUND,
                       "非public非default非自己所属的题面无法查看");
         }

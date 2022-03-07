@@ -41,7 +41,7 @@ public class ApiResponseHandlerConfig implements InitializingBean {
     @Override
     public void afterPropertiesSet() {
         List<HandlerMethodReturnValueHandler> returnValueHandlers = adapter.getReturnValueHandlers();
-        List<HandlerMethodReturnValueHandler> handlers = new ArrayList(returnValueHandlers);
+        List<HandlerMethodReturnValueHandler> handlers = new ArrayList<>(returnValueHandlers);
         this.decorateHandlers(handlers);
         adapter.setReturnValueHandlers(handlers);
     }
@@ -51,14 +51,14 @@ public class ApiResponseHandlerConfig implements InitializingBean {
             HandlerMethodReturnValueHandler handlerMethodReturnValueHandler = handlers.get(i);
             if (handlerMethodReturnValueHandler instanceof ViewNameMethodReturnValueHandler) {
                 // 在视图处理器前插入本返回值处理器，以免 String 类型返回值被提前按视图进行处理
-                handlers.add(i, OJProcessor());
+                handlers.add(i, ojProcessor());
                 return;
             }
         }
     }
 
     @Bean
-    public ResponseResultProcessorDecorator OJProcessor() {
+    public ResponseResultProcessorDecorator ojProcessor() {
         return new ResponseResultProcessorDecorator();
     }
 
@@ -68,8 +68,8 @@ public class ApiResponseHandlerConfig implements InitializingBean {
 
         @Override
         public boolean supportsReturnType(MethodParameter returnType) {
-            return AnnotatedElementUtils.hasAnnotation(returnType.getContainingClass(), ApiResponseBody.class) ||
-                    returnType.hasMethodAnnotation(ApiResponseBody.class);
+            return AnnotatedElementUtils.hasAnnotation(returnType.getContainingClass(), ApiResponseBody.class)
+                    || returnType.hasMethodAnnotation(ApiResponseBody.class);
         }
 
         @Override

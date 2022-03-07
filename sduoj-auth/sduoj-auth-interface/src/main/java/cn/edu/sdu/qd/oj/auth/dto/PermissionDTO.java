@@ -23,7 +23,7 @@ import java.util.Map;
 @NoArgsConstructor
 @AllArgsConstructor
 @EqualsAndHashCode(callSuper = true)
-public class PermissionDTO extends BaseDTO{
+public class PermissionDTO extends BaseDTO {
 
     private Long id;
 

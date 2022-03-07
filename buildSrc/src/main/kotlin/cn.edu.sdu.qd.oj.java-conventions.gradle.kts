@@ -4,6 +4,7 @@
 plugins {
     `java-library`
     `maven-publish`
+    id("checkstyle")
     id("org.springframework.boot")
     id("io.spring.dependency-management")
 }
@@ -18,6 +19,16 @@ repositories {
     mavenCentral()
 //    maven { url = uri("https://maven.aliyun.com/repository/public/") }
 //    maven { url = uri("https://maven.aliyun.com/repository/spring/") }
+}
+
+checkstyle {
+    toolVersion = "8.41.1"
+}
+
+tasks.withType<Checkstyle>().configureEach {
+    doLast {
+        reportErrorStyle(this as Checkstyle)
+    }
 }
 
 dependencies {
@@ -89,6 +100,16 @@ allprojects {
                 artifact(tasks.jar)
             }
         }
+    }
+    tasks.withType(JavaCompile::class) {
+        // 暂时关闭MapStruct Warning TODO: 设计好converter层来解决MapStruct中的unmappedTarget问题
+        options.compilerArgs.add("-Amapstruct.unmappedTargetPolicy=IGNORE")
+    }
+    tasks.classes {
+        finalizedBy("checkstyleMain")
+    }
+    tasks.testClasses {
+        finalizedBy("checkstyleTest")
     }
 }
 

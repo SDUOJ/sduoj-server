@@ -108,7 +108,7 @@ public class RedisConfig {
                 .computePrefixWith(cacheName -> "cache".concat(":").concat(cacheName).concat(":"))
                 .serializeKeysWith(RedisSerializationContext.SerializationPair.fromSerializer(redisKeySerializer()))
                 .serializeValuesWith(RedisSerializationContext.SerializationPair.fromSerializer(redisValueSerializer()))
-                .entryTtl(Duration.ofHours(1))  ;
+                .entryTtl(Duration.ofHours(1));
     }
 
     @Bean

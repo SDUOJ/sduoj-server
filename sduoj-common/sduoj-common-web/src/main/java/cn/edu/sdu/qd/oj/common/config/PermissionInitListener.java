@@ -48,6 +48,7 @@ public class PermissionInitListener implements SpringApplicationRunListener {
         super();
     }
 
+    @SuppressWarnings("unchecked")
     private static final Class<? extends Annotation>[] MAPPING_CLASSES = new Class[] {RequestMapping.class,
             GetMapping.class, PostMapping.class, PutMapping.class, DeleteMapping.class};
 

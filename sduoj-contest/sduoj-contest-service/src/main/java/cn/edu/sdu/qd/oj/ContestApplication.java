@@ -22,6 +22,6 @@ import org.springframework.cloud.openfeign.EnableFeignClients;
 @MapperScan(basePackages = {"cn.edu.sdu.qd.oj.contest.mapper"})
 public class ContestApplication {
     public static void main(String[] args) {
-        SpringApplication.run(ContestApplication.class,args);
+        SpringApplication.run(ContestApplication.class, args);
     }
 }

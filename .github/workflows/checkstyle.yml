@@ -20,5 +20,13 @@ jobs:
         env:
           REVIEWDOG_GITHUB_API_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
-          java -jar checkstyle.jar -c checkstyle-config.xml -f xml . | reviewdog -f=checkstyle -name="Checkstyle Check" -reporter=github-pr-check
-          java -jar checkstyle.jar -c checkstyle-config.xml -f xml . | reviewdog -f=checkstyle -name="Checkstyle Comment" -reporter=github-pr-review
+          java -Dconfig_loc=config/checkstyle \
+               -jar checkstyle.jar \
+               -c config/checkstyle/checkstyle.xml \
+               -f xml . \
+            | reviewdog -f=checkstyle -name="Checkstyle Check" -reporter=github-pr-check
+          java -Dconfig_loc=config/checkstyle \
+               -jar checkstyle.jar \
+               -c config/checkstyle/checkstyle.xml \
+               -f xml . \
+            | reviewdog -f=checkstyle -name="Checkstyle Comment" -reporter=github-pr-review

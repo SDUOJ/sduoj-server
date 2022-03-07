@@ -22,7 +22,7 @@ public class SubmissionBizContant {
 
     public static String getRedisChannelKey(String submissionId) {
         return "/submission/" + submissionId;
-     }
+    }
 
 
 }

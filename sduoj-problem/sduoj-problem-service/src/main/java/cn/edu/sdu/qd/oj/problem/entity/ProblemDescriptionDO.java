@@ -81,7 +81,7 @@ public class ProblemDescriptionDO extends BaseDO {
     @TableField(ProblemDescriptionDOField.HTML_HINT)
     private String htmlHint;
 
-    public static int compareById(ProblemDescriptionDO o1, ProblemDescriptionDO o2){
+    public static int compareById(ProblemDescriptionDO o1, ProblemDescriptionDO o2) {
         return o1.id.compareTo(o2.id);
     }
 }
