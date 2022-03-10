@@ -107,6 +107,10 @@ allprojects {
     }
     tasks.classes {
         finalizedBy("checkstyleMain")
+        copy {
+            from("${rootProject.rootDir}/config/logback/")
+            into("${buildDir}/resources/main/")
+        }
     }
     tasks.testClasses {
         finalizedBy("checkstyleTest")
