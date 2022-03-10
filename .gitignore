@@ -18,4 +18,6 @@ out/
 .classpath
 .project
 
+/**/src/main/generated/
+
 *.gpg
