@@ -5,7 +5,6 @@ plugins {
     `java-library`
     `maven-publish`
     id("checkstyle")
-    id("org.springframework.boot")
     id("io.spring.dependency-management")
 }
 
@@ -15,20 +14,14 @@ java.sourceCompatibility = JavaVersion.VERSION_1_8
 java.targetCompatibility = JavaVersion.VERSION_1_8
 
 repositories {
-    mavenLocal()
     mavenCentral()
+    // uncomment follows if GFW in your network
 //    maven { url = uri("https://maven.aliyun.com/repository/public/") }
 //    maven { url = uri("https://maven.aliyun.com/repository/spring/") }
 }
 
 checkstyle {
     toolVersion = "8.41.1"
-}
-
-tasks.withType<Checkstyle>().configureEach {
-    doLast {
-        reportErrorStyle(this as Checkstyle)
-    }
 }
 
 dependencies {
@@ -42,6 +35,7 @@ dependencies {
 
 dependencyManagement {
     imports {
+        mavenBom("org.springframework.boot:spring-boot-dependencies:${Versions.springBoot}")
         mavenBom("org.springframework.cloud:spring-cloud-dependencies:${Versions.springCloud}")
         mavenBom("com.alibaba.cloud:spring-cloud-alibaba-dependencies:${Versions.springCloudAlibaba}")
     }
@@ -60,7 +54,6 @@ dependencyManagement {
         dependency("org.apache.commons:commons-pool2:${Versions.commonsPool}")
         dependency("cn.hutool:hutool-core:${Versions.hutool}")
         dependency("com.github.ben-manes.caffeine:caffeine:${Versions.caffeine}")
-        dependency("org.javassist:javassist:${Versions.javassist}")
         dependency("org.slf4j:slf4j-api:${Versions.slf4j}")
         dependency("org.slf4j:slf4j-nop:${Versions.slf4j}")
         dependency("com.fasterxml.jackson.core:jackson-core:${Versions.jackson}")
@@ -76,47 +69,35 @@ dependencyManagement {
     }
 }
 
-// 定义 service 工程和 interface 工程的区别, service 工程需要打成 Jar 包不需要发布, interface 则相反
-allprojects {
-    val projectName = this.name
-    val isService = projectName.contains(Regex("-(service|gateway|websocket)$"))
-    if (isService) {
-        tasks.bootJar {
-            enabled = true
-            archiveName = projectName.replace("-service", "") + ".jar"
-        }
-        tasks.jar {
-            enabled = false
-        }
-    } else {
-        tasks.bootJar {
-            enabled = false
-        }
-        tasks.jar {
-            enabled = true
-        }
-        publishing {
-            publications.create<MavenPublication>("maven") {
-                artifact(tasks.jar)
-            }
-        }
-    }
-    tasks.withType(JavaCompile::class) {
-        // 暂时关闭MapStruct Warning TODO: 设计好converter层来解决MapStruct中的unmappedTarget问题
-        options.compilerArgs.add("-Amapstruct.unmappedTargetPolicy=IGNORE")
+// 配置service工程
+val isService = project.name.contains(Regex("-(service|gateway|websocket)$"))
+if (isService) {
+    tasks.named("bootJar") {
+        (this as Jar).archiveFileName.set(project.name.replace("-service", "") + ".jar")
     }
     tasks.classes {
-        finalizedBy("checkstyleMain")
         copy {
             from("${rootProject.rootDir}/config/logback/")
             into("${buildDir}/resources/main/")
         }
     }
-    tasks.testClasses {
-        finalizedBy("checkstyleTest")
+}
+// 发布包到Maven仓库
+publishing {
+    publications.create<MavenPublication>("maven") {
+        artifact(tasks.jar)
     }
 }
-
-tasks.withType<JavaCompile>() {
+// 编译器参数
+tasks.withType(JavaCompile::class) {
     options.encoding = "UTF-8"
+    options.compilerArgs.add("-parameters")
+    // 暂时关闭MapStruct Warning TODO: 设计好converter层来解决MapStruct中的unmappedTarget问题
+    options.compilerArgs.add("-Amapstruct.unmappedTargetPolicy=IGNORE")
 }
+// style 检查，不通过不编译
+tasks.withType<Checkstyle>().configureEach {
+    doLast { reportErrorStyle(this as Checkstyle) }
+}
+tasks.classes { finalizedBy("checkstyleMain") }
+tasks.testClasses { finalizedBy("checkstyleTest") }

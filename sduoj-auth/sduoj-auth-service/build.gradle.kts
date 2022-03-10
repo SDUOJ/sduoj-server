@@ -3,6 +3,7 @@
  */
 
 plugins {
+    id("org.springframework.boot") version Versions.springBoot
     id("cn.edu.sdu.qd.oj.java-conventions")
 }
 

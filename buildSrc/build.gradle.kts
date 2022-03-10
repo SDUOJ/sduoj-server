@@ -12,10 +12,8 @@ repositories {
     gradlePluginPortal()
 }
 
-val springBootVersion: String by project
 val dependencyManagementPluginVersion: String by project
 
 dependencies {
-    implementation("org.springframework.boot:spring-boot-gradle-plugin:$springBootVersion")
     implementation("io.spring.gradle:dependency-management-plugin:$dependencyManagementPluginVersion")
 }
