@@ -23,7 +23,7 @@ jobs:
       - name: Gradle Build
         run: |
           chmod +x ./gradlew
-          ./gradlew build
+          ./gradlew bootJar --scan
 
       - name: Set up QEMU
         uses: docker/setup-qemu-action@v1

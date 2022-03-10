@@ -20,7 +20,7 @@ RUN ln -sf /usr/lib/jvm/java-8-openjdk-amd64/bin/java /usr/bin/java \
 # build
  && cd /sduoj/dockerWorkspace/sduoj-server* \
  && chmod +x ./gradlew \
- && ./gradlew build --scan \
+ && ./gradlew bootJar --scan \
 # copy
  && mv                       sduoj-gateway/build/libs/* /sduoj/ \
  && mv                     sduoj-websocket/build/libs/* /sduoj/ \
