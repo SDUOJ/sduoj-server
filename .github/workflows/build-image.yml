@@ -23,7 +23,7 @@ jobs:
       - name: Gradle Build
         run: |
           chmod +x ./gradlew
-          ./gradlew bootJar --scan
+          ./gradlew build --scan
 
       - name: Set up QEMU
         uses: docker/setup-qemu-action@v1
@@ -42,7 +42,7 @@ jobs:
         uses: docker/build-push-action@v2
         with:
           context: .
-          file: action.Dockerfile
+          file: microservice.Dockerfile
           platforms: linux/amd64 #,linux/arm64
           push: true
           tags: registry.cn-beijing.aliyuncs.com/sduoj/sduoj-server:latest

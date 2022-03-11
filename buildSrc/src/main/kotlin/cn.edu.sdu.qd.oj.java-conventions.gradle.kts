@@ -71,6 +71,13 @@ val isService = project.name.contains(Regex("service|gateway|websocket"))
 if (isService) {
     tasks.named("bootJar") {
         (this as Jar).archiveFileName.set(project.name.replace("-service", "") + ".jar")
+        doLast {
+            copy {
+                from(archiveFile)
+                into(rootProject.buildDir)
+            }
+            archiveFile.get().asFile.delete()
+        }
     }
     tasks.classes {
         doLast {
@@ -100,3 +107,5 @@ tasks.withType<Checkstyle>().configureEach {
 }
 tasks.classes { finalizedBy("checkstyleMain") }
 tasks.testClasses { finalizedBy("checkstyleTest") }
+// 清理
+tasks.clean {  delete(rootProject.buildDir.listFiles()) }

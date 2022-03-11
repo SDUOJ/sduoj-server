@@ -18,5 +18,10 @@ spring:
         namespace: ${sduoj.config.active}
         server-addr: ${sduoj.config.nacos-addr}
         file-extension: yml
+      discovery:
+        namespace: ${sduoj.config.active}
+        server-addr: ${sduoj.config.nacos-addr}
   profiles:
     active: ${sduoj.config.active}
+mybatis-plus:
+  type-aliases-package: cn.edu.sdu.qd.oj.**.entity
