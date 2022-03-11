@@ -67,20 +67,21 @@ dependencyManagement {
 }
 
 // 配置service工程
-val isService = project.name.contains(Regex("-(service|gateway|websocket)$"))
+val isService = project.name.contains(Regex("service|gateway|websocket"))
 if (isService) {
     tasks.named("bootJar") {
         (this as Jar).archiveFileName.set(project.name.replace("-service", "") + ".jar")
     }
     tasks.classes {
-        copy {
-            from("${rootProject.rootDir}/config/logback/")
-            into("${buildDir}/resources/main/")
+        doLast {
+            copy {
+                from("${rootProject.rootDir}/config/logback/")
+                into("${buildDir}/resources/main/")
+            }
         }
     }
 }
 // 发布包到Maven仓库
-tasks.jar { enabled = true }
 publishing {
     publications.create<MavenPublication>("maven") {
         artifact(tasks.jar)
