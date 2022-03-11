@@ -58,6 +58,7 @@ dependencyManagement {
         dependency("org.apache.logging.log4j:log4j-to-slf4j:${Versions.log4j}")
         dependency("org.apache.logging.log4j:log4j-api:${Versions.log4j}")
         dependency("org.apache.logging.log4j:log4j-core:${Versions.log4j}")
+        dependency("org.javassist:javassist:${Versions.javassist}")
     }
 }
 
