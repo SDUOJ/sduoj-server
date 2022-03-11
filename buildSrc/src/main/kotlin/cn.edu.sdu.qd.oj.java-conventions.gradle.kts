@@ -1,7 +1,6 @@
 plugins {
     `java-library`
     `maven-publish`
-    id("checkstyle")
     id("io.spring.dependency-management")
 }
 
@@ -15,10 +14,6 @@ repositories {
     // uncomment follows if GFW in your network
 //    maven { url = uri("https://maven.aliyun.com/repository/public/") }
 //    maven { url = uri("https://maven.aliyun.com/repository/spring/") }
-}
-
-checkstyle {
-    toolVersion = "8.41.1"
 }
 
 dependencies {
@@ -101,11 +96,5 @@ tasks.withType(JavaCompile::class) {
     // 暂时关闭MapStruct Warning TODO: 设计好converter层来解决MapStruct中的unmappedTarget问题
     options.compilerArgs.add("-Amapstruct.unmappedTargetPolicy=IGNORE")
 }
-// style 检查，不通过不编译
-tasks.withType<Checkstyle>().configureEach {
-    doLast { reportErrorStyle(this as Checkstyle) }
-}
-tasks.classes { finalizedBy("checkstyleMain") }
-tasks.testClasses { finalizedBy("checkstyleTest") }
 // 清理
 tasks.clean {  delete(rootProject.buildDir.listFiles()) }
