@@ -83,11 +83,12 @@ if (isService) {
             }
         }
     }
-}
-// 发布包到Maven仓库
-publishing {
-    publications.create<MavenPublication>("maven") {
-        artifact(tasks.jar)
+} else {
+    // 发布包到Maven仓库
+    publishing {
+        publications.create<MavenPublication>("maven") {
+            artifact(tasks.jar)
+        }
     }
 }
 // 编译器参数
