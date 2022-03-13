@@ -85,6 +85,18 @@ allprojects {
             enabled = true
         }
         publishing {
+            System.getenv("GITHUB_TOKEN")?.let { GITHUB_TOKEN ->
+                repositories {
+                    maven {
+                        name = "GitHubPackages"
+                        url = uri("https://maven.pkg.github.com/" + System.getenv("GITHUB_REPOSITORY"))
+                        credentials {
+                            username = System.getenv("GITHUB_ACTOR")
+                            password = GITHUB_TOKEN
+                        }
+                    }
+                }
+            }
             publications.create<MavenPublication>("maven") {
                 artifact(tasks.jar)
             }
