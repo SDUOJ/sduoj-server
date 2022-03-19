@@ -21,7 +21,7 @@ import cn.edu.sdu.qd.oj.checkpoint.entity.CheckpointDO;
 import cn.edu.sdu.qd.oj.common.entity.UserSessionDTO;
 import cn.edu.sdu.qd.oj.common.enums.ApiExceptionEnum;
 import cn.edu.sdu.qd.oj.common.util.AssertUtils;
-import cn.edu.sdu.qd.oj.dto.PlainFileDownloadDTO;
+import cn.edu.sdu.qd.oj.filesys.dto.PlainFileDownloadDTO;
 import cn.edu.sdu.qd.oj.problem.converter.ProblemConverterUtils;
 import cn.edu.sdu.qd.oj.problem.dao.ProblemDao;
 import cn.edu.sdu.qd.oj.problem.dto.ProblemCheckpointDTO;

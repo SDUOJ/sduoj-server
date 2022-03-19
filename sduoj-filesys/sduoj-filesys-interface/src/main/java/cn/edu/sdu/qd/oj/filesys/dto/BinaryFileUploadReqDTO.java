@@ -8,24 +8,24 @@
  *      https://www.gnu.org/licenses/agpl-3.0.en.html
  */
 
-package cn.edu.sdu.qd.oj.dto;
+package cn.edu.sdu.qd.oj.filesys.dto;
 
 import cn.edu.sdu.qd.oj.common.entity.BaseDTO;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import lombok.*;
-import org.springframework.core.io.FileSystemResource;
+
+import java.io.InputStream;
 
 @Data
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
 @EqualsAndHashCode(callSuper = true)
-public class FileDownloadReqDTO extends BaseDTO {
-
-    private Long id;
-
-    private String downloadFilename;
+public class BinaryFileUploadReqDTO extends BaseDTO {
+    private String filename;
+    private byte[] bytes;
+    private Long size;
 
     @JsonIgnore
-    private FileSystemResource fileSystemResource;
+    private InputStream inputStream;
 }

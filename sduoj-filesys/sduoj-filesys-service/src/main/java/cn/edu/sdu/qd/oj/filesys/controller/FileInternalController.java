@@ -11,11 +11,11 @@
 package cn.edu.sdu.qd.oj.filesys.controller;
 
 
-import cn.edu.sdu.qd.oj.api.FilesysApi;
-import cn.edu.sdu.qd.oj.dto.BinaryFileUploadReqDTO;
-import cn.edu.sdu.qd.oj.dto.FileDTO;
-import cn.edu.sdu.qd.oj.dto.FileDownloadReqDTO;
-import cn.edu.sdu.qd.oj.dto.PlainFileDownloadDTO;
+import cn.edu.sdu.qd.oj.filesys.api.FilesysApi;
+import cn.edu.sdu.qd.oj.filesys.dto.BinaryFileUploadReqDTO;
+import cn.edu.sdu.qd.oj.filesys.dto.FileDTO;
+import cn.edu.sdu.qd.oj.filesys.dto.FileDownloadReqDTO;
+import cn.edu.sdu.qd.oj.filesys.dto.PlainFileDownloadDTO;
 import cn.edu.sdu.qd.oj.filesys.service.FileService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.io.ByteArrayResource;
