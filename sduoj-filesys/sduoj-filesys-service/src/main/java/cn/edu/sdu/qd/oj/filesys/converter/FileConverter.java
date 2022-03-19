@@ -11,7 +11,7 @@
 package cn.edu.sdu.qd.oj.filesys.converter;
 
 import cn.edu.sdu.qd.oj.common.converter.BaseConverter;
-import cn.edu.sdu.qd.oj.dto.FileDTO;
+import cn.edu.sdu.qd.oj.filesys.dto.FileDTO;
 import cn.edu.sdu.qd.oj.filesys.entity.FileDO;
 
 @org.mapstruct.Mapper(componentModel = "spring")

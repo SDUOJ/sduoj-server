@@ -8,12 +8,12 @@
  *      https://www.gnu.org/licenses/gpl-3.0.en.html
  */
 
-package cn.edu.sdu.qd.oj.api;
+package cn.edu.sdu.qd.oj.filesys.api;
 
-import cn.edu.sdu.qd.oj.dto.BinaryFileUploadReqDTO;
-import cn.edu.sdu.qd.oj.dto.FileDTO;
-import cn.edu.sdu.qd.oj.dto.FileDownloadReqDTO;
-import cn.edu.sdu.qd.oj.dto.PlainFileDownloadDTO;
+import cn.edu.sdu.qd.oj.filesys.dto.BinaryFileUploadReqDTO;
+import cn.edu.sdu.qd.oj.filesys.dto.FileDTO;
+import cn.edu.sdu.qd.oj.filesys.dto.FileDownloadReqDTO;
+import cn.edu.sdu.qd.oj.filesys.dto.PlainFileDownloadDTO;
 import org.springframework.core.io.Resource;
 import org.springframework.web.bind.annotation.*;
 

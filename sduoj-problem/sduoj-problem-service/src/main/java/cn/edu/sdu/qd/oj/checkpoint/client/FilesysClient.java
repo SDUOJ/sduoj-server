@@ -10,7 +10,7 @@
 
 package cn.edu.sdu.qd.oj.checkpoint.client;
 
-import cn.edu.sdu.qd.oj.api.FilesysApi;
+import cn.edu.sdu.qd.oj.filesys.api.FilesysApi;
 import org.springframework.cloud.openfeign.FeignClient;
 
 @FeignClient(FilesysApi.SERVICE_NAME)
