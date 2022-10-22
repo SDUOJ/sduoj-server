@@ -1,5 +1,5 @@
 object Versions {
-    val sduoj = "1.0.0-SNAPSHOT"
+    val sduoj = "0.0.1-SNAPSHOT"
 
     val springCloud = "Greenwich.SR5"
     val springCloudAlibaba = "2.1.2.RELEASE"
