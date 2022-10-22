@@ -5,8 +5,8 @@ ENV LANG C.UTF-8
 
 COPY build/sduoj-*.jar /root/sduoj/
 
-ADD https://github.com/SDUOJ/docker-compose-wait/releases/download/2.7.3/wait /wait
-RUN chmod +x /wait
+# download docker-compose-wait
+COPY --from=sduoj/docker-compose-wait:latest /wait /wait
 
 
 ENV NACOS_ADDR=127.0.0.1:8848 \
